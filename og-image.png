@@ -1,0 +1,111 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="#0a0d12"/>
+      <stop offset="55%" stop-color="#0d1117"/>
+      <stop offset="100%" stop-color="#111827"/>
+    </linearGradient>
+    <linearGradient id="logoGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#7EB8F7"/>
+      <stop offset="100%" stop-color="#4A90D9"/>
+    </linearGradient>
+    <linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#1a2a4a"/>
+      <stop offset="100%" stop-color="#0e1a2e"/>
+    </linearGradient>
+    <linearGradient id="goldLine" x1="0" y1="0" x2="1200" y2="0" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" stop-color="transparent"/>
+      <stop offset="20%" stop-color="#c9a84c"/>
+      <stop offset="80%" stop-color="#c9a84c"/>
+      <stop offset="100%" stop-color="transparent"/>
+    </linearGradient>
+    <linearGradient id="glowGrad" cx="50%" cy="30%" r="60%" gradientUnits="objectBoundingBox">
+      <stop offset="0%" stop-color="#c9a84c" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#c9a84c" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+
+  <!-- Subtle radial glow at top center -->
+  <ellipse cx="600" cy="100" rx="550" ry="260" fill="#c9a84c" opacity="0.05"/>
+
+  <!-- Top gold border line -->
+  <rect x="0" y="0" width="1200" height="3" fill="url(#goldLine)"/>
+
+  <!-- Bottom gold border line -->
+  <rect x="0" y="627" width="1200" height="3" fill="url(#goldLine)"/>
+
+  <!-- Left decorative vertical accent -->
+  <rect x="72" y="80" width="2" height="470" fill="#c9a84c" opacity="0.25"/>
+
+  <!-- AA Logo mark -->
+  <rect x="96" y="108" width="88" height="88" rx="20" fill="url(#logoBg)"/>
+  <path d="M140 122 L178 188 L102 188 Z" stroke="url(#logoGrad)" stroke-width="4.5" fill="none" stroke-linejoin="round"/>
+  <path d="M140 140 L165 186 L115 186 Z" fill="url(#logoGrad)" opacity="0.9"/>
+
+  <!-- Eyebrow label -->
+  <rect x="96" y="218" width="236" height="28" rx="14" fill="#c9a84c" fill-opacity="0.12"/>
+  <rect x="96" y="218" width="236" height="28" rx="14" fill="none" stroke="#c9a84c" stroke-opacity="0.3" stroke-width="1"/>
+  <text x="214" y="237" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#c9a84c" text-anchor="middle" letter-spacing="1.5">AA TEAM · TRAINING PLATFORM</text>
+
+  <!-- Main title line 1 -->
+  <text x="96" y="320" font-family="Segoe UI, Arial, sans-serif" font-size="62" font-weight="800" fill="#e6edf3" letter-spacing="-1">Privilege &amp; Coding</text>
+
+  <!-- Main title line 2 — gold -->
+  <text x="96" y="396" font-family="Segoe UI, Arial, sans-serif" font-size="62" font-weight="800" fill="#c9a84c" letter-spacing="-1">Mastery Hub</text>
+
+  <!-- Subtitle -->
+  <text x="96" y="450" font-family="Segoe UI, Arial, sans-serif" font-size="20" fill="#8b949e" letter-spacing="0.2">Adaptive quizzes · Flash cards · Reference guide · Live leaderboard</text>
+
+  <!-- Divider line -->
+  <rect x="96" y="480" width="560" height="1" fill="#30363d"/>
+
+  <!-- Feature pills row -->
+  <!-- Pill 1: ACP -->
+  <rect x="96" y="500" width="100" height="30" rx="15" fill="#1f6feb22" stroke="#1f6feb" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="146" y="520" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#58a6ff" text-anchor="middle">ACP</text>
+
+  <!-- Pill 2: WPP -->
+  <rect x="206" y="500" width="100" height="30" rx="15" fill="#8957e522" stroke="#8957e5" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="256" y="520" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#c9a0e0" text-anchor="middle">Work Product</text>
+
+  <!-- Pill 3: CIP -->
+  <rect x="316" y="500" width="100" height="30" rx="15" fill="#23863622" stroke="#238636" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="366" y="520" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#56d364" text-anchor="middle">CIP</text>
+
+  <!-- Pill 4: QC Cert -->
+  <rect x="426" y="500" width="120" height="30" rx="15" fill="#c9a84c22" stroke="#c9a84c" stroke-opacity="0.4" stroke-width="1"/>
+  <text x="486" y="520" font-family="Segoe UI, Arial, sans-serif" font-size="12" font-weight="700" fill="#c9a84c" text-anchor="middle">QC Certification</text>
+
+  <!-- Right side: Stats panel -->
+  <rect x="820" y="108" width="292" height="414" rx="14" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+
+  <!-- Stats panel header -->
+  <rect x="820" y="108" width="292" height="52" rx="14" fill="#21262d"/>
+  <rect x="820" y="146" width="292" height="14" rx="0" fill="#21262d"/>
+  <text x="966" y="140" font-family="Segoe UI, Arial, sans-serif" font-size="13" font-weight="700" fill="#8b949e" text-anchor="middle" letter-spacing="1">WHAT'S INSIDE</text>
+
+  <!-- Stat 1 -->
+  <text x="966" y="210" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#c9a84c" text-anchor="middle">50+</text>
+  <text x="966" y="236" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#8b949e" text-anchor="middle">Practice Questions</text>
+  <rect x="860" y="252" width="212" height="1" fill="#30363d"/>
+
+  <!-- Stat 2 -->
+  <text x="966" y="298" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#c9a84c" text-anchor="middle">20</text>
+  <text x="966" y="324" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#8b949e" text-anchor="middle">Flash Cards</text>
+  <rect x="860" y="340" width="212" height="1" fill="#30363d"/>
+
+  <!-- Stat 3 -->
+  <text x="966" y="386" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#c9a84c" text-anchor="middle">★</text>
+  <text x="966" y="412" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#8b949e" text-anchor="middle">Mastery Certification</text>
+  <rect x="860" y="428" width="212" height="1" fill="#30363d"/>
+
+  <!-- Stat 4 -->
+  <text x="966" y="470" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="800" fill="#c9a84c" text-anchor="middle">QC</text>
+  <text x="966" y="496" font-family="Segoe UI, Arial, sans-serif" font-size="13" fill="#8b949e" text-anchor="middle">Certification Path</text>
+
+  <!-- URL watermark -->
+  <text x="600" y="598" font-family="Segoe UI, Arial, sans-serif" font-size="15" fill="#3a4a5a" text-anchor="middle" letter-spacing="0.5">aa-mastery.vercel.app</text>
+</svg>
