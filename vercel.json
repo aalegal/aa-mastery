@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!og-image\\.png$).*)",
+      "destination": "/index.html"
+    }
+  ]
+}
