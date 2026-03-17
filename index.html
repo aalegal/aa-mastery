@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>AA Team – Privilege & Coding Mastery</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+<style>
+:root{
+  --gold:#c9a84c;--dark:#0d1117;--card:#161b22;--border:#30363d;
+  --green:#238636;--red:#da3633;--blue:#1f6feb;--purple:#8957e5;
+  --text:#e6edf3;--muted:#8b949e;--accent:#58a6ff;--card2:#1c2128;
+}
+*{box-sizing:border-box;margin:0;padding:0;font-family:'Segoe UI',Arial,sans-serif}
+body{background:var(--dark);color:var(--text);min-height:100vh}
+#topbar{background:linear-gradient(135deg,#0a0d12,#161b22);border-bottom:2px solid var(--gold);padding:0 24px;display:flex;align-items:center;height:58px;gap:16px;position:sticky;top:0;z-index:100}
+.site-logo{font-size:1.1rem;font-weight:800;color:var(--gold);letter-spacing:.5px;white-space:nowrap;display:flex;align-items:center;gap:10px}
+.site-logo-text span{display:block;color:var(--muted);font-weight:400;font-size:.75rem;letter-spacing:.3px;margin-top:-2px}
+#topnav{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+#topnav button{background:transparent;border:1px solid transparent;color:var(--muted);padding:6px 14px;border-radius:6px;cursor:pointer;font-size:.83rem;transition:all .2s}
+#topnav button:hover,#topnav button.active{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold)}
+#auth-zone{display:flex;align-items:center;gap:8px;margin-left:12px}
+#auth-zone .user-pill{background:#21262d;border:1px solid var(--border);border-radius:20px;padding:4px 12px;font-size:.8rem;color:var(--accent)}
+.btn{padding:8px 18px;border-radius:7px;border:none;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
+.btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:#e8c76a}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
+.btn-red{background:#da363322;border:1px solid var(--red);color:#ff7b72}.btn-red:hover{background:#da363344}
+.btn-sm{padding:5px 12px;font-size:.78rem}
+#hero{background:linear-gradient(135deg,#0a0d12 0%,#0d1117 40%,#111827 100%);padding:64px 24px 48px;text-align:center;border-bottom:1px solid var(--border)}
+#hero .hero-logo{width:64px;height:64px;object-fit:contain;margin:0 auto 18px;display:block}
+#hero h1{font-size:2.2rem;font-weight:800;color:var(--gold);margin-bottom:10px;letter-spacing:-.5px}
+#hero p{color:var(--muted);font-size:1rem;max-width:560px;margin:0 auto 28px;line-height:1.7}
+.hero-badges{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:32px}
+.hbadge{background:#21262d;border:1px solid var(--border);border-radius:20px;padding:6px 16px;font-size:.82rem;color:var(--muted)}
+.hbadge span{color:var(--gold);font-weight:700}
+.stat-row{display:flex;gap:24px;justify-content:center;flex-wrap:wrap}
+.stat{text-align:center}.stat-num{font-size:1.8rem;font-weight:800;color:var(--gold)}
+.stat-lbl{font-size:.78rem;color:var(--muted)}
+.page{display:none;max-width:960px;margin:0 auto;padding:28px 20px}
+.page.active{display:block}
+.card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:20px}
+h2{font-size:1.25rem;color:var(--gold);margin-bottom:12px}
+h3{font-size:1rem;color:var(--accent);margin-bottom:8px}
+p,li{line-height:1.6;font-size:.91rem}
+ul,ol{padding-left:20px;margin-top:6px}li{margin-bottom:4px}
+.rtabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.rtab{background:#21262d;border:1px solid var(--border);color:var(--muted);padding:6px 13px;border-radius:6px;cursor:pointer;font-size:.82rem;transition:all .2s}
+.rtab.active,.rtab:hover{background:var(--gold);color:#000;font-weight:700;border-color:var(--gold)}
+.rpane{display:none}.rpane.active{display:block}
+.rule{background:#21262d;border-left:4px solid var(--accent);padding:11px 14px;border-radius:0 8px 8px 0;margin:8px 0;font-size:.9rem}
+.rule.gold{border-color:var(--gold)}.rule.green{border-color:var(--green)}.rule.red{border-color:var(--red)}
+table{width:100%;border-collapse:collapse;font-size:.84rem;margin-top:10px}
+th{background:#21262d;color:var(--gold);padding:9px;text-align:left;border:1px solid var(--border)}
+td{padding:8px 10px;border:1px solid var(--border);vertical-align:top}
+tr:nth-child(even) td{background:#161b2280}
+.fc-wrap{perspective:900px;cursor:pointer;max-width:600px;margin:0 auto;height:210px}
+.fc-inner{position:relative;width:100%;height:100%;transition:transform .5s;transform-style:preserve-3d}
+.fc-wrap.flipped .fc-inner{transform:rotateY(180deg)}
+.fc-front,.fc-back{position:absolute;width:100%;height:100%;backface-visibility:hidden;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:22px;text-align:center}
+.fc-front{background:linear-gradient(135deg,#1f2937,#21262d);border:2px solid var(--accent)}
+.fc-back{background:linear-gradient(135deg,#1a2a1a,#21262d);border:2px solid var(--green);transform:rotateY(180deg)}
+.fc-nav{display:flex;gap:10px;justify-content:center;margin-top:14px;align-items:center}
+.modal-bg{display:none;position:fixed;inset:0;background:#000000cc;z-index:200;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;width:100%;max-width:420px;position:relative}
+.modal h2{margin-bottom:20px;text-align:center}
+.form-group{margin-bottom:14px}
+.form-group label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:5px}
+.form-group input{width:100%;background:#21262d;border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:7px;font-size:.9rem}
+.form-group input:focus{outline:none;border-color:var(--accent)}
+.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.auth-toggle{text-align:center;margin-top:12px;font-size:.83rem;color:var(--muted)}
+.auth-toggle a{color:var(--accent);cursor:pointer;text-decoration:none}
+.auth-err{color:#ff7b72;font-size:.82rem;margin-bottom:10px;display:none}
+.auth-ok{color:#56d364;font-size:.82rem;margin-bottom:10px;display:none}
+.qgate{text-align:center;padding:40px 20px}
+.qgate h2{margin-bottom:10px}
+.qgate p{color:var(--muted);margin-bottom:20px}
+.q-filters{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:14px}
+.q-filters button{padding:5px 13px;border-radius:14px;border:1px solid var(--border);background:transparent;color:var(--muted);font-size:.8rem;cursor:pointer;transition:all .2s}
+.q-filters button.active{background:var(--gold);color:#000;border-color:var(--gold);font-weight:700}
+.prog-bar{background:#21262d;border-radius:6px;height:8px;width:100%;margin-bottom:16px}
+.prog-fill{background:linear-gradient(90deg,var(--gold),#e8c76a);height:100%;border-radius:6px;transition:width .4s}
+.q-text{font-size:.97rem;font-weight:500;margin-bottom:14px;padding:13px;background:#21262d;border-radius:8px;border-left:3px solid var(--accent);line-height:1.6}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice-btn{background:#21262d;border:1px solid var(--border);color:var(--text);padding:11px 15px;border-radius:8px;text-align:left;cursor:pointer;font-size:.88rem;transition:all .2s;display:flex;align-items:flex-start;gap:10px}
+.choice-btn:hover:not(:disabled){border-color:var(--accent);background:#2d333b}
+.choice-btn .cl{font-weight:700;color:var(--accent);min-width:20px;flex-shrink:0}
+.choice-btn.correct{background:#23863620;border-color:var(--green);color:#56d364}
+.choice-btn.incorrect{background:#da363320;border-color:var(--red);color:#ff7b72}
+.choice-btn.reveal{background:#23863620;border-color:var(--green);color:#56d364}
+.choice-btn:disabled{cursor:default}
+.feedback{margin-top:13px;padding:13px;border-radius:8px;font-size:.88rem;line-height:1.6;display:none}
+.feedback.show{display:block}
+.feedback.c{background:#23863620;border:1px solid var(--green);color:#56d364}
+.feedback.w{background:#da363320;border:1px solid var(--red);color:#ff7b72}
+.score-ring{width:110px;height:110px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;margin:0 auto 14px;font-size:1.5rem;font-weight:800;border:6px solid}
+.score-ring.gold{border-color:var(--gold);color:var(--gold)}
+.score-ring.green{border-color:var(--green);color:#56d364}
+.score-ring.yellow{border-color:#e3b341;color:#e3b341}
+.score-ring.red{border-color:var(--red);color:#ff7b72}
+.band-box{padding:12px 20px;border-radius:8px;margin:12px auto;max-width:420px;text-align:center;font-weight:700}
+.missed-item{padding:9px 12px;margin:6px 0;background:#21262d;border-radius:6px;font-size:.83rem;border-left:3px solid var(--red)}
+.round-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(201,168,76,.12);border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:4px 12px;font-size:.78rem;color:var(--gold);font-weight:700;margin-bottom:10px}
+.study-card{background:#21262d;border:1px solid var(--border);border-radius:8px;padding:14px;margin:8px 0;border-left:3px solid var(--red)}
+.study-card .sc-q{font-size:.85rem;font-weight:600;color:var(--text);margin-bottom:8px}
+.study-card .sc-wrong{font-size:.8rem;color:#ff7b72;margin-bottom:4px}
+.study-card .sc-right{font-size:.8rem;color:#56d364;margin-bottom:6px}
+.study-card .sc-tip{font-size:.8rem;color:var(--muted);background:#161b22;border-radius:6px;padding:8px 10px;border-left:2px solid var(--accent);line-height:1.5}
+.mastery-screen{text-align:center;padding:32px 20px}
+.mastery-star{font-size:3.5rem;margin-bottom:12px;animation:starPop .5s ease}
+@keyframes starPop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.mastery-title{font-size:1.6rem;font-weight:800;color:var(--gold);margin-bottom:8px}
+.mastery-sub{color:var(--muted);font-size:.9rem;margin-bottom:20px;max-width:420px;margin-left:auto;margin-right:auto}
+.round-history{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin:16px 0}
+.rh-dot{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;border:2px solid;flex-direction:column;line-height:1.2}
+.rh-dot.pass{background:rgba(35,134,54,.2);border-color:var(--green);color:#56d364}
+.rh-dot.fail{background:rgba(218,54,51,.2);border-color:var(--red);color:#ff7b72}
+.rh-dot.perfect{background:rgba(201,168,76,.2);border-color:var(--gold);color:var(--gold)}
+.lb-row{display:flex;align-items:center;gap:12px;padding:10px 14px;background:#21262d;border-radius:8px;margin:6px 0;border:1px solid var(--border)}
+.lb-rank{width:28px;height:28px;border-radius:50%;background:var(--border);display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;flex-shrink:0}
+.lb-rank.r1{background:var(--gold);color:#000}
+.lb-rank.r2{background:#6e7681;color:#fff}
+.lb-rank.r3{background:#c9562a;color:#fff}
+.lb-name{flex:1;font-size:.9rem}
+.lb-score{font-weight:700;color:var(--gold)}
+.lb-pct{font-size:.78rem;color:var(--muted);margin-left:4px}
+.my-row{background:rgba(31,111,235,.08);border-color:rgba(31,111,235,.25)!important}
+.chain-step{display:flex;align-items:flex-start;gap:12px;padding:11px 14px;background:#21262d;border:1px solid var(--border);border-radius:8px;margin-bottom:5px}
+.chain-num{width:28px;height:28px;border-radius:50%;background:var(--gold);color:#000;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:.83rem;flex-shrink:0;margin-top:2px}
+.chain-arrow{color:var(--muted);text-align:center;font-size:1.1rem;margin:2px 0}
+.admin-warning{background:#da363318;border:1px solid var(--red);border-radius:8px;padding:14px;margin-bottom:16px;font-size:.88rem;color:#ff7b72}
+.badge{display:inline-block;padding:3px 10px;border-radius:12px;font-size:.74rem;font-weight:600;margin:2px}
+.ba{background:#1f6feb33;color:#58a6ff;border:1px solid #1f6feb}
+.bw{background:#8957e533;color:#c9a0e0;border:1px solid #8957e5}
+.bc{background:#23863633;color:#56d364;border:1px solid #238636}
+.bn{background:#da363333;color:#ff7b72;border:1px solid #da3633}
+.be{background:#c9a84c33;color:var(--gold);border:1px solid var(--gold)}
+.tag{display:inline-block;background:#21262d;border:1px solid var(--border);border-radius:4px;padding:2px 7px;font-size:.74rem;color:var(--muted);margin:2px}
+.divider{height:1px;background:var(--border);margin:14px 0}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.info-card{background:#21262d;border:1px solid var(--border);border-radius:10px;padding:16px;text-align:center}
+.info-icon{font-size:1.8rem;margin-bottom:8px}
+.info-title{font-weight:700;margin-bottom:4px}
+.info-desc{font-size:.8rem;color:var(--muted)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media(max-width:600px){#hero h1{font-size:1.5rem}#topnav button{padding:5px 9px;font-size:.76rem}.site-logo-text span{display:none}}
+</style>
+</head>
+<body>
+
+<div id="topbar">
+  <div class="site-logo">
+    <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="bg1" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a2a4a"/><stop offset="100%" stop-color="#0e1a2e"/></linearGradient>
+        <linearGradient id="tg1" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7EB8F7"/><stop offset="100%" stop-color="#4A90D9"/></linearGradient>
+      </defs>
+      <rect width="100" height="100" rx="22" fill="url(#bg1)"/>
+      <path d="M50 14 L86 74 L14 74 Z" stroke="url(#tg1)" stroke-width="5" fill="none" stroke-linejoin="round"/>
+      <path d="M50 30 L72 68 L28 68 Z" fill="url(#tg1)" opacity="0.9"/>
+    </svg>
+    <div class="site-logo-text">AA Team<span>Privilege &amp; Coding Mastery</span></div>
+  </div>
+  <div id="topnav">
+    <button class="active" onclick="nav('home')">Home</button>
+    <button onclick="nav('reference')">📚 Reference</button>
+    <button onclick="nav('flashcards')">🃏 Flash Cards</button>
+    <button onclick="nav('quiz')">✏️ Quiz</button>
+    <button onclick="nav('leaderboard')">🏆 Leaderboard</button>
+    <button onclick="nav('escalation')">🔺 Escalation</button>
+  </div>
+  <div id="auth-zone">
+    <span id="user-pill" class="user-pill" style="display:none"></span>
+    <button id="btn-login" class="btn btn-gold btn-sm" onclick="openModal('login')">Log In</button>
+    <button id="btn-logout" class="btn btn-outline btn-sm" style="display:none" onclick="logout()">Log Out</button>
+    <button id="btn-admin" class="btn btn-sm btn-red" style="display:none" onclick="nav('admin')">⚙️ Admin</button>
+  </div>
+</div>
+
+<div id="hero">
+  <svg class="hero-logo" width="64" height="64" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="bg2" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a2a4a"/><stop offset="100%" stop-color="#0e1a2e"/></linearGradient>
+      <linearGradient id="tg2" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#7EB8F7"/><stop offset="100%" stop-color="#4A90D9"/></linearGradient>
+    </defs>
+    <rect width="100" height="100" rx="22" fill="url(#bg2)"/>
+    <path d="M50 14 L86 74 L14 74 Z" stroke="url(#tg2)" stroke-width="5" fill="none" stroke-linejoin="round"/>
+    <path d="M50 30 L72 68 L28 68 Z" fill="url(#tg2)" opacity="0.9"/>
+  </svg>
+  <h1>AA Team Privilege &amp; Coding Mastery</h1>
+  <p>Your complete training hub for privilege review, responsiveness coding, and the road to QC certification. Study freely — log in to track your progress.</p>
+  <div class="hero-badges">
+    <div class="hbadge">📚 <span>Reference Guide</span> — Free</div>
+    <div class="hbadge">🃏 <span>Flash Cards</span> — Free</div>
+    <div class="hbadge">✏️ <span>Practice Quiz</span> — Login Required</div>
+    <div class="hbadge">🏆 <span>Leaderboard</span> — Login Required</div>
+  </div>
+  <div class="stat-row">
+    <div class="stat"><div class="stat-num">50+</div><div class="stat-lbl">Practice Questions</div></div>
+    <div class="stat"><div class="stat-num">3</div><div class="stat-lbl">Privilege Types</div></div>
+    <div class="stat"><div class="stat-num">20</div><div class="stat-lbl">Flash Cards</div></div>
+    <div class="stat"><div class="stat-num">QC</div><div class="stat-lbl">Certification Path</div></div>
+  </div>
+</div>
+
+<!-- HOME -->
+<div id="page-home" class="page active">
+  <div class="card" style="text-align:center;padding:28px">
+    <h2>Welcome to the Road to QC</h2>
+    <p style="color:var(--muted);max-width:500px;margin:0 auto 20px">All reference material and flashcards are free. Create an account to unlock quizzes, save your scores, and climb the leaderboard.</p>
+    <div class="grid2">
+      <div class="info-card" onclick="nav('reference')" style="cursor:pointer"><div class="info-icon">📚</div><div class="info-title">Reference Guide</div><div class="info-desc">ACP, WPP, CIP, In-House Counsel, Regulators, Four Corners &amp; more</div></div>
+      <div class="info-card" onclick="nav('flashcards')" style="cursor:pointer"><div class="info-icon">🃏</div><div class="info-title">Flash Cards</div><div class="info-desc">Flip-style concept review — 20 key privilege rules</div></div>
+      <div class="info-card" onclick="nav('quiz')" style="cursor:pointer"><div class="info-icon">✏️</div><div class="info-title">Practice Quiz</div><div class="info-desc">50+ questions with adaptive loop — keeps drilling until you hit 100%</div></div>
+      <div class="info-card" onclick="nav('leaderboard')" style="cursor:pointer"><div class="info-icon">🏆</div><div class="info-title">Leaderboard</div><div class="info-desc">See top scorers and ★ Mastered team members</div></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>🎯 The Three Mindset Rules</h2>
+    <div class="rule gold"><strong>1. Purpose Over People</strong> — Lawyer on email ≠ automatic privilege. Ask: <em>What is the PURPOSE of this communication?</em></div>
+    <div class="rule green"><strong>2. When in Doubt — Protect &amp; Escalate</strong> — 50/50, 60/40, or unsure? Code as <strong>Privileged</strong> and escalate immediately.</div>
+    <div class="rule"><strong>3. Four Corners &amp; Discipline</strong> — Decide only from what is written in the document itself. Not custodian, date range, or family.</div>
+  </div>
+  <div class="card">
+    <h2>📊 QC Score Gates</h2>
+    <table>
+      <tr><th>Score</th><th>Band</th><th>Privilege Live Coding</th></tr>
+      <tr><td style="color:var(--gold)">100%</td><td>🏆 Gold Standard</td><td>✅ Eligible — QC Candidate</td></tr>
+      <tr><td>96–98%</td><td>⭐ Excellent</td><td>❌ Training only</td></tr>
+      <tr><td>90–94%</td><td>✅ Solid</td><td>❌ Targeted coaching needed</td></tr>
+      <tr><td>80–88%</td><td>⚠️ Developing</td><td>❌ High QC required</td></tr>
+      <tr><td>&lt;80%</td><td>🔴 Retraining</td><td>❌ Intensive retraining needed</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- REFERENCE -->
+<div id="page-reference" class="page">
+  <div class="card">
+    <div class="rtabs">
+      <button class="rtab active" onclick="showRef('acp',this)">ACP</button>
+      <button class="rtab" onclick="showRef('wpp',this)">Work Product</button>
+      <button class="rtab" onclick="showRef('cip',this)">Common Interest</button>
+      <button class="rtab" onclick="showRef('inhouse',this)">In-House Counsel</button>
+      <button class="rtab" onclick="showRef('regulators',this)">Regulators</button>
+      <button class="rtab" onclick="showRef('fourcorners',this)">Four Corners</button>
+      <button class="rtab" onclick="showRef('drafts',this)">Drafts &amp; Families</button>
+      <button class="rtab" onclick="showRef('waiver',this)">Waiver</button>
+      <button class="rtab" onclick="showRef('coding',this)">Coding Rules</button>
+    </div>
+    <div id="rpane-acp" class="rpane active">
+      <h2>Attorney–Client Privilege (ACP)</h2>
+      <p>Protects <strong>confidential communications</strong> between an attorney and client for the purpose of seeking or providing <strong>legal advice</strong>.</p>
+      <h3 style="margin-top:14px">Four Elements (ALL must be true):</h3>
+      <ol><li><strong>Communication</strong> — written, oral, or electronic</li><li><strong>Between attorney &amp; client</strong> (or their agents)</li><li><strong>Made in confidence</strong></li><li><strong>Primary purpose: legal advice</strong> — not just business</li></ol>
+      <h3 style="margin-top:14px">✅ Usually ACP:</h3>
+      <ul><li>Employee asking counsel: "What is our legal exposure if we do X?"</li><li>Outside counsel memo analyzing litigation risk to small internal group</li><li>CEO to outside counsel: "Here are the facts; what are our legal options?"</li></ul>
+      <h3 style="margin-top:14px">❌ Usually NOT ACP:</h3>
+      <ul><li>Business emails with lawyer copied only as "FYI"</li><li>Marketing presentations reviewed by legal but containing no legal advice</li><li>In-house counsel acting as Head of Strategy with no legal content</li></ul>
+    </div>
+    <div id="rpane-wpp" class="rpane">
+      <h2>Work Product Privilege (WPP)</h2>
+      <p>Protects materials prepared <strong>in anticipation of litigation or for trial</strong> by or for a party or its representatives.</p>
+      <div class="rule"><strong>Key Test:</strong> "Would this document exist in this form if there were no litigation or investigation?" If NO → likely WPP.</div>
+      <h3 style="margin-top:12px">Key Points:</h3>
+      <ul><li>Does <strong>NOT</strong> require an attorney on the document</li><li>Covers: notes, drafts, chronologies, investigation summaries, strategy docs</li><li>"Legal asked us to compile this for the DOJ investigation" → WPP signal</li></ul>
+      <h3 style="margin-top:12px">✅ Usually WPP:</h3>
+      <ul><li>Investigation report at explicit request of litigation counsel</li><li>Timeline compiled because legal asked for DOJ prep</li><li>Deposition Q&amp;A drafted by outside counsel</li><li>Attorney's margin notes on a non-privileged contract</li></ul>
+      <h3 style="margin-top:12px">❌ Usually NOT WPP:</h3>
+      <ul><li>Monthly sales dashboard generated as routine business for years</li><li>Engineering report written before any lawsuit or legal risk was mentioned</li></ul>
+    </div>
+    <div id="rpane-cip" class="rpane">
+      <h2>Common Interest Privilege (CIP) / Joint Defense</h2>
+      <p>Allows parties with a <strong>shared legal interest</strong> to share privileged info <strong>without waiving</strong> attorney-client privilege.</p>
+      <h3 style="margin-top:12px">CIP Checklist:</h3>
+      <ul><li>Parties share a <strong>legal</strong> interest (not just commercial)</li><li>Lawyers are involved in the communication</li><li>Communication made to <strong>advance that legal interest</strong></li><li>No active waiver — information kept confidential</li></ul>
+      <div class="rule green">If you see: <strong>"common interest," "joint defense," "JDA"</strong> → treat as Privileged and escalate if unclear.</div>
+      <h3 style="margin-top:12px">✅ Usually CIP:</h3>
+      <ul><li>Co-defendants' counsel sharing strategy under a signed JDA</li><li>Company + executive (separate counsel) sharing privileged DOJ analysis</li></ul>
+      <h3 style="margin-top:12px">❌ NOT CIP:</h3>
+      <ul><li>Business teams emailing financial models (no lawyers, no legal strategy)</li><li>Two friends sharing documents with no lawyers involved</li></ul>
+    </div>
+    <div id="rpane-inhouse" class="rpane">
+      <h2>In-House vs Outside Counsel</h2>
+      <div class="rule gold"><strong>Core Rule: Privilege follows ROLE, not job title.</strong></div>
+      <h3 style="margin-top:12px">Lawyer Hat → ACP:</h3>
+      <ul><li>Advising on antitrust risk of a pricing structure</li><li>Legal analysis of employment discrimination exposure</li><li>Recommending actions to reduce legal exposure</li></ul>
+      <h3 style="margin-top:12px">Business Hat → NOT Privileged:</h3>
+      <ul><li>"Our Q4 numbers are weak — let's cut headcount" (no legal content)</li><li>Meeting invite to weekly sales check-in</li><li>Holiday party planning with counsel accidentally copied</li><li>Email signed as "VP of Operations" with operational content only</li></ul>
+      <h3 style="margin-top:12px">Common Pitfalls:</h3>
+      <ul><li>"CC'ing Legal so they're in the loop" with no legal advice → NOT privileged</li><li>"Legal said we're fine" (mentioned but not analyzed) → NOT privileged</li><li>Mixed email (legal primary + business secondary) → ACP, primary purpose controls</li></ul>
+    </div>
+    <div id="rpane-regulators" class="rpane">
+      <h2>Regulators &amp; Bank Examination Privilege</h2>
+      <table><tr><th>Agency</th><th>Focus</th></tr>
+      <tr><td>SEC</td><td>Securities markets, investor protection</td></tr>
+      <tr><td>DOJ</td><td>Federal law enforcement, antitrust</td></tr>
+      <tr><td>FTC</td><td>Consumer protection, antitrust</td></tr>
+      <tr><td>FERC</td><td>Interstate energy transmission</td></tr>
+      <tr><td>IRS</td><td>Federal tax administration</td></tr>
+      <tr><td>OSHA</td><td>Workplace safety</td></tr>
+      <tr><td>FDA</td><td>Drug, device, food safety</td></tr>
+      <tr><td>FBI</td><td>Federal criminal investigations</td></tr>
+      <tr><td>CMS</td><td>Medicare &amp; Medicaid</td></tr></table>
+      <div class="rule" style="margin-top:12px"><strong>Rule of Thumb:</strong> Docs substantively discussing investigations/enforcement with counsel are very likely privilege or work product.</div>
+      <div class="rule red" style="margin-top:8px"><strong>Bank Exam Privilege:</strong> Always code as Privileged and Escalate. Never strip protection.</div>
+    </div>
+    <div id="rpane-fourcorners" class="rpane">
+      <h2>Four Corners Test</h2>
+      <div class="rule gold"><strong>Only use what is written inside the four corners of the document itself.</strong></div>
+      <h3 style="margin-top:12px">Do NOT code Responsive just because:</h3>
+      <ul><li>The custodian is "usually" responsive</li><li>The date is within a responsive range</li><li>The parent or sibling document is responsive</li></ul>
+      <h3 style="margin-top:12px">DO ask:</h3>
+      <p style="padding:10px;background:#21262d;border-radius:6px;margin-top:8px;font-style:italic">"Is the information that makes this responsive contained within the four corners of this document?"</p>
+    </div>
+    <div id="rpane-drafts" class="rpane">
+      <h2>Drafts, Families &amp; Attachments</h2>
+      <h3>Drafts &amp; Privilege:</h3>
+      <ul><li>Drafts can be privileged — especially with legal comments or analysis by counsel</li><li>Privilege weaker when attorney is doing business/accounting work</li><li>Drafts intended for public/government filing may lose privilege</li></ul>
+      <h3 style="margin-top:12px">Families (Parent + Attachments):</h3>
+      <ul><li>If overall family context is privileged → safeguard the whole family unless protocol says otherwise</li><li>A clearly privileged attachment remains privileged even with a neutral parent</li><li>Factual spreadsheet in privileged family + protocol silent → Privileged + Escalate</li></ul>
+    </div>
+    <div id="rpane-waiver" class="rpane">
+      <h2>Waiver of Privilege</h2>
+      <div class="rule red"><strong>Privilege is LOST when:</strong> client discloses to a non-agent third party · attorney discloses to a third party · email sent with outside third party as recipient · final document filed publicly.</div>
+      <h3 style="margin-top:14px">Tricky Scenarios → Always Escalate:</h3>
+      <ul><li>CEO forwards legal advice email to CFO with business commentary</li><li>Executive forwards counsel's privileged email to third-party consultant</li><li>Legal analysis shared with outside auditor</li></ul>
+      <div class="rule gold" style="margin-top:12px"><strong>Coder's rule:</strong> Do NOT decide waiver yourself. Mark Privileged and Escalate.</div>
+    </div>
+    <div id="rpane-coding" class="rpane">
+      <h2>Coding Rules &amp; Conservative Approach</h2>
+      <table>
+        <tr><th>Situation</th><th>Action</th></tr>
+        <tr><td>50/50 privilege vs not</td><td><span class="badge be">Privileged + Escalate</span></td></tr>
+        <tr><td>60/40 or 40/60</td><td><span class="badge be">Privileged + Escalate</span></td></tr>
+        <tr><td>Gray area / unsure</td><td><span class="badge be">Privileged + Escalate</span></td></tr>
+        <tr><td>Privileged family, protocol silent</td><td><span class="badge be">Privileged + Escalate</span></td></tr>
+        <tr><td>Bank exam / supervisory report</td><td><span class="badge be">Privileged + Escalate</span></td></tr>
+        <tr><td>Clear ACP only</td><td><span class="badge ba">ACP</span></td></tr>
+        <tr><td>Clear WPP only</td><td><span class="badge bw">WPP</span></td></tr>
+        <tr><td>Both apply</td><td><span class="badge ba">ACP</span> + <span class="badge bw">WPP</span></td></tr>
+        <tr><td>CIP</td><td><span class="badge bc">CIP</span></td></tr>
+        <tr><td>Clearly not privileged</td><td><span class="badge bn">Not Privileged</span></td></tr>
+      </table>
+      <div class="rule red" style="margin-top:14px"><strong>WARNING:</strong> Mis-coding a privileged doc as Not Privileged and producing without a slipsheet = opposing counsel sees ALL privileged content.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FLASHCARDS -->
+<div id="page-flashcards" class="page">
+  <div class="card">
+    <h2>🃏 Flash Cards</h2>
+    <p style="color:var(--muted);font-size:.84rem;margin-bottom:16px">Click the card to reveal the answer.</p>
+    <div class="fc-wrap" id="fcwrap" onclick="fcFlip()">
+      <div class="fc-inner">
+        <div class="fc-front"><div><div id="fc-q" style="font-size:1rem;font-weight:600;line-height:1.5"></div><div style="font-size:.75rem;color:var(--muted);margin-top:10px">Click to reveal →</div></div></div>
+        <div class="fc-back"><div id="fc-a" style="font-size:.92rem;line-height:1.6"></div></div>
+      </div>
+    </div>
+    <div class="fc-nav">
+      <button class="btn btn-outline" onclick="fcPrev()">← Prev</button>
+      <span id="fc-ctr" style="color:var(--muted);font-size:.84rem"></span>
+      <button class="btn btn-gold" onclick="fcNext()">Next →</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="page-quiz" class="page">
+  <div id="quiz-gate" class="card qgate" style="display:none">
+    <div style="font-size:2.5rem;margin-bottom:12px">🔒</div>
+    <h2>Login Required</h2>
+    <p>Create a free account or log in to access the adaptive quiz and track your mastery progress.</p>
+    <div style="display:flex;gap:10px;justify-content:center;margin-top:16px">
+      <button class="btn btn-gold" onclick="openModal('login')">Log In</button>
+      <button class="btn btn-outline" onclick="openModal('signup')">Create Account</button>
+    </div>
+  </div>
+  <div id="quiz-start" class="card" style="display:none">
+    <h2>✏️ Practice Quiz</h2>
+    <p style="color:var(--muted);margin-bottom:14px">Logged in as <strong id="quiz-username" style="color:var(--accent)"></strong></p>
+    <div id="quiz-stats" style="display:flex;gap:14px;flex-wrap:wrap;margin-bottom:16px"></div>
+    <div class="divider"></div>
+    <p style="margin-bottom:10px;font-size:.9rem">Choose a category:</p>
+    <div class="q-filters">
+      <button class="active" onclick="selCat('all',this)">All Questions</button>
+      <button onclick="selCat('privilege',this)">Privilege</button>
+      <button onclick="selCat('responsiveness',this)">Responsiveness</button>
+      <button onclick="selCat('inhouse',this)">In-House vs Business</button>
+      <button onclick="selCat('regulators',this)">Regulators</button>
+      <button onclick="selCat('cip',this)">Common Interest</button>
+    </div>
+    <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
+      <label style="color:var(--muted);font-size:.88rem">Questions:</label>
+      <select id="qcount" style="background:#21262d;border:1px solid var(--border);color:var(--text);padding:6px 12px;border-radius:6px;font-size:.88rem">
+        <option value="10">10</option><option value="20" selected>20</option><option value="30">30</option><option value="50">All</option>
+      </select>
+      <button class="btn btn-gold" onclick="startQuiz()">Start Quiz →</button>
+    </div>
+  </div>
+  <div id="quiz-area" class="card" style="display:none">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;flex-wrap:wrap;gap:8px">
+      <span id="qa-label" style="color:var(--gold);font-weight:700;font-size:1.05rem"></span>
+      <span id="qa-ctr" style="color:var(--muted);font-size:.84rem"></span>
+    </div>
+    <div class="prog-bar"><div class="prog-fill" id="qa-prog"></div></div>
+    <div class="q-text" id="qa-text"></div>
+    <div class="choices" id="qa-choices"></div>
+    <div class="feedback" id="qa-fb"></div>
+    <div style="margin-top:14px;display:flex;gap:10px">
+      <button class="btn btn-gold" id="btn-next" onclick="nextQ()" disabled>Next →</button>
+      <button class="btn btn-outline btn-sm" onclick="endQuiz()">End Quiz</button>
+    </div>
+  </div>
+  <!-- Round Results -->
+  <div id="round-results" style="display:none">
+    <div class="card" style="text-align:center">
+      <div class="round-badge" id="rr-badge"></div>
+      <div id="rr-ring" class="score-ring" style="margin-top:10px"></div>
+      <div id="rr-band" class="band-box"></div>
+      <p id="rr-msg" style="color:var(--muted);font-size:.88rem;margin-bottom:6px"></p>
+      <p id="rr-save" style="font-size:.82rem;color:var(--accent);margin-bottom:16px"></p>
+      <div class="round-history" id="rr-history"></div>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap" id="rr-actions"></div>
+    </div>
+    <div class="card" id="study-card-wrap" style="display:none">
+      <h3 style="margin-bottom:4px">📖 Study These Before Your Next Round</h3>
+      <p style="font-size:.82rem;color:var(--muted);margin-bottom:14px">Your next quiz will focus on these exact concepts until you master them.</p>
+      <div id="study-body"></div>
+    </div>
+  </div>
+  <!-- Mastery Screen -->
+  <div id="mastery-screen" class="card mastery-screen" style="display:none">
+    <div class="mastery-star">🏆</div>
+    <div class="mastery-title">Mastery Achieved!</div>
+    <div class="mastery-sub" id="mastery-sub"></div>
+    <div class="round-history" id="mastery-history"></div>
+    <p id="mastery-save" style="font-size:.82rem;color:var(--accent);margin-bottom:16px"></p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button class="btn btn-gold" onclick="resetQuiz()">Back to Menu</button>
+      <button class="btn btn-outline" onclick="nav('leaderboard')">View Leaderboard</button>
+    </div>
+  </div>
+  <!-- Fallback results -->
+  <div id="quiz-results" style="display:none">
+    <div class="card" style="text-align:center">
+      <h2>Session Complete</h2>
+      <div id="res-ring" class="score-ring" style="margin-top:14px"></div>
+      <div id="res-band" class="band-box"></div>
+      <p id="res-msg" style="color:var(--muted);margin-bottom:16px;font-size:.88rem"></p>
+      <p id="res-save" style="font-size:.82rem;color:var(--accent);margin-bottom:16px"></p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+        <button class="btn btn-gold" onclick="resetQuiz()">Back to Menu</button>
+        <button class="btn btn-outline" onclick="nav('leaderboard')">View Leaderboard</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div id="page-leaderboard" class="page">
+  <div class="card">
+    <h2>🏆 Leaderboard</h2>
+    <p style="color:var(--muted);font-size:.84rem;margin-bottom:16px">Top scores across all quiz attempts. ★ Mastered = achieved 100% in a session.</p>
+    <div id="lb-body"><div style="color:var(--muted);text-align:center;padding:20px"><span class="spinner"></span>Loading...</div></div>
+  </div>
+  <div class="card" id="my-scores-card" style="display:none">
+    <h3>📊 Your Score History</h3>
+    <div id="my-scores-body"></div>
+  </div>
+</div>
+
+<!-- ESCALATION -->
+<div id="page-escalation" class="page">
+  <div class="card">
+    <h2>🔺 Escalation Chain</h2>
+    <p style="color:var(--muted);margin-bottom:16px;font-size:.88rem">When in doubt, follow this exact order — never guess silently on a gray area.</p>
+    <div class="chain-step"><div class="chain-num">1</div><div><strong>Glory or Junior</strong><br><span style="font-size:.81rem;color:var(--muted)">Your first go-to for ALL questions — privilege, responsiveness, and edge cases</span></div></div>
+    <div class="chain-arrow">↓</div>
+    <div class="chain-step"><div class="chain-num">2</div><div><strong>Zabron or Simon</strong><br><span style="font-size:.81rem;color:var(--muted)">If Glory/Junior are unavailable or need backup</span></div></div>
+    <div class="chain-arrow">↓</div>
+    <div class="chain-step"><div class="chain-num">3</div><div><strong>Aaron</strong><br><span style="font-size:.81rem;color:var(--muted)">If still unclear after steps 1–2</span></div></div>
+    <div class="chain-arrow">↓</div>
+    <div class="chain-step"><div class="chain-num">4</div><div><strong>PM / RM (Project Manager / Review Manager)</strong><br><span style="font-size:.81rem;color:var(--muted)">If Aaron doesn't have a clear answer or it's a client-level issue</span></div></div>
+    <div class="rule gold" style="margin-top:16px">While waiting → keep coded as <strong>Privileged</strong>. You are never penalized for protecting privilege and asking for help.</div>
+  </div>
+  <div class="card">
+    <h2>📝 How to Ask a Good Question</h2>
+    <p style="margin-bottom:10px">Always include:</p>
+    <ol><li><strong>Doc ID</strong> — exact identifier</li><li><strong>Short context</strong> — who is emailing whom, about what</li><li><strong>Your lean</strong> — what you think and why</li><li><strong>Why you're unsure</strong> — what makes it difficult</li></ol>
+    <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:12px;font-size:.85rem;font-style:italic;line-height:1.7">"Doc ID: ABC-12345<br>Sender: in-house counsel; recipients: two managers<br>Content: Counsel asks managers for facts to assess FTC investigation risk.<br>I'm leaning: Responsive, ACP + WPP, Highly Confidential.<br>Question: Is this the right privilege/confidentiality combo for regulator-related internal emails?"</div>
+  </div>
+  <div class="card">
+    <h2>⏱️ Professionalism Reminders</h2>
+    <ul>
+      <li>Respond to messages within <strong>5 minutes</strong> while on shift</li>
+      <li>Report first document coded at start of shift</li>
+      <li>By <strong>1:00 pm NY time</strong> — report total documents coded</li>
+      <li>At sign-out — report final count</li>
+      <li>Target speed: Day 1 ~20/hr → Day 2 ~30/hr → Day 3 ~40/hr → Day 4+ 50–60/hr</li>
+      <li><strong>Never sacrifice privilege accuracy for speed</strong></li>
+    </ul>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="page-admin" class="page">
+  <div class="card">
+    <h2>⚙️ Admin Panel</h2>
+    <div class="admin-warning">⚠️ This panel is restricted to the site administrator only. Actions here are irreversible.</div>
+    <h3>User Score Management</h3>
+    <p style="color:var(--muted);font-size:.86rem;margin-bottom:14px">Select a user to reset or clear their quiz history.</p>
+    <div id="admin-users"><div style="color:var(--muted)"><span class="spinner"></span>Loading users...</div></div>
+  </div>
+  <div class="card">
+    <h2>📊 All Scores Overview</h2>
+    <div id="admin-scores"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-bg" id="modal-bg">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h2 id="modal-title">Log In</h2>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-ok" id="auth-ok"></div>
+    <div class="form-group"><label>Email</label><input type="email" id="inp-email" placeholder="you@example.com"></div>
+    <div class="form-group"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••"></div>
+    <div class="form-group" id="name-group" style="display:none"><label>Display Name</label><input type="text" id="inp-name" placeholder="Your name (shown on leaderboard)"></div>
+    <button class="btn btn-gold" style="width:100%;padding:11px" id="modal-submit" onclick="submitAuth()">Log In</button>
+    <div class="auth-toggle" id="auth-toggle">Don't have an account? <a onclick="switchModal('signup')">Sign up</a></div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// SUPABASE CONFIG
+// ═══════════════════════════════════════
+const SUPABASE_URL = 'https://mrxhydaoxlxuampmgaoi.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
+const ADMIN_EMAIL = 'jeff@ataandeadvisors.com';
+// ═══════════════════════════════════════
+
+const SB={
+  url:SUPABASE_URL,key:SUPABASE_ANON_KEY,token:null,user:null,
+  hdr(x={}){return{'Content-Type':'application/json','apikey':this.key,'Authorization':'Bearer '+(this.token||this.key),...x}},
+  async req(m,p,b=null){try{const r=await axios({method:m,url:this.url+p,headers:this.hdr(),data:b});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
+  async signUp(email,pw,name){const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name}}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{data:r.data}},
+  async signIn(email,pw){const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{error:'Login failed'}},
+  async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.token=null;this.user=null},
+  async saveScore(uid,name,cat,score,total){return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
+  async getLeaderboard(){return this.req('GET','/rest/v1/quiz_scores?select=display_name,score,total,pct,category,created_at&order=pct.desc,score.desc&limit=200')},
+  async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
+  async getAllScores(){return this.req('GET','/rest/v1/quiz_scores?select=*&order=created_at.desc&limit=300')},
+  async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)}
+};
+
+let currentPage='home';
+function nav(p){
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('#topnav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('#topnav button').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+p+"'"))b.classList.add('active')});
+  currentPage=p;window.scrollTo(0,0);
+  if(p==='quiz')initQuizPage();
+  if(p==='leaderboard')loadLeaderboard();
+  if(p==='admin')loadAdmin();
+}
+
+function showRef(id,btn){
+  document.querySelectorAll('.rpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('rpane-'+id).classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+
+const FC=[
+  {q:"What are the four elements required for ACP?",a:"1. Communication\n2. Between attorney & client (or agents)\n3. Made in confidence\n4. Primary purpose: legal advice — not just business"},
+  {q:"True or False: A lawyer copied on an email automatically makes it privileged.",a:"FALSE. Privilege follows ROLE, not title. Ask: what is the primary PURPOSE of the communication?"},
+  {q:"What is the key test for Work Product Privilege?",a:"'Would this document exist in this form if there were no litigation or investigation?' If NO → likely WPP. Does NOT require an attorney on the document."},
+  {q:"When does a client WAIVE Attorney-Client Privilege?",a:"When they disclose privileged communications to a non-agent THIRD PARTY. Also: attorney discloses to a third party, or email sent with outside third party as recipient."},
+  {q:"What should you do if a document is 50/50 privilege vs not?",a:"Code as PRIVILEGED and ESCALATE. Same for 60/40 or 40/60. Always protect and ask: Glory/Junior → Zabron/Simon → Aaron → PM/RM."},
+  {q:"What is Common Interest Privilege (CIP)?",a:"Allows parties with a shared LEGAL interest to share privileged info without waiving privilege. Requires: shared legal interest + lawyer involvement + communication advancing that legal interest + no active waiver."},
+  {q:"What does the Four Corners Test mean?",a:"Only use what is WRITTEN IN THE DOCUMENT ITSELF. Do NOT code responsive just because: custodian is usually relevant, date is in range, or a family member is responsive."},
+  {q:"If overall family context indicates privilege but individual docs don't — what do you do?",a:"SAFEGUARD privilege based on the overall family context. Code the documents as privileged and escalate for confirmation."},
+  {q:"Does privilege pass to a successor company in a merger?",a:"YES. Privilege belongs to the corporate entity and passes to its successor in a merger or similar transaction."},
+  {q:"What color are privilege terms typically highlighted in Relativity?",a:"RED (sometimes yellow). Highlighting is a TOOL, not a decision. You must still analyze the document yourself."},
+  {q:"What is the difference between ACP and WPP?",a:"ACP: Confidential attorney-client communications for legal advice.\nWPP: Materials created IN ANTICIPATION OF LITIGATION. Does NOT require attorney on document."},
+  {q:"If a privileged doc is coded 'Not Privileged' and produced without a slipsheet — what happens?",a:"Opposing counsel sees ALL privileged content. This can damage the client's legal strategy and the case."},
+  {q:"Can non-legal employees generate work product?",a:"YES. If created at counsel's request or in anticipation of litigation. E.g., 'Legal asked us to compile this timeline for the DOJ investigation' → WPP."},
+  {q:"What makes CIP different from two companies just doing business together?",a:"CIP requires a LEGAL interest (not just commercial). There must be lawyers involved, communication advances the legal interest, and privilege is preserved."},
+  {q:"In-house counsel sends an all-staff email about a new parking policy. Privileged?",a:"NOT PRIVILEGED. Broad distribution, no legal advice, no confidential facts. Counsel's title doesn't make it privileged."},
+  {q:"A compliance team prepares an investigation report at the explicit request of outside litigation counsel. What privilege?",a:"WORK PRODUCT PRIVILEGE (WPP). Prepared in anticipation of litigation at counsel's explicit request."},
+  {q:"What do you do with a bank examination report from a federal banking regulator?",a:"Code as PRIVILEGED and ESCALATE. Bank examination privilege is special and project-specific. Never strip protection."},
+  {q:"A formal letter FROM the SEC to the company — is it privileged?",a:"NOT PRIVILEGED. The SEC's own letter is a government document — not the company's ACP or work product."},
+  {q:"Outside counsel drafts a memo analyzing litigation risk, labeled ACP/WPP, sent only to GC and CFO. What privilege?",a:"BOTH ACP AND WPP. Legal analysis for the client (ACP) + created in litigation context (WPP). Use both labels."},
+  {q:"What is the escalation order for a gray-area privilege question?",a:"1. Glory or Junior\n2. Zabron or Simon (if unavailable)\n3. Aaron (if still unclear)\n4. PM/RM (if Aaron unsure)\n→ While waiting: keep coded as PRIVILEGED."},
+];
+let fcIdx=0,fcFlipped=false;
+function fcRender(){document.getElementById('fc-q').textContent=FC[fcIdx].q;document.getElementById('fc-a').innerHTML=FC[fcIdx].a.replace(/\n/g,'<br>');document.getElementById('fc-ctr').textContent=(fcIdx+1)+' / '+FC.length;document.getElementById('fcwrap').classList.remove('flipped');fcFlipped=false;}
+function fcFlip(){fcFlipped=!fcFlipped;document.getElementById('fcwrap').classList.toggle('flipped',fcFlipped)}
+function fcNext(){fcIdx=(fcIdx+1)%FC.length;fcRender()}
+function fcPrev(){fcIdx=(fcIdx-1+FC.length)%FC.length;fcRender()}
+fcRender();
+
+const Qs=[
+  {cat:'privilege',text:'An employee emails in-house counsel: "We just received a demand letter. Can you tell me what our legal options are?" No one else is copied.',ch:['Not Privileged','Attorney–Client Privilege (ACP)','Work Product Privilege (WPP)','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:1,fb:'Classic ACP — client seeking legal advice from counsel confidentially. All four ACP elements are met.'},
+  {cat:'privilege',text:'In-house counsel sends a company-wide email to "All Staff" announcing a new parking policy. No legal advice, no mention of lawsuits.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution, no legal advice, no confidential facts. The lawyer\'s title doesn\'t change the analysis.'},
+  {cat:'privilege',text:'A sales manager forwards a non-lawyer email chain to in-house counsel with "FYI – for your awareness." Counsel does not respond. The chain discusses sales targets only.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. FYI forwarding without seeking or receiving legal advice doesn\'t create privilege.'},
+  {cat:'privilege',text:'Internal investigation report prepared by compliance team at the EXPLICIT request of outside litigation counsel, analyzing witness interviews and recommending defense strategy.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product Privilege. Created at counsel\'s request for ongoing litigation. WPP does not require an attorney to be the author — just a litigation nexus.'},
+  {cat:'privilege',text:'A monthly sales dashboard generated every week for five years as routine business reporting. It falls within the litigation date range but nothing suggests it was created for litigation.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Routine business documents created independent of litigation are not WPP. Existing litigation doesn\'t retroactively protect old business docs.'},
+  {cat:'privilege',text:'Outside counsel drafts a confidential Q&A for executives to prepare them for a deposition in ongoing litigation, including predicted questions and suggested answers.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Deposition prep materials show attorney mental impressions and strategy — classic WPP.'},
+  {cat:'privilege',text:'Company A and Company B are co-defendants. Their outside counsel share a strategy memo under a signed Joint Defense Agreement (JDA).',ch:['Not Privileged','ACP only','WPP only','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:3,fb:'CIP. Co-defendants with a JDA sharing legal strategy = textbook Common Interest Privilege.'},
+  {cat:'privilege',text:'Two companies considering a joint venture have their BUSINESS TEAMS email each other financial models and revenue projections. No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal interest, no JDA. A shared business/profit motive is NOT enough for CIP.'},
+  {cat:'privilege',text:'Outside counsel drafts a 10-page memo analyzing whether the client should self-report to the SEC. Labeled "ACP / Work Product." Sent only to GC and CFO.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:3,fb:'Both ACP and WPP. Legal advice to the client (ACP) AND created in anticipation of potential regulatory action (WPP). Use both labels.'},
+  {cat:'privilege',text:'A bank receives a confidential examination report from its federal banking regulator, labeled "CONFIDENTIAL – EXAMINATION MATERIAL."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. Bank examination privilege is special. Never strip protection as a first-level coder — always escalate for PM/RM direction.'},
+  {cat:'privilege',text:'An engineer writes a technical report about a product failure BEFORE anyone mentioned lawsuits. Months later it gets forwarded to counsel. What is the privilege of the ORIGINAL report?',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The original report was routine business/safety documentation with no litigation nexus at the time of creation. WPP doesn\'t apply retroactively.'},
+  {cat:'privilege',text:'A formal letter FROM THE SEC to the company requesting documents. You are reviewing the SEC\'s letter itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Government/regulator documents are not attorney-client communications or work product created by the company.'},
+  {cat:'privilege',text:'An email from in-house counsel explicitly stating: "Not legal advice – just business thoughts on pricing."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. When counsel explicitly disclaims legal advice and the content is purely business, ACP generally doesn\'t apply.'},
+  {cat:'privilege',text:'Email says "CC\'ing legal just so they\'re in the loop" — but no legal advice is requested or given.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Copying legal alone doesn\'t create privilege. Privilege depends on substance and purpose, not just a lawyer\'s presence in the cc field.'},
+  {cat:'privilege',text:'An engineer sends a product safety memo to in-house counsel and two managers. No explicit request for legal advice. Subject: "For Review – Product Failure Summary." You are genuinely 50/50.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. When genuinely 50/50, the rule is always: code Privileged and ask up the chain. Never resolve doubt by removing privilege.'},
+  {cat:'inhouse',text:'In-house counsel (also Head of Business Strategy) emails: "Our Q4 numbers are weak. I suggest we cut headcount and increase prices in Region A." No legal content.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Counsel is wearing the BUSINESS hat. No legal risk, no laws mentioned, no lawsuit reference.'},
+  {cat:'inhouse',text:'Same in-house counsel emails: "If we adopt this pricing structure, there is a real antitrust risk. My LEGAL ADVICE is that we change the discount thresholds or prepare to justify under X doctrine."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Now counsel is clearly wearing the LAWYER hat — analyzing legal risk and giving explicit legal advice. Primary purpose controls.'},
+  {cat:'inhouse',text:'In-house counsel is cc\'d on an email chain between two non-lawyers planning a holiday party. Counsel never replies. They appear to be cc\'d accidentally.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Holiday party planning is not legal advice. An accidental cc doesn\'t create privilege.'},
+  {cat:'inhouse',text:'In-house counsel emails the CEO and HR Director: "After reviewing the investigation, my legal advice is that we terminate Employee X to reduce our exposure under employment discrimination laws."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. This is clearly counsel in their legal role — analyzing legal exposure and providing legal advice on termination.'},
+  {cat:'inhouse',text:'In-house counsel sends an email to the entire Sales Distribution List reminding them not to overpromise delivery dates. No detailed legal analysis.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution list, general guidance/reminder, no confidential legal analysis.'},
+  {cat:'inhouse',text:'A non-lawyer product manager emails in-house counsel: "I\'m not sure if this contract breach is a legal issue; can you advise?" Includes detailed confidential facts about a vendor.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Employee seeking legal advice from counsel confidentially, sharing facts necessary for that advice. Classic ACP.'},
+  {cat:'inhouse',text:'Two non-lawyer managers discuss whether to fire an employee. One forwards the chain to counsel asking "any legal risk?" — Counsel has NOT responded yet. Code the ORIGINAL non-lawyer chain.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The original chain was purely business discussion before any legal involvement. Forwarding it doesn\'t retroactively privilege the original.'},
+  {cat:'inhouse',text:'Counsel\'s REPLY: "There is moderate risk of a discrimination claim. My legal advice is to either document performance issues thoroughly or consider a PIP first."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Counsel\'s reply is legal risk assessment and legal advice. This portion of the chain IS privileged.'},
+  {cat:'inhouse',text:'In-house counsel signs an email as "VP of Operations": "Please increase production by 20% next quarter to catch up on back orders." No legal content.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Acting in the VP of Operations role — purely operational direction. Privilege follows ROLE, not title.'},
+  {cat:'responsiveness',text:'Email: "We should quietly match Competitor A\'s 5% price increase next quarter so we don\'t start a price war." (Issues: 1-Pricing/Antitrust, 2-Safety, 3-Marketing/Misrep, 4-HR/Retaliation)',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3 (Misrepresentation)','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Matching competitors\' prices to avoid a price war is antitrust/pricing coordination.'},
+  {cat:'responsiveness',text:'Email: "We\'ve had 7 customer injuries this month from Product X\'s blade cracking. We should notify QA and legal."',ch:['Non-Responsive','Responsive – Issue 1','Responsive – Issue 2 (Product Safety)','Responsive – Issues 2 and 3','Escalate / Ask'],c:2,fb:'Responsive – Issue 2. Classic product safety/compliance — injuries and defects squarely fit Issue 2.'},
+  {cat:'responsiveness',text:'System-generated email: "Your password has been reset successfully. If you did not request this, contact IT."',ch:['Non-Responsive','Responsive – Issue 1','Responsive because it shows employees','Responsive – Issue 4','Escalate / Ask'],c:0,fb:'Non-Responsive. System admin emails with no case-relevant content are not responsive.'},
+  {cat:'responsiveness',text:'Email from HR: "We received a formal complaint from Taylor that her manager demoted her after she reported gender discrimination. Attached is her complaint form."',ch:['Non-Responsive','Responsive – Issue 2','Responsive – Issue 4 (HR/Retaliation)','Responsive – Issues 2 and 4','Escalate / Ask'],c:2,fb:'Responsive – Issue 4. Complaint followed by adverse action (demotion) = textbook HR/retaliation.'},
+  {cat:'responsiveness',text:'Chat: "Our ad says \'completely safe for children under 3\' but the test team said parts are still a choking hazard. I hope no one complains."',ch:['Non-Responsive','Responsive – Issue 2 only','Responsive – Issue 3 only','Responsive – Issues 2 and 3','Escalate / Ask'],c:3,fb:'Both Issues 2 and 3. Choking hazard = safety (Issue 2). "Completely safe" claim contradicting internal tests = misrepresentation (Issue 3).'},
+  {cat:'responsiveness',text:'Company newsletter: "Volunteer Day Photos — thank you to everyone who helped at the food bank!"',ch:['Responsive','Non-Responsive','Responsive because employees are pictured','Responsive – Issue 4','Escalate / Ask'],c:1,fb:'Non-Responsive. No connection to any case issue.'},
+  {cat:'responsiveness',text:'Email: "Let\'s give aggressive discounts but only to customers who agree not to buy from Competitor N for two years."',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Tying discounts to exclusivity blocking competitors = classic antitrust issue.'},
+  {cat:'responsiveness',text:'Parent email: "Please review attached complaint. This is the third serious injury we\'ve seen this month with Product X." — You are coding the PARENT EMAIL only.',ch:['Parent Non-Responsive, Attachment Responsive','Parent Responsive – Issue 2, Attachment Responsive – Issue 2','Parent Responsive only if protocol says so','Parent Non-Responsive because details are in attachment'],c:1,fb:'Both Responsive – Issue 2. The parent ITSELF contains responsive content ("third serious injury," "Product X") within its four corners.'},
+  {cat:'responsiveness',text:'Email from the Chief Strategy Officer (key antitrust custodian): "Soccer practice schedule for the kids — Monday and Wednesday at 5 pm." Purely personal.',ch:['Responsive – custodian is key','Non-Responsive','Responsive because date is in range','Escalate / Ask'],c:1,fb:'Non-Responsive. Custodian identity is NOT enough under Four Corners. The email has no responsive content.'},
+  {cat:'regulators',text:'In-house counsel emails CEO with an attachment titled "SEC Inquiry – Anticipated Questions & Recommended Responses" — a counsel-created summary.',ch:['Not Privileged','ACP','Work Product Privilege (WPP)','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Counsel-created response strategy for a regulatory inquiry = WPP.'},
+  {cat:'regulators',text:'In-house counsel emails CFO: "Please prepare a spreadsheet of all tax positions for the last 7 years for the IRS audit. I will use it for our defense strategy." Spreadsheet freshly created ONLY because of the audit.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Created specifically at counsel\'s request for defense strategy in an IRS audit. Would not exist without the investigation.'},
+  {cat:'regulators',text:'A FERC Notice of Inquiry (a public document) downloaded from the FERC website and emailed internally with "FYI." You are reviewing the FERC Notice itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The regulator\'s own public document — not an attorney-client communication or company work product.'},
+  {cat:'regulators',text:'The company receives a bank examination report labeled "CONFIDENTIAL – EXAMINATION MATERIAL." You are reviewing the report itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. Bank examination privilege is special. Always escalate — never strip protection as a first-level coder.'},
+  {cat:'regulators',text:'The OSHA inspector\'s written report is emailed by a non-lawyer safety manager to plant operations. You are reviewing the OSHA report itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The OSHA inspection report is a government document — not attorney-client communication or work product.'},
+  {cat:'regulators',text:'Outside regulatory counsel drafts a "Draft Response to SEC Comment Letter" with argumentation and proposed edits. Circulated only to GC and CFO.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:3,fb:'Both ACP and WPP. Legal advice on how to respond (ACP) AND prepared in anticipation of potential enforcement (WPP).'},
+  {cat:'cip',text:'Two co-defendants sign a Joint Defense Agreement. Outside counsel for Defendant A sends outside counsel for Defendant B: "Here is our draft motion to dismiss, shared under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:3,fb:'CIP. Co-defendants with a JDA sharing litigation strategy = textbook CIP.'},
+  {cat:'cip',text:'Company X and Company Y (both sued by same plaintiff) — two employees (no lawyers) email each other: "Let\'s share our documents and come up with a plan." No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no JDA, no legal interest established. Two individuals sharing ideas without privilege protection.'},
+  {cat:'cip',text:'Company C\'s outside counsel emails Company D\'s outside counsel: "We both are FERC investigation targets. Attached is our privileged strategy memo. Please coordinate under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Counsel-to-counsel communication for separate investigation targets under a CIP agreement.'},
+  {cat:'cip',text:'Two companies discussing a potential joint venture — BUSINESS TEAMS email financial models. Casually mention "lawyers will sort out legal issues later." No lawyers on the emails, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal strategy, no JDA. A shared commercial interest is NOT enough for CIP.'},
+  {cat:'cip',text:'Three co-defendants sign a written Joint Defense Agreement. Outside counsel for Company F sends counsel for G and H: "Attached is our draft settlement analysis memo, shared under our common interest arrangement."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Settlement analysis shared among co-defendants\' counsel under a JDA = textbook CIP.'},
+];
+
+// ── ADAPTIVE QUIZ ENGINE ──
+let qCat='all',qPool=[],qIdx=0,qScore=0,qMissed=[],qAns=null;
+let missedBank=[],roundNum=0,roundHistory=[],sessionActive=false,initialCount=20;
+
+function selCat(c,btn){qCat=c;document.querySelectorAll('.q-filters button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+
+function initQuizPage(){
+  const li=!!SB.user;
+  document.getElementById('quiz-gate').style.display=li?'none':'block';
+  document.getElementById('quiz-start').style.display=li?'block':'none';
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('round-results').style.display='none';
+  document.getElementById('mastery-screen').style.display='none';
+  document.getElementById('quiz-results').style.display='none';
+  if(li){document.getElementById('quiz-username').textContent=SB.user.user_metadata?.display_name||SB.user.email.split('@')[0];loadUserStats();}
+}
+
+async function loadUserStats(){
+  const {data}=await SB.getUserScores(SB.user.id);
+  const el=document.getElementById('quiz-stats');
+  if(!data||!data.length){el.innerHTML='<span style="color:var(--muted);font-size:.84rem">No quiz attempts yet. Take your first quiz!</span>';return;}
+  const best=Math.max(...data.map(s=>s.pct));
+  const avg=Math.round(data.reduce((a,s)=>a+s.pct,0)/data.length);
+  const mastered=data.filter(s=>s.category&&s.category.includes('★MASTERY')).length;
+  el.innerHTML=`<div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Best Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">${best}%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Avg Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--accent)">${avg}%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Mastery Awards</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">${mastered}</div></div>`;
+}
+
+function startQuiz(){
+  let pool=qCat==='all'?Qs:Qs.filter(q=>q.cat===qCat);
+  initialCount=parseInt(document.getElementById('qcount').value);
+  qPool=shuffle([...pool]).slice(0,Math.min(initialCount,pool.length));
+  qIdx=0;qScore=0;qMissed=[];qAns=null;
+  missedBank=[];roundNum=1;roundHistory=[];sessionActive=true;
+  document.getElementById('quiz-start').style.display='none';
+  document.getElementById('quiz-area').style.display='block';
+  document.getElementById('round-results').style.display='none';
+  document.getElementById('mastery-screen').style.display='none';
+  document.getElementById('quiz-results').style.display='none';
+  renderQ();
+}
+
+const catLabels={privilege:'🔒 Privilege',responsiveness:'📄 Responsiveness',inhouse:'👔 In-House',regulators:'🏛️ Regulators',cip:'🤝 CIP'};
+function renderQ(){
+  const q=qPool[qIdx];qAns=null;
+  document.getElementById('qa-label').textContent='Round '+roundNum+' · Q'+(qIdx+1)+' '+(catLabels[q.cat]||'');
+  document.getElementById('qa-ctr').textContent=(qIdx+1)+' / '+qPool.length+' — Score: '+qScore;
+  document.getElementById('qa-prog').style.width=(qIdx/qPool.length*100)+'%';
+  document.getElementById('qa-text').textContent=q.text;
+  const ch=document.getElementById('qa-choices');ch.innerHTML='';
+  const L=['A','B','C','D','E'];
+  q.ch.forEach((c,i)=>{
+    const b=document.createElement('button');b.className='choice-btn';
+    b.innerHTML=`<span class="cl">${L[i]}.</span><span>${c}</span>`;
+    b.onclick=()=>selectA(i);ch.appendChild(b);
+  });
+  const fb=document.getElementById('qa-fb');fb.className='feedback';
+  document.getElementById('btn-next').disabled=true;
+}
+
+function selectA(i){
+  if(qAns!==null)return;qAns=i;
+  const q=qPool[qIdx];
+  const btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(b=>b.disabled=true);
+  const fb=document.getElementById('qa-fb');
+  if(i===q.c){
+    btns[i].classList.add('correct');qScore++;
+    fb.textContent='✅ Correct! '+q.fb;fb.className='feedback show c';
+  } else {
+    btns[i].classList.add('incorrect');btns[q.c].classList.add('reveal');
+    qMissed.push({...q,yourAnswer:q.ch[i]});
+    fb.textContent='❌ Incorrect. Correct: "'+q.ch[q.c]+'". '+q.fb;fb.className='feedback show w';
+  }
+  document.getElementById('btn-next').disabled=false;
+}
+
+function nextQ(){qIdx++;if(qIdx>=qPool.length){showRoundResults();return;}renderQ()}
+function endQuiz(){if(qIdx>0)showRoundResults();else resetQuiz()}
+
+async function showRoundResults(){
+  document.getElementById('quiz-area').style.display='none';
+  const pct=Math.round(qScore/qPool.length*100);
+  const isPerfect=pct===100;
+  roundHistory.push({round:roundNum,score:qScore,total:qPool.length,pct});
+
+  // Save round to Supabase
+  let saveMsg='';
+  if(SB.user){
+    const name=SB.user.user_metadata?.display_name||SB.user.email.split('@')[0];
+    const label=isPerfect?(qCat+' ★MASTERY'):qCat;
+    const {error}=await SB.saveScore(SB.user.id,name,label,qScore,qPool.length);
+    saveMsg=error?'⚠️ Could not save score.':'✅ Round score saved!';
+  }
+
+  if(isPerfect){showMastery(saveMsg);return;}
+
+  // Merge missed into bank (deduplicate by text)
+  qMissed.forEach(m=>{if(!missedBank.find(x=>x.text===m.text))missedBank.push(m);});
+
+  // Show round results
+  document.getElementById('round-results').style.display='block';
+  document.getElementById('rr-badge').textContent='Round '+roundNum+' Complete';
+
+  const ring=document.getElementById('rr-ring');
+  ring.innerHTML=qScore+'/'+qPool.length+'<br><span style="font-size:.82rem">'+pct+'%</span>';
+  const col=pct>=90?'green':pct>=70?'yellow':'red';
+  ring.className='score-ring '+col;
+
+  const cols={green:'#56d364',yellow:'#e3b341',red:'#ff7b72'};
+  const bb=document.getElementById('rr-band');
+  const bandTxt=pct>=90?'Almost there! One more push.':pct>=70?'Good progress — focus on the misses below.':'Keep going — every round makes you stronger.';
+  bb.textContent=bandTxt;
+  bb.style.cssText=`background:${cols[col]}18;border:1px solid ${cols[col]};color:${cols[col]}`;
+
+  document.getElementById('rr-msg').textContent=`You missed ${qMissed.length} question${qMissed.length!==1?'s':''}. Your next round will focus on those exact concepts until you master them.`;
+  document.getElementById('rr-save').textContent=saveMsg;
+
+  document.getElementById('rr-history').innerHTML=roundHistory.map(r=>{
+    const cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
+    return`<div class="rh-dot ${cls}" title="Round ${r.round}: ${r.pct}%">R${r.round}<br><span style="font-size:.6rem">${r.pct}%</span></div>`;
+  }).join('');
+
+  document.getElementById('rr-actions').innerHTML=`
+    <button class="btn btn-gold" onclick="startNextRound()">Round ${roundNum+1}: Fix My Misses →</button>
+    <button class="btn btn-outline btn-sm" onclick="resetQuiz()">End Session</button>
+    <div style="width:100%;text-align:center;font-size:.76rem;color:var(--muted);margin-top:6px">Keep going until you hit 100% — that's mastery. The loop never ends until you do.</div>`;
+
+  // Study guide
+  const sw=document.getElementById('study-card-wrap');
+  const sb=document.getElementById('study-body');
+  if(qMissed.length){
+    sw.style.display='block';
+    sb.innerHTML=qMissed.map(m=>`
+      <div class="study-card">
+        <div class="sc-q">${m.text}</div>
+        <div class="sc-wrong">✕ You answered: ${m.yourAnswer}</div>
+        <div class="sc-right">✓ Correct answer: ${m.ch[m.c]}</div>
+        <div class="sc-tip">💡 ${m.fb}</div>
+      </div>`).join('');
+  } else sw.style.display='none';
+}
+
+function startNextRound(){
+  if(!missedBank.length){showMastery('');return;}
+  const pool=qCat==='all'?Qs:Qs.filter(q=>q.cat===qCat);
+  const notMissed=pool.filter(q=>!missedBank.find(m=>m.text===q.text));
+  const fresh=shuffle([...notMissed]).slice(0,Math.max(0,initialCount-missedBank.length));
+  qPool=shuffle([...missedBank,...fresh]);
+  qIdx=0;qScore=0;qMissed=[];qAns=null;
+  roundNum++;
+  document.getElementById('round-results').style.display='none';
+  document.getElementById('quiz-area').style.display='block';
+  renderQ();
+}
+
+function showMastery(saveMsg){
+  document.getElementById('round-results').style.display='none';
+  document.getElementById('quiz-area').style.display='none';
+  document.getElementById('mastery-screen').style.display='block';
+  const totalRounds=roundHistory.length;
+  document.getElementById('mastery-sub').textContent=`You achieved 100% on Round ${roundNum} after ${totalRounds} round${totalRounds!==1?'s':''}. That's what mastery looks like — keep it consistent!`;
+  document.getElementById('mastery-history').innerHTML=roundHistory.map(r=>{
+    const cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
+    return`<div class="rh-dot ${cls}" title="Round ${r.round}: ${r.pct}%">R${r.round}<br><span style="font-size:.6rem">${r.pct}%</span></div>`;
+  }).join('');
+  document.getElementById('mastery-save').textContent=saveMsg;
+}
+
+function resetQuiz(){
+  missedBank=[];roundNum=0;roundHistory=[];sessionActive=false;
+  initQuizPage();
+}
+
+async function loadLeaderboard(){
+  const {data,error}=await SB.getLeaderboard();
+  const lb=document.getElementById('lb-body');
+  if(error||!data){lb.innerHTML='<p style="color:var(--red);padding:16px">Could not load leaderboard. Check Supabase configuration.</p>';return;}
+  if(!data.length){lb.innerHTML='<p style="color:var(--muted);padding:16px">No scores yet — be the first!</p>';return;}
+  const map={};
+  data.forEach(s=>{
+    const isMastery=s.category&&s.category.includes('★MASTERY');
+    if(!map[s.display_name]){map[s.display_name]=s;return;}
+    const cur=map[s.display_name];
+    const curMastery=cur.category&&cur.category.includes('★MASTERY');
+    if(!curMastery&&isMastery){map[s.display_name]=s;return;}
+    if(curMastery&&!isMastery)return;
+    if(s.pct>cur.pct)map[s.display_name]=s;
+  });
+  const top=Object.values(map).sort((a,b)=>{
+    const am=a.category&&a.category.includes('★MASTERY');
+    const bm=b.category&&b.category.includes('★MASTERY');
+    if(am&&!bm)return -1;if(!am&&bm)return 1;
+    return b.pct-a.pct||b.score-a.score;
+  }).slice(0,20);
+  const myName=SB.user?.user_metadata?.display_name||SB.user?.email?.split('@')[0];
+  lb.innerHTML=top.map((s,i)=>{
+    const r=i+1,rc=r===1?'r1':r===2?'r2':r===3?'r3':'';
+    const isMastery=s.category&&s.category.includes('★MASTERY');
+    const masteryBadge=isMastery?` <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:1px 7px;font-size:.68rem;color:var(--gold);font-weight:700;vertical-align:middle">★ Mastered</span>`:'';
+    const isMe=s.display_name===myName;
+    return`<div class="lb-row${isMe?' my-row':''}"><div class="lb-rank ${rc}">${r}</div><div class="lb-name">${s.display_name}${masteryBadge}${isMe?' 👈':''}</div><div><span class="lb-score">${s.pct}%</span><span class="lb-pct">(${s.score}/${s.total})</span></div></div>`;
+  }).join('');
+  if(SB.user){
+    const {data:mine}=await SB.getUserScores(SB.user.id);
+    const ms=document.getElementById('my-scores-card'),mb=document.getElementById('my-scores-body');
+    if(mine&&mine.length){
+      ms.style.display='block';
+      mb.innerHTML=mine.slice(0,15).map(s=>{
+        const isMastery=s.category&&s.category.includes('★MASTERY');
+        return`<div class="lb-row"><div style="flex:1;font-size:.84rem">${new Date(s.created_at).toLocaleDateString()} <span style="color:var(--muted)">${s.category}</span></div><div><span class="lb-score">${s.pct}%</span><span class="lb-pct">(${s.score}/${s.total})</span>${isMastery?'<span style="color:var(--gold);font-size:.72rem;margin-left:4px">★</span>':''}</div></div>`;
+      }).join('');
+    }
+  }
+}
+
+async function loadAdmin(){
+  if(!SB.user||SB.user.email!==ADMIN_EMAIL){document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Access denied.</p>';return;}
+  const {data,error}=await SB.getAllScores();
+  if(error||!data){document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Error loading data.</p>';return;}
+  const users={};data.forEach(s=>{if(!users[s.user_id])users[s.user_id]={name:s.display_name,count:0,id:s.user_id};users[s.user_id].count++;});
+  document.getElementById('admin-users').innerHTML=Object.values(users).map(u=>`<div class="lb-row"><div class="lb-name">${u.name}</div><div style="color:var(--muted);font-size:.82rem;margin-right:8px">${u.count} attempts</div><button class="btn btn-red btn-sm" onclick="adminReset('${u.id}','${u.name}')">🗑️ Reset</button></div>`).join('');
+  document.getElementById('admin-scores').innerHTML=data.slice(0,60).map(s=>`<div style="display:flex;gap:10px;padding:7px 10px;background:#21262d;border-radius:6px;margin:4px 0;font-size:.81rem;flex-wrap:wrap;align-items:center"><span style="color:var(--accent);min-width:130px;font-weight:500">${s.display_name}</span><span style="color:var(--gold);font-weight:700">${s.pct}%</span><span style="color:var(--muted)">${s.category}</span><span style="color:var(--muted);margin-left:auto">${new Date(s.created_at).toLocaleDateString()}</span></div>`).join('');
+}
+
+async function adminReset(uid,name){
+  if(!confirm(`Reset ALL quiz scores for "${name}"? This cannot be undone.`))return;
+  const {error}=await SB.deleteUserScores(uid);
+  if(error){alert('Error: '+error);return;}
+  alert(`Scores for "${name}" have been cleared.`);loadAdmin();
+}
+
+let modalMode='login';
+function openModal(m){modalMode=m;switchModal(m);document.getElementById('modal-bg').classList.add('open')}
+function closeModal(){document.getElementById('modal-bg').classList.remove('open')}
+function switchModal(m){
+  modalMode=m;const isL=m==='login';
+  document.getElementById('modal-title').textContent=isL?'Log In':'Create Account';
+  document.getElementById('modal-submit').textContent=isL?'Log In':'Create Account';
+  document.getElementById('name-group').style.display=isL?'none':'block';
+  document.getElementById('auth-toggle').innerHTML=isL?'Don\'t have an account? <a onclick="switchModal(\'signup\')">Sign up</a>':'Already have an account? <a onclick="switchModal(\'login\')">Log in</a>';
+  document.getElementById('auth-err').style.display='none';
+  document.getElementById('auth-ok').style.display='none';
+}
+
+async function submitAuth(){
+  const email=document.getElementById('inp-email').value.trim();
+  const pass=document.getElementById('inp-pass').value;
+  const name=document.getElementById('inp-name').value.trim();
+  const errEl=document.getElementById('auth-err'),okEl=document.getElementById('auth-ok');
+  errEl.style.display='none';okEl.style.display='none';
+  if(!email||!pass){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return;}
+  const btn=document.getElementById('modal-submit');
+  btn.innerHTML='<span class="spinner"></span>Please wait...';btn.disabled=true;
+  if(modalMode==='signup'){
+    if(!name){errEl.textContent='Please enter a display name.';errEl.style.display='block';btn.innerHTML='Create Account';btn.disabled=false;return;}
+    const {data,error}=await SB.signUp(email,pass,name);
+    btn.innerHTML='Create Account';btn.disabled=false;
+    if(error){errEl.textContent=error;errEl.style.display='block';return;}
+    okEl.textContent='Account created! Check your email to confirm, then log in.';okEl.style.display='block';
+    setTimeout(()=>switchModal('login'),2500);
+  } else {
+    const {data,error}=await SB.signIn(email,pass);
+    btn.innerHTML='Log In';btn.disabled=false;
+    if(error){errEl.textContent=error;errEl.style.display='block';return;}
+    onLogin();closeModal();
+  }
+}
+
+function onLogin(){
+  const u=SB.user,name=u.user_metadata?.display_name||u.email.split('@')[0];
+  document.getElementById('user-pill').textContent='👤 '+name;
+  document.getElementById('user-pill').style.display='inline-block';
+  document.getElementById('btn-login').style.display='none';
+  document.getElementById('btn-logout').style.display='inline-block';
+  if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
+  if(currentPage==='quiz')initQuizPage();
+}
+
+async function logout(){
+  await SB.signOut();
+  document.getElementById('user-pill').style.display='none';
+  document.getElementById('btn-login').style.display='inline-block';
+  document.getElementById('btn-logout').style.display='none';
+  document.getElementById('btn-admin').style.display='none';
+  if(currentPage==='quiz')initQuizPage();
+}
+
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal()});
+</script>
+</body>
+</html>
