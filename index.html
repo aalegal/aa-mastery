@@ -748,6 +748,20 @@ tr:nth-child(even) td{background:#161b2280}
   </div>
 </div>
 
+<!-- PASSWORD RESET OVERLAY -->
+<div id="reset-overlay">
+  <div class="reset-modal">
+    <div class="reset-icon">🔐</div>
+    <h2>Set New Password</h2>
+    <p>Enter your new password below to complete the reset.</p>
+    <div class="auth-err" id="reset-err"></div>
+    <div class="auth-ok" id="reset-ok"></div>
+    <div class="form-group" style="text-align:left"><label>New Password</label><input type="password" id="reset-pass" placeholder="Enter new password (min 6 characters)"></div>
+    <div class="form-group" style="text-align:left"><label>Confirm Password</label><input type="password" id="reset-pass2" placeholder="Confirm new password"></div>
+    <button class="btn btn-gold" style="width:100%;padding:11px" id="reset-submit" onclick="submitPasswordReset()">Update Password</button>
+  </div>
+</div>
+
 <!-- AUTH MODAL -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
@@ -760,6 +774,7 @@ tr:nth-child(even) td{background:#161b2280}
     <div class="form-group" id="name-group" style="display:none"><label>Display Name</label><input type="text" id="inp-name" placeholder="Your name (shown on leaderboard)"></div>
     <button class="btn btn-gold" style="width:100%;padding:11px" id="modal-submit" onclick="submitAuth()">Log In</button>
     <div class="auth-toggle" id="auth-toggle">Don't have an account? <a onclick="switchModal('signup')">Sign up</a></div>
+    <div style="text-align:center;margin-top:8px"><a onclick="showForgotPassword()" style="color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:none">Forgot your password?</a></div>
   </div>
 </div>
 
@@ -779,7 +794,16 @@ const SB={
   async signUp(email,pw,name){const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name}}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{data:r.data}},
   async signIn(email,pw){const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{error:'Login failed'}},
   async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.token=null;this.user=null},
-  async saveScore(uid,name,cat,score,total){return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
+  async signResetPassword(email){
+    const r=await axios({
+      method:'POST',
+      url:this.url+'/auth/v1/recover',
+      headers:{'Content-Type':'application/json','apikey':this.key},
+      data:{email,options:{redirectTo:'https://aa-mastery.vercel.app'}}
+    }).catch(e=>({data:e.response?.data}));
+    if(r.data?.error)return{error:r.data.error.message||r.data.error};
+    return{data:r.data};
+  },return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
   async getLeaderboard(){return this.req('GET','/rest/v1/quiz_scores?select=display_name,score,total,pct,category,created_at&order=pct.desc,score.desc&limit=200')},
   async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
   async getAllScores(){return this.req('GET','/rest/v1/quiz_scores?select=*&order=created_at.desc&limit=300')},
@@ -788,27 +812,21 @@ const SB={
 
 let currentPage='home';
 function nav(p){
-  var target=document.getElementById('page-'+p);
-  if(!target){console.error('AA Mastery: missing page element #page-'+p);return;}
-  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
-  document.querySelectorAll('#topnav button').forEach(function(b){b.classList.remove('active');});
-  target.classList.add('active');
-  document.querySelectorAll('#topnav button').forEach(function(b){
-    var oc=b.getAttribute('onclick');
-    if(oc&&oc.indexOf("'"+p+"'")!==-1)b.classList.add('active');
-  });
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('#topnav button').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('#topnav button').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+p+"'"))b.classList.add('active')});
   currentPage=p;window.scrollTo(0,0);
   if(p==='quiz')initQuizPage();
   if(p==='leaderboard')loadLeaderboard();
   if(p==='admin')loadAdmin();
+  if(p==='withhold'){}// static page
 }
 
 function showRef(id,btn){
-  var pane=document.getElementById('rpane-'+id);
-  if(!pane){console.error('AA Mastery: missing rpane element #rpane-'+id);return;}
-  document.querySelectorAll('.rpane').forEach(function(p){p.classList.remove('active');});
-  document.querySelectorAll('.rtab').forEach(function(t){t.classList.remove('active');});
-  pane.classList.add('active');
+  document.querySelectorAll('.rpane').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('rpane-'+id).classList.add('active');
   if(btn)btn.classList.add('active');
 }
 
@@ -886,8 +904,9 @@ const Qs=[
   {cat:'cip',text:'Company C\'s outside counsel emails Company D\'s outside counsel: "We both are FERC investigation targets. Attached is our privileged strategy memo. Please coordinate under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Counsel-to-counsel communication for separate investigation targets under a CIP agreement.'},
   {cat:'cip',text:'Two companies discussing a potential joint venture — BUSINESS TEAMS email financial models. Casually mention "lawyers will sort out legal issues later." No lawyers on the emails, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal strategy, no JDA. A shared commercial interest is NOT enough for CIP.'},
   {cat:'cip',text:'Three co-defendants sign a written Joint Defense Agreement. Outside counsel for Company F sends counsel for G and H: "Attached is our draft settlement analysis memo, shared under our common interest arrangement."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Settlement analysis shared among co-defendants\' counsel under a JDA = textbook CIP.'},
+];
 
-  // ── WITHHOLD vs REDACT questions ──
+  // ── WITHHOLD vs REDACT (100+ questions) ──
   {cat:'withhold',text:'An email from a CEO to the company lawyer asking: "Can we legally fire John?" — The entire email is about legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:1,fb:'Privilege WITHHOLD. The entire purpose of the document is legal advice. There is nothing non-privileged to share. Withhold the whole thing.'},
   {cat:'withhold',text:'A 10-page Weekly Meeting Minutes document. Pages 1–9 discuss sales goals. Page 10 has one paragraph where the company lawyer gives legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:2,fb:'Privilege REDACT. The document is mostly business (pages 1–9). Only the small legal advice paragraph on page 10 needs a black box. Give the rest to the opposing side.'},
   {cat:'withhold',text:'What is the simple rule for choosing between Withhold and Redact?',ch:['If the document has a lawyer → Withhold; if not → Redact','If the whole document is a secret → Withhold; if only a small piece is a secret → Redact','If it is ACP → Withhold; if it is WPP → Redact','If it is over 5 pages → Withhold; if shorter → Redact'],c:1,fb:'Simple Rule: If the WHOLE document is a secret → WITHHOLD. If only a SMALL PIECE is a secret → REDACT. This is the core distinction.'},
@@ -1259,7 +1278,66 @@ async function logout(){
   if(currentPage==='quiz')initQuizPage();
 }
 
-function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+// ── PASSWORD RESET HANDLER ──
+// Runs on page load — checks if URL contains a reset token from Supabase
+async function checkForPasswordReset(){
+  const hash=window.location.hash;
+  const params=new URLSearchParams(hash.replace('#',''));
+  const type=params.get('type');
+  const accessToken=params.get('access_token');
+
+  // Supabase sends #access_token=...&type=recovery for password resets
+  if(type==='recovery' && accessToken){
+    // Set the session with the recovery token so we can update the password
+    SB.token=accessToken;
+    // Show the password reset modal
+    document.getElementById('reset-overlay').style.display='flex';
+    // Clean the URL so the token isn't visible
+    window.history.replaceState(null,'',window.location.pathname);
+  }
+}
+
+async function submitPasswordReset(){
+  const pass=document.getElementById('reset-pass').value;
+  const pass2=document.getElementById('reset-pass2').value;
+  const errEl=document.getElementById('reset-err');
+  const okEl=document.getElementById('reset-ok');
+  errEl.style.display='none';okEl.style.display='none';
+
+  if(!pass||pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
+  if(pass!==pass2){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
+
+  const btn=document.getElementById('reset-submit');
+  btn.innerHTML='<span class="spinner"></span>Updating...';btn.disabled=true;
+
+  try{
+    const r=await axios({
+      method:'PUT',
+      url:SB.url+'/auth/v1/user',
+      headers:SB.hdr(),
+      data:{password:pass}
+    });
+    btn.innerHTML='Update Password';btn.disabled=false;
+    if(r.data?.id){
+      okEl.textContent='✅ Password updated successfully! You can now log in.';
+      okEl.style.display='block';
+      setTimeout(()=>{
+        document.getElementById('reset-overlay').style.display='none';
+        openModal('login');
+      },2000);
+    } else {
+      errEl.textContent='Something went wrong. Please try the reset link again.';
+      errEl.style.display='block';
+    }
+  }catch(e){
+    btn.innerHTML='Update Password';btn.disabled=false;
+    errEl.textContent=e.response?.data?.message||'Error updating password. Please try again.';
+    errEl.style.display='block';
+  }
+}
+
+// Run on page load
+checkForPasswordReset();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal()});
 </script>
 </body>
