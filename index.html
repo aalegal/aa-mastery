@@ -10,7 +10,7 @@
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#c9a84c">
 <meta property="og:type" content="website">
-<meta property="og:url" content="https://aa-mastery.vercel.app/">
+<meta property="og:url" content="https://aa-mastery.vercel.app">
 <meta property="og:site_name" content="AA Team Mastery">
 <meta property="og:title" content="AA Team – Privilege &amp; Coding Mastery">
 <meta property="og:description" content="Master privilege review and responsiveness coding. Adaptive quizzes that drill your weak spots until you hit 100%. Flash cards, reference guide, and live leaderboard.">
@@ -21,7 +21,7 @@
 <meta property="og:image:height" content="630">
 <meta property="og:image:alt" content="AA Team Privilege &amp; Coding Mastery – Training Hub">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://aa-mastery.vercel.app/">
+<meta name="twitter:url" content="https://aa-mastery.vercel.app">
 <meta name="twitter:title" content="AA Team – Privilege &amp; Coding Mastery">
 <meta name="twitter:description" content="Master privilege review and responsiveness coding. Adaptive quizzes that drill your weak spots until you hit 100%.">
 <meta name="twitter:image" content="https://raw.githubusercontent.com/aalegal/aa-mastery/main/og-image.png">
@@ -52,6 +52,7 @@ body{background:var(--dark);color:var(--text);min-height:100vh}
 .btn-gold{background:var(--gold);color:#000}.btn-gold:hover{background:#e8c76a}
 .btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--accent);color:var(--accent)}
 .btn-red{background:#da363322;border:1px solid var(--red);color:#ff7b72}.btn-red:hover{background:#da363344}
+.btn-ghost{background:transparent;border:none;color:var(--accent);cursor:pointer;font-size:.8rem;text-decoration:underline;padding:4px 0}
 .btn-sm{padding:5px 12px;font-size:.78rem}
 #hero{background:linear-gradient(135deg,#0a0d12 0%,#0d1117 40%,#111827 100%);padding:64px 24px 48px;text-align:center;border-bottom:1px solid var(--border)}
 #hero .hero-logo{width:64px;height:64px;object-fit:contain;margin:0 auto 18px;display:block}
@@ -87,19 +88,26 @@ tr:nth-child(even) td{background:#161b2280}
 .fc-front{background:linear-gradient(135deg,#1f2937,#21262d);border:2px solid var(--accent)}
 .fc-back{background:linear-gradient(135deg,#1a2a1a,#21262d);border:2px solid var(--green);transform:rotateY(180deg)}
 .fc-nav{display:flex;gap:10px;justify-content:center;margin-top:14px;align-items:center}
+/* ── AUTH MODAL ── */
 .modal-bg{display:none;position:fixed;inset:0;background:#000000cc;z-index:200;align-items:center;justify-content:center}
 .modal-bg.open{display:flex}
 .modal{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:32px;width:100%;max-width:420px;position:relative}
-.modal h2{margin-bottom:20px;text-align:center}
+.modal h2{margin-bottom:6px;text-align:center}
+.modal-sub{text-align:center;color:var(--muted);font-size:.83rem;margin-bottom:20px}
+.modal-icon{font-size:2.2rem;text-align:center;margin-bottom:10px}
 .form-group{margin-bottom:14px}
-.form-group label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:5px}
-.form-group input{width:100%;background:#21262d;border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:7px;font-size:.9rem}
+.form-group label{display:block;font-size:.83rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.form-group input{width:100%;background:#21262d;border:1px solid var(--border);color:var(--text);padding:10px 13px;border-radius:7px;font-size:.9rem;transition:border-color .2s}
 .form-group input:focus{outline:none;border-color:var(--accent)}
-.modal-close{position:absolute;top:12px;right:16px;background:none;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer}
+.modal-close{position:absolute;top:12px;right:16px;background:#21262d;border:1px solid var(--border);color:var(--muted);font-size:1rem;cursor:pointer;width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{color:var(--text);border-color:var(--border)}
 .auth-toggle{text-align:center;margin-top:12px;font-size:.83rem;color:var(--muted)}
-.auth-toggle a{color:var(--accent);cursor:pointer;text-decoration:none}
-.auth-err{color:#ff7b72;font-size:.82rem;margin-bottom:10px;display:none}
-.auth-ok{color:#56d364;font-size:.82rem;margin-bottom:10px;display:none}
+.auth-toggle a{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:600}
+.auth-err{color:#ff7b72;font-size:.82rem;margin-bottom:10px;display:none;background:#da363318;border:1px solid #da363344;border-radius:6px;padding:8px 10px}
+.auth-ok{color:#56d364;font-size:.82rem;margin-bottom:10px;display:none;background:#23863618;border:1px solid #23863644;border-radius:6px;padding:8px 10px}
+.auth-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:.78rem}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+/* ── QUIZ ── */
 .qgate{text-align:center;padding:40px 20px}
 .qgate h2{margin-bottom:10px}
 .qgate p{color:var(--muted);margin-bottom:20px}
@@ -420,6 +428,7 @@ tr:nth-child(even) td{background:#161b2280}
       <button onclick="selCat('inhouse',this)">In-House vs Business</button>
       <button onclick="selCat('regulators',this)">Regulators</button>
       <button onclick="selCat('cip',this)">Common Interest</button>
+      <button onclick="selCat('withhold',this)">⚫ Withhold vs Redact</button>
     </div>
     <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px">
       <label style="color:var(--muted);font-size:.88rem">Questions:</label>
@@ -443,7 +452,6 @@ tr:nth-child(even) td{background:#161b2280}
       <button class="btn btn-outline btn-sm" onclick="endQuiz()">End Quiz</button>
     </div>
   </div>
-  <!-- Round Results -->
   <div id="round-results" style="display:none">
     <div class="card" style="text-align:center">
       <div class="round-badge" id="rr-badge"></div>
@@ -460,7 +468,6 @@ tr:nth-child(even) td{background:#161b2280}
       <div id="study-body"></div>
     </div>
   </div>
-  <!-- Mastery Screen -->
   <div id="mastery-screen" class="card mastery-screen" style="display:none">
     <div class="mastery-star">🏆</div>
     <div class="mastery-title">Mastery Achieved!</div>
@@ -472,7 +479,6 @@ tr:nth-child(even) td{background:#161b2280}
       <button class="btn btn-outline" onclick="nav('leaderboard')">View Leaderboard</button>
     </div>
   </div>
-  <!-- Fallback results -->
   <div id="quiz-results" style="display:none">
     <div class="card" style="text-align:center">
       <h2>Session Complete</h2>
@@ -557,8 +563,6 @@ tr:nth-child(even) td{background:#161b2280}
     </div>
     <div class="rule gold" style="margin-top:16px;font-size:.92rem;text-align:center"><strong>Simple Rule: If the WHOLE document is a secret → WITHHOLD. If only a SMALL PIECE is a secret → REDACT.</strong></div>
   </div>
-
-  <!-- DECISION FLOWCHART -->
   <div class="card">
     <h2>🔀 The Decision Flowchart</h2>
     <p style="color:var(--muted);font-size:.84rem;margin-bottom:14px">Follow this exact path for every single document. Do not skip steps!</p>
@@ -591,8 +595,6 @@ tr:nth-child(even) td{background:#161b2280}
       </div>
     </div>
   </div>
-
-  <!-- SIDE BY SIDE COMPARISON -->
   <div class="card">
     <h2>📊 Withhold vs Redact — Side by Side</h2>
     <table>
@@ -605,135 +607,68 @@ tr:nth-child(even) td{background:#161b2280}
       <tr><td><strong>Risk if wrong</strong></td><td>Over-withholding can draw sanctions from the court</td><td>Under-redacting can expose privileged content to opposing counsel</td></tr>
     </table>
   </div>
-
-  <!-- PLOG GUIDE -->
   <div class="card">
     <h2>📋 The Privilege Log (PLOG) Guide</h2>
-    <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">When you hide a document (withhold or redact), you must put it on a list called the <strong style="color:var(--text)">Privilege Log (PLOG)</strong>. This list is given to the opposing side so they can see WHAT you're hiding — but not WHY in detail.</p>
+    <p style="font-size:.85rem;color:var(--muted);margin-bottom:14px">When you hide a document (withhold or redact), you must put it on a list called the <strong style="color:var(--text)">Privilege Log (PLOG)</strong>.</p>
     <div class="rule gold"><strong>The Golden Rule:</strong> Write a description that proves a lawyer was involved, but NEVER give away the actual secret.</div>
     <h3 style="margin-top:14px">❌ BAD PLOG Examples:</h3>
-    <div style="background:#da363318;border:1px solid var(--red);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem">
-      <div style="color:#ff7b72;margin-bottom:6px">❌ "Email from lawyer saying we will lose the case because our contract is illegal."</div>
-      <div style="color:var(--muted)">→ You just gave away the secret! The opposing side now knows your weakness.</div>
-    </div>
-    <div style="background:#da363318;border:1px solid var(--red);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem">
-      <div style="color:#ff7b72;margin-bottom:6px">❌ "Email."</div>
-      <div style="color:var(--muted)">→ Too vague. The judge will reject this and may order you to produce the document.</div>
-    </div>
+    <div style="background:#da363318;border:1px solid var(--red);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem"><div style="color:#ff7b72;margin-bottom:6px">❌ "Email from lawyer saying we will lose the case because our contract is illegal."</div><div style="color:var(--muted)">→ You just gave away the secret!</div></div>
+    <div style="background:#da363318;border:1px solid var(--red);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem"><div style="color:#ff7b72;margin-bottom:6px">❌ "Email."</div><div style="color:var(--muted)">→ Too vague. The judge will reject this.</div></div>
     <h3 style="margin-top:14px">✅ GOOD PLOG Examples:</h3>
-    <div style="background:#23863618;border:1px solid var(--green);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem">
-      <div style="color:#56d364;margin-bottom:6px">✅ "Email reflecting legal advice regarding contract validity."</div>
-      <div style="color:var(--muted)">→ States the topic without giving the answer. Perfect.</div>
-    </div>
-    <div style="background:#23863618;border:1px solid var(--green);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem">
-      <div style="color:#56d364;margin-bottom:6px">✅ "Memorandum prepared in anticipation of litigation regarding patent claims."</div>
-      <div style="color:var(--muted)">→ Identifies it as Work Product without revealing the strategy.</div>
-    </div>
-    <h3 style="margin-top:14px">📝 Copy-Paste PLOG Templates:</h3>
+    <div style="background:#23863618;border:1px solid var(--green);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem"><div style="color:#56d364;margin-bottom:6px">✅ "Email reflecting legal advice regarding contract validity."</div></div>
+    <div style="background:#23863618;border:1px solid var(--green);border-radius:8px;padding:12px;margin:8px 0;font-size:.84rem"><div style="color:#56d364;margin-bottom:6px">✅ "Memorandum prepared in anticipation of litigation regarding patent claims."</div></div>
+    <h3 style="margin-top:14px">📝 PLOG Templates:</h3>
     <div style="display:flex;flex-direction:column;gap:8px;margin-top:8px">
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px">
-        <div style="font-size:.76rem;color:var(--gold);font-weight:700;margin-bottom:4px;letter-spacing:.5px">FOR ACP:</div>
-        <div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] reflecting legal advice regarding [General Topic].</div>
-        <div style="font-size:.8rem;color:var(--muted);margin-top:4px">Example: Email reflecting legal advice regarding employee termination.</div>
-      </div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px">
-        <div style="font-size:.76rem;color:var(--purple);font-weight:700;margin-bottom:4px;letter-spacing:.5px">FOR WORK PRODUCT:</div>
-        <div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] prepared in anticipation of litigation regarding [General Topic].</div>
-        <div style="font-size:.8rem;color:var(--muted);margin-top:4px">Example: Memorandum prepared in anticipation of litigation regarding patent claims.</div>
-      </div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px">
-        <div style="font-size:.76rem;color:var(--green);font-weight:700;margin-bottom:4px;letter-spacing:.5px">FOR REDACTION:</div>
-        <div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] containing redacted legal advice regarding [General Topic].</div>
-        <div style="font-size:.8rem;color:var(--muted);margin-top:4px">Example: Meeting minutes containing redacted legal advice regarding regulatory compliance.</div>
-      </div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-size:.76rem;color:var(--gold);font-weight:700;margin-bottom:4px">FOR ACP:</div><div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] reflecting legal advice regarding [General Topic].</div></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-size:.76rem;color:var(--purple);font-weight:700;margin-bottom:4px">FOR WORK PRODUCT:</div><div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] prepared in anticipation of litigation regarding [General Topic].</div></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:12px"><div style="font-size:.76rem;color:var(--green);font-weight:700;margin-bottom:4px">FOR REDACTION:</div><div style="font-size:.85rem;color:var(--text);font-style:italic">[Document Type] containing redacted legal advice regarding [General Topic].</div></div>
     </div>
   </div>
-
-  <!-- ACRONYM CHEAT SHEET -->
   <div class="card">
     <h2>🔤 Legal Acronym Cheat Sheet</h2>
-    <p style="color:var(--muted);font-size:.84rem;margin-bottom:14px">When reviewing corporate documents, you will see a lot of "alphabet soup." Keep this cheat sheet next to your screen.</p>
-    <h3>👤 The People (Who is talking?)</h3>
+    <h3>👤 The People</h3>
     <table style="margin-bottom:16px">
       <tr><th>Acronym</th><th>Stands For</th><th>Simple Definition</th></tr>
       <tr><td><span style="color:var(--gold);font-weight:700">GC</span></td><td>General Counsel</td><td>The top head lawyer who works inside the company</td></tr>
       <tr><td><span style="color:var(--gold);font-weight:700">IHC</span></td><td>In-House Counsel</td><td>Any lawyer who works as a direct employee of the company</td></tr>
       <tr><td><span style="color:var(--gold);font-weight:700">OC</span></td><td>Outside Counsel</td><td>Lawyers hired from an outside law firm for a specific case</td></tr>
-      <tr><td><span style="color:var(--gold);font-weight:700">CC / BCC</span></td><td>Carbon Copy / Blind Carbon Copy</td><td>People who received the email but are not the main audience. CC'ing a lawyer does NOT automatically make it privileged!</td></tr>
+      <tr><td><span style="color:var(--gold);font-weight:700">CC / BCC</span></td><td>Carbon Copy / Blind Carbon Copy</td><td>CC'ing a lawyer does NOT automatically make it privileged!</td></tr>
     </table>
-    <h3>📄 The Documents (What are they discussing?)</h3>
+    <h3>📄 The Documents</h3>
     <table style="margin-bottom:16px">
       <tr><th>Acronym</th><th>Stands For</th><th>Simple Definition</th></tr>
       <tr><td><span style="color:var(--accent);font-weight:700">NDA</span></td><td>Non-Disclosure Agreement</td><td>A legal contract where people promise to keep a secret</td></tr>
       <tr><td><span style="color:var(--accent);font-weight:700">MSA</span></td><td>Master Services Agreement</td><td>The main big-picture contract between two companies</td></tr>
-      <tr><td><span style="color:var(--accent);font-weight:700">SOW</span></td><td>Statement of Work</td><td>A smaller document listing exactly what tasks will be done under the MSA</td></tr>
-      <tr><td><span style="color:var(--accent);font-weight:700">LOI / MOU</span></td><td>Letter of Intent / Memo of Understanding</td><td>A document saying "we plan to make a deal" before the final contract</td></tr>
-      <tr><td><span style="color:var(--accent);font-weight:700">PLOG</span></td><td>Privilege Log</td><td>The list we create to show the opposing side which documents we are withholding</td></tr>
+      <tr><td><span style="color:var(--accent);font-weight:700">SOW</span></td><td>Statement of Work</td><td>A smaller document listing exactly what tasks will be done</td></tr>
+      <tr><td><span style="color:var(--accent);font-weight:700">LOI / MOU</span></td><td>Letter of Intent / Memo of Understanding</td><td>A pre-contract planning document</td></tr>
+      <tr><td><span style="color:var(--accent);font-weight:700">PLOG</span></td><td>Privilege Log</td><td>The list of withheld/redacted documents given to opposing side</td></tr>
     </table>
-    <h3>⚖️ Lawsuit Terms (What is happening?)</h3>
-    <table style="margin-bottom:16px">
-      <tr><th>Term</th><th>Definition</th><th>Privilege Flag?</th></tr>
-      <tr><td><span style="color:#ff7b72;font-weight:700">Lit / Litigation</span></td><td>The formal legal word for a lawsuit</td><td><span class="badge be">Watch for WP</span></td></tr>
-      <tr><td><span style="color:#ff7b72;font-weight:700">Depo / Deposition</span></td><td>Official interview where a lawyer asks witness questions under oath before trial</td><td><span class="badge be">Watch for WP</span></td></tr>
-      <tr><td><span style="color:#ff7b72;font-weight:700">Subpoena</span></td><td>A strict legal order forcing someone to hand over documents or testify</td><td><span class="badge be">Watch for WP</span></td></tr>
-      <tr><td><span style="color:#ff7b72;font-weight:700">DOJ / SEC / FTC</span></td><td>Government agencies — company is likely being investigated</td><td><span class="badge be">High privilege risk</span></td></tr>
-    </table>
-    <h3>🔐 Privilege Shorthand (Tricky Warning Signs)</h3>
-    <div class="rule red"><strong>WARNING:</strong> Just because an executive typed "Priv" or "Privileged and Confidential" at the top of an email does NOT mean it is legally privileged. You STILL have to check the rules! Read the actual message.</div>
+    <h3>🔐 Privilege Shorthand</h3>
+    <div class="rule red"><strong>WARNING:</strong> "Priv" or "Privileged and Confidential" labels do NOT automatically create privilege. Always apply the four-step test.</div>
     <table style="margin-top:10px">
       <tr><th>Shorthand</th><th>Meaning</th><th>What to do</th></tr>
-      <tr><td><strong>Priv</strong></td><td>Privileged</td><td>Do not assume — read the content and apply the four-step test</td></tr>
-      <tr><td><strong>A/C or ACP</strong></td><td>Attorney-Client Privilege</td><td>Strong signal — verify legal advice is actually present</td></tr>
-      <tr><td><strong>WP / AWP</strong></td><td>Work Product / Attorney Work Product</td><td>Check if it was created in anticipation of litigation</td></tr>
-      <tr><td><strong>JDA</strong></td><td>Joint Defense Agreement</td><td>The contract two companies sign to share legal secrets — code as CIP</td></tr>
+      <tr><td><strong>A/C or ACP</strong></td><td>Attorney-Client Privilege</td><td>Verify legal advice is actually present</td></tr>
+      <tr><td><strong>WP / AWP</strong></td><td>Work Product / Attorney Work Product</td><td>Check if created in anticipation of litigation</td></tr>
+      <tr><td><strong>JDA</strong></td><td>Joint Defense Agreement</td><td>Two companies sharing legal secrets — code as CIP</td></tr>
     </table>
   </div>
-
-  <!-- KEYWORDS & RED FLAGS -->
-  <div class="card">
-    <h2>🚩 Keywords &amp; Red Flags</h2>
-    <p style="font-size:.84rem;color:var(--muted);margin-bottom:12px">Look out for these words. They often (but not always) mean a document is privileged.</p>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px">
-      <div>
-        <h3 style="color:var(--green)">✅ Strong Legal Keywords</h3>
-        <ul style="margin-top:8px">
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">Legal advice / Legal strategy</li>
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">Counsel / General Counsel / Outside Counsel</li>
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">Lawsuit / Litigation / Deposition</li>
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">Draft for legal review</li>
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">"Seeking your legal guidance..."</li>
-          <li style="font-size:.84rem;color:var(--muted);margin-bottom:6px">In anticipation of litigation</li>
-          <li style="font-size:.84rem;color:var(--muted)">Attorney work product</li>
-        </ul>
-      </div>
-      <div>
-        <h3 style="color:var(--red)">⚠️ Dangerous Misleading Phrases</h3>
-        <div style="background:#da363318;border:1px solid var(--red);border-radius:8px;padding:10px;margin-top:8px;font-size:.83rem;color:var(--muted)">
-          <div style="margin-bottom:8px"><strong style="color:#ff7b72">"Privileged and Confidential"</strong><br>Every lawyer puts this at the bottom of their emails automatically. It does NOT magically make a lunch invitation privileged! Read the actual message.</div>
-          <div style="margin-bottom:8px"><strong style="color:#ff7b72">"For your review"</strong><br>This might just mean reviewing for typos. It must be for LEGAL review to be privileged.</div>
-          <div><strong style="color:#ff7b72">"Priv" label on a business email</strong><br>An executive typing "Priv" on a sales strategy email does not make it privileged. Apply the four-step test.</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- REVIEWER CHECKLIST -->
   <div class="card">
     <h2>✅ The Ultimate Reviewer Checklist</h2>
-    <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">Check these boxes before you hit "Save" on any privileged document.</p>
     <div style="display:flex;flex-direction:column;gap:8px">
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Did I check the <strong>project's specific protocol/instructions</strong> first? (Protocol always overrides this playbook)</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Is there a <strong>lawyer involved</strong>? (Sender, recipient, or mentioned in the text)</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>If there is no lawyer, is this clearly <strong>lawsuit preparation (Work Product)</strong>?</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Did I verify this is <strong>Legal Advice</strong> and not just business or social chat?</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Is the communication <strong>completely private</strong>? (No outside third parties on the email)</span></div>
-      <div style="background:#21262d;border:1px solid var(--gold);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Did I choose the correct action? (<strong>WITHHOLD the whole document</strong> OR <strong>REDACT just a part</strong>)</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Did I write a <strong>safe PLOG description</strong> that protects the secret without giving it away?</span></div>
-      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);font-size:1rem;flex-shrink:0">☐</span><span>Did I check the <strong>attachments</strong> to ensure the whole "Family" is coded correctly?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Did I check the <strong>project's specific protocol/instructions</strong> first?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Is there a <strong>lawyer involved</strong>? (Sender, recipient, or mentioned in the text)</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>If there is no lawyer, is this clearly <strong>lawsuit preparation (Work Product)</strong>?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Did I verify this is <strong>Legal Advice</strong> and not just business or social chat?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Is the communication <strong>completely private</strong>? (No outside third parties)</span></div>
+      <div style="background:#21262d;border:1px solid var(--gold);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Did I choose: <strong>WITHHOLD the whole document</strong> OR <strong>REDACT just a part</strong>?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Did I write a <strong>safe PLOG description</strong> that protects the secret without giving it away?</span></div>
+      <div style="background:#21262d;border:1px solid var(--border);border-radius:8px;padding:11px 14px;font-size:.85rem;display:flex;align-items:flex-start;gap:10px"><span style="color:var(--gold);flex-shrink:0">☐</span><span>Did I check the <strong>attachments</strong> to ensure the whole "Family" is coded correctly?</span></div>
     </div>
     <div class="rule gold" style="margin-top:14px"><strong>REMEMBER:</strong> Whenever in doubt, ALWAYS ask your supervisor for help.</div>
   </div>
 </div>
+
+<!-- ADMIN -->
 <div id="page-admin" class="page">
   <div class="card">
     <h2>⚙️ Admin Panel</h2>
@@ -748,33 +683,60 @@ tr:nth-child(even) td{background:#161b2280}
   </div>
 </div>
 
-<!-- PASSWORD RESET OVERLAY -->
-<div id="reset-overlay">
-  <div class="reset-modal">
-    <div class="reset-icon">🔐</div>
-    <h2>Set New Password</h2>
-    <p>Enter your new password below to complete the reset.</p>
-    <div class="auth-err" id="reset-err"></div>
-    <div class="auth-ok" id="reset-ok"></div>
-    <div class="form-group" style="text-align:left"><label>New Password</label><input type="password" id="reset-pass" placeholder="Enter new password (min 6 characters)"></div>
-    <div class="form-group" style="text-align:left"><label>Confirm Password</label><input type="password" id="reset-pass2" placeholder="Confirm new password"></div>
-    <button class="btn btn-gold" style="width:100%;padding:11px" id="reset-submit" onclick="submitPasswordReset()">Update Password</button>
-  </div>
-</div>
-
-<!-- AUTH MODAL -->
+<!-- ══════ AUTH MODAL ══════ -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
     <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-icon" id="modal-icon">🔐</div>
     <h2 id="modal-title">Log In</h2>
+    <p class="modal-sub" id="modal-sub">Welcome back to AA Mastery</p>
     <div class="auth-err" id="auth-err"></div>
     <div class="auth-ok" id="auth-ok"></div>
-    <div class="form-group"><label>Email</label><input type="email" id="inp-email" placeholder="you@example.com"></div>
-    <div class="form-group"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••"></div>
-    <div class="form-group" id="name-group" style="display:none"><label>Display Name</label><input type="text" id="inp-name" placeholder="Your name (shown on leaderboard)"></div>
-    <button class="btn btn-gold" style="width:100%;padding:11px" id="modal-submit" onclick="submitAuth()">Log In</button>
-    <div class="auth-toggle" id="auth-toggle">Don't have an account? <a onclick="switchModal('signup')">Sign up</a></div>
-    <div style="text-align:center;margin-top:8px"><a onclick="showForgotPassword()" style="color:var(--muted);font-size:.78rem;cursor:pointer;text-decoration:none">Forgot your password?</a></div>
+
+    <!-- LOGIN VIEW -->
+    <div id="view-login">
+      <div class="form-group"><label>Email</label><input type="email" id="inp-email" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="inp-pass" placeholder="••••••••"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px" id="btn-login-submit" onclick="doLogin()">Log In</button>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-outline" style="width:100%;padding:10px" onclick="showView('magic')">✉️ Send Magic Link Instead</button>
+      <div class="auth-toggle" style="margin-top:12px">Don't have an account? <a onclick="showView('signup')">Sign up free</a></div>
+      <div style="text-align:center;margin-top:8px"><button class="btn-ghost" onclick="showView('forgot')">Forgot your password?</button></div>
+    </div>
+
+    <!-- SIGNUP VIEW -->
+    <div id="view-signup" style="display:none">
+      <div class="form-group"><label>Display Name</label><input type="text" id="inp-name" placeholder="Your name (shown on leaderboard)"></div>
+      <div class="form-group"><label>Email</label><input type="email" id="inp-email-s" placeholder="you@example.com"></div>
+      <div class="form-group"><label>Password</label><input type="password" id="inp-pass-s" placeholder="Min 6 characters"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px" onclick="doSignup()">Create Account</button>
+      <div class="auth-toggle" style="margin-top:12px">Already have an account? <a onclick="showView('login')">Log in</a></div>
+    </div>
+
+    <!-- FORGOT PASSWORD VIEW -->
+    <div id="view-forgot" style="display:none">
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">Enter your email and we'll send you a link to reset your password.</p>
+      <div class="form-group"><label>Email</label><input type="email" id="inp-email-f" placeholder="you@example.com"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px" onclick="doForgot()">Send Reset Link</button>
+      <div style="text-align:center;margin-top:12px"><button class="btn-ghost" onclick="showView('login')">← Back to Login</button></div>
+    </div>
+
+    <!-- MAGIC LINK VIEW -->
+    <div id="view-magic" style="display:none">
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">Enter your email and we'll send you a one-click login link. No password needed.</p>
+      <div class="form-group"><label>Email</label><input type="email" id="inp-email-m" placeholder="you@example.com"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px" onclick="doMagicLink()">✉️ Send Magic Link</button>
+      <div style="text-align:center;margin-top:12px"><button class="btn-ghost" onclick="showView('login')">← Back to Login</button></div>
+    </div>
+
+    <!-- RESET PASSWORD VIEW (shown after clicking reset email link) -->
+    <div id="view-reset" style="display:none">
+      <p style="font-size:.84rem;color:var(--muted);margin-bottom:14px">Enter your new password below.</p>
+      <div class="form-group"><label>New Password</label><input type="password" id="inp-pass-r" placeholder="Min 6 characters"></div>
+      <div class="form-group"><label>Confirm Password</label><input type="password" id="inp-pass-r2" placeholder="Confirm new password"></div>
+      <button class="btn btn-gold" style="width:100%;padding:11px" onclick="doResetPassword()">Update Password</button>
+    </div>
+
   </div>
 </div>
 
@@ -785,51 +747,243 @@ tr:nth-child(even) td{background:#161b2280}
 const SUPABASE_URL = 'https://mrxhydaoxlxuampmgaoi.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
 const ADMIN_EMAIL = 'jeff@ataandeadvisors.com';
+const SITE_URL = 'https://aa-mastery.vercel.app';
 // ═══════════════════════════════════════
 
 const SB={
   url:SUPABASE_URL,key:SUPABASE_ANON_KEY,token:null,user:null,
   hdr(x={}){return{'Content-Type':'application/json','apikey':this.key,'Authorization':'Bearer '+(this.token||this.key),...x}},
   async req(m,p,b=null){try{const r=await axios({method:m,url:this.url+p,headers:this.hdr(),data:b});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
-  async signUp(email,pw,name){const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name}}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{data:r.data}},
-  async signIn(email,pw){const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{error:'Login failed'}},
-  async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.token=null;this.user=null},
-  async signResetPassword(email){
-    const r=await axios({
-      method:'POST',
-      url:this.url+'/auth/v1/recover',
-      headers:{'Content-Type':'application/json','apikey':this.key},
-      data:{email,options:{redirectTo:'https://aa-mastery.vercel.app'}}
-    }).catch(e=>({data:e.response?.data}));
+  async signUp(email,pw,name){
+    const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name},emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));
+    if(r.data?.error)return{error:r.data.error.message||r.data.error};
+    if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}
+    return{data:r.data};
+  },
+  async signIn(email,pw){
+    const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));
+    if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};
+    if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}
+    return{error:'Login failed'};
+  },
+  async sendMagicLink(email){
+    const r=await axios({method:'POST',url:this.url+'/auth/v1/magiclink',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));
     if(r.data?.error)return{error:r.data.error.message||r.data.error};
     return{data:r.data};
-  },return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
+  },
+  async sendPasswordReset(email){
+    const r=await axios({method:'POST',url:this.url+'/auth/v1/recover',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{redirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));
+    if(r.data?.error)return{error:r.data.error.message||r.data.error};
+    return{data:r.data};
+  },
+  async updatePassword(newPassword){
+    return this.req('PUT','/auth/v1/user',{password:newPassword});
+  },
+  async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.token=null;this.user=null},
+  async saveScore(uid,name,cat,score,total){return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
   async getLeaderboard(){return this.req('GET','/rest/v1/quiz_scores?select=display_name,score,total,pct,category,created_at&order=pct.desc,score.desc&limit=200')},
   async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
   async getAllScores(){return this.req('GET','/rest/v1/quiz_scores?select=*&order=created_at.desc&limit=300')},
   async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)}
 };
 
+// ── CHECK URL FOR AUTH TOKENS ON PAGE LOAD ──
+// Handles: password reset links AND magic link logins
+(function checkAuthToken(){
+  const hash=window.location.hash;
+  if(!hash)return;
+  const params=new URLSearchParams(hash.replace('#',''));
+  const type=params.get('type');
+  const accessToken=params.get('access_token');
+  if(!accessToken)return;
+  // Clean URL immediately
+  window.history.replaceState(null,'',window.location.pathname);
+  SB.token=accessToken;
+  if(type==='recovery'){
+    // Password reset — show the reset password form
+    openModal('reset');
+  } else if(type==='magiclink' || type==='signup' || type==='email'){
+    // Magic link or email confirmation — fetch user and log in
+    axios({method:'GET',url:SB.url+'/auth/v1/user',headers:SB.hdr()}).then(function(r){
+      if(r.data?.id){SB.user=r.data;onLogin();}
+    }).catch(function(){});
+  }
+})();
+
+// ── NAVIGATION ──
 let currentPage='home';
 function nav(p){
-  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
-  document.querySelectorAll('#topnav button').forEach(b=>b.classList.remove('active'));
-  document.getElementById('page-'+p).classList.add('active');
-  document.querySelectorAll('#topnav button').forEach(b=>{if(b.getAttribute('onclick')?.includes("'"+p+"'"))b.classList.add('active')});
+  var target=document.getElementById('page-'+p);
+  if(!target){console.error('AA Mastery: missing page element #page-'+p);return;}
+  document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
+  document.querySelectorAll('#topnav button').forEach(function(b){b.classList.remove('active');});
+  target.classList.add('active');
+  document.querySelectorAll('#topnav button').forEach(function(b){
+    var oc=b.getAttribute('onclick');
+    if(oc&&oc.indexOf("'"+p+"'")!==-1)b.classList.add('active');
+  });
   currentPage=p;window.scrollTo(0,0);
   if(p==='quiz')initQuizPage();
   if(p==='leaderboard')loadLeaderboard();
   if(p==='admin')loadAdmin();
-  if(p==='withhold'){}// static page
 }
 
 function showRef(id,btn){
-  document.querySelectorAll('.rpane').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.rtab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('rpane-'+id).classList.add('active');
+  var pane=document.getElementById('rpane-'+id);
+  if(!pane)return;
+  document.querySelectorAll('.rpane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('.rtab').forEach(function(t){t.classList.remove('active');});
+  pane.classList.add('active');
   if(btn)btn.classList.add('active');
 }
 
+// ── AUTH MODAL ──
+function openModal(mode){
+  clearAuthMessages();
+  if(mode==='reset'){
+    setModalHeader('🔐','Set New Password','Enter your new password below');
+    showView('reset');
+  } else if(mode==='login'){
+    setModalHeader('👋','Welcome Back','Log in to track your progress');
+    showView('login');
+  } else if(mode==='signup'){
+    setModalHeader('🚀','Create Account','Join the AA Team Mastery Hub');
+    showView('signup');
+  }
+  document.getElementById('modal-bg').classList.add('open');
+}
+
+function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
+
+function setModalHeader(icon,title,sub){
+  document.getElementById('modal-icon').textContent=icon;
+  document.getElementById('modal-title').textContent=title;
+  document.getElementById('modal-sub').textContent=sub;
+}
+
+function showView(v){
+  ['login','signup','forgot','magic','reset'].forEach(function(n){
+    document.getElementById('view-'+n).style.display=n===v?'block':'none';
+  });
+  clearAuthMessages();
+  const headers={
+    login:['👋','Welcome Back','Log in to track your progress'],
+    signup:['🚀','Create Account','Join the AA Team Mastery Hub'],
+    forgot:['🔑','Reset Password','We\'ll send you a reset link'],
+    magic:['✉️','Magic Link','One-click login — no password needed'],
+    reset:['🔐','Set New Password','Enter your new password below']
+  };
+  if(headers[v])setModalHeader(headers[v][0],headers[v][1],headers[v][2]);
+}
+
+function clearAuthMessages(){
+  var e=document.getElementById('auth-err'),o=document.getElementById('auth-ok');
+  e.style.display='none';e.textContent='';
+  o.style.display='none';o.textContent='';
+}
+
+function showErr(msg){var e=document.getElementById('auth-err');e.textContent=msg;e.style.display='block';}
+function showOk(msg){var o=document.getElementById('auth-ok');o.textContent=msg;o.style.display='block';}
+
+function setBtnLoading(btnId,loading,originalText){
+  var btn=document.getElementById(btnId);
+  if(!btn)return;
+  btn.disabled=loading;
+  btn.innerHTML=loading?'<span class="spinner"></span>Please wait...':originalText;
+}
+
+async function doLogin(){
+  var email=document.getElementById('inp-email').value.trim();
+  var pass=document.getElementById('inp-pass').value;
+  clearAuthMessages();
+  if(!email||!pass){showErr('Please enter your email and password.');return;}
+  document.getElementById('btn-login-submit').disabled=true;
+  document.getElementById('btn-login-submit').innerHTML='<span class="spinner"></span>Logging in...';
+  var r=await SB.signIn(email,pass);
+  document.getElementById('btn-login-submit').disabled=false;
+  document.getElementById('btn-login-submit').innerHTML='Log In';
+  if(r.error){showErr(r.error);return;}
+  onLogin();closeModal();
+}
+
+async function doSignup(){
+  var name=document.getElementById('inp-name').value.trim();
+  var email=document.getElementById('inp-email-s').value.trim();
+  var pass=document.getElementById('inp-pass-s').value;
+  clearAuthMessages();
+  if(!name||!email||!pass){showErr('Please fill in all fields.');return;}
+  if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
+  var btn=document.querySelector('#view-signup .btn-gold');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account...';
+  var r=await SB.signUp(email,pass,name);
+  btn.disabled=false;btn.innerHTML='Create Account';
+  if(r.error){showErr(r.error);return;}
+  showOk('✅ Account created! Check your email to confirm, then log in.');
+  setTimeout(function(){showView('login');},3000);
+}
+
+async function doForgot(){
+  var email=document.getElementById('inp-email-f').value.trim();
+  clearAuthMessages();
+  if(!email){showErr('Please enter your email address.');return;}
+  var btn=document.querySelector('#view-forgot .btn-gold');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
+  var r=await SB.sendPasswordReset(email);
+  btn.disabled=false;btn.innerHTML='Send Reset Link';
+  if(r.error){showErr(r.error);return;}
+  showOk('✅ Reset link sent! Check your email inbox and click the link.');
+}
+
+async function doMagicLink(){
+  var email=document.getElementById('inp-email-m').value.trim();
+  clearAuthMessages();
+  if(!email){showErr('Please enter your email address.');return;}
+  var btn=document.querySelector('#view-magic .btn-gold');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
+  var r=await SB.sendMagicLink(email);
+  btn.disabled=false;btn.innerHTML='✉️ Send Magic Link';
+  if(r.error){showErr(r.error);return;}
+  showOk('✅ Magic link sent! Check your email and click the link to log in instantly.');
+}
+
+async function doResetPassword(){
+  var p1=document.getElementById('inp-pass-r').value;
+  var p2=document.getElementById('inp-pass-r2').value;
+  clearAuthMessages();
+  if(!p1||p1.length<6){showErr('Password must be at least 6 characters.');return;}
+  if(p1!==p2){showErr('Passwords do not match.');return;}
+  var btn=document.querySelector('#view-reset .btn-gold');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Updating...';
+  var r=await SB.updatePassword(p1);
+  btn.disabled=false;btn.innerHTML='Update Password';
+  if(r.error){showErr(r.error);return;}
+  showOk('✅ Password updated! You can now log in with your new password.');
+  setTimeout(function(){closeModal();openModal('login');},2500);
+}
+
+function onLogin(){
+  var u=SB.user;
+  var name=u.user_metadata?.display_name||u.email.split('@')[0];
+  document.getElementById('user-pill').textContent='👤 '+name;
+  document.getElementById('user-pill').style.display='inline-block';
+  document.getElementById('btn-login').style.display='none';
+  document.getElementById('btn-logout').style.display='inline-block';
+  if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
+  if(currentPage==='quiz')initQuizPage();
+}
+
+async function logout(){
+  await SB.signOut();
+  document.getElementById('user-pill').style.display='none';
+  document.getElementById('btn-login').style.display='inline-block';
+  document.getElementById('btn-logout').style.display='none';
+  document.getElementById('btn-admin').style.display='none';
+  if(currentPage==='quiz')initQuizPage();
+}
+
+document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+// ── FLASHCARDS ──
 const FC=[
   {q:"What are the four elements required for ACP?",a:"1. Communication\n2. Between attorney & client (or agents)\n3. Made in confidence\n4. Primary purpose: legal advice — not just business"},
   {q:"True or False: A lawyer copied on an email automatically makes it privileged.",a:"FALSE. Privilege follows ROLE, not title. Ask: what is the primary PURPOSE of the communication?"},
@@ -859,6 +1013,7 @@ function fcNext(){fcIdx=(fcIdx+1)%FC.length;fcRender()}
 function fcPrev(){fcIdx=(fcIdx-1+FC.length)%FC.length;fcRender()}
 fcRender();
 
+// ── QUIZ DATA ──
 const Qs=[
   {cat:'privilege',text:'An employee emails in-house counsel: "We just received a demand letter. Can you tell me what our legal options are?" No one else is copied.',ch:['Not Privileged','Attorney–Client Privilege (ACP)','Work Product Privilege (WPP)','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:1,fb:'Classic ACP — client seeking legal advice from counsel confidentially. All four ACP elements are met.'},
   {cat:'privilege',text:'In-house counsel sends a company-wide email to "All Staff" announcing a new parking policy. No legal advice, no mention of lawsuits.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution, no legal advice, no confidential facts. The lawyer\'s title doesn\'t change the analysis.'},
@@ -900,105 +1055,55 @@ const Qs=[
   {cat:'regulators',text:'The OSHA inspector\'s written report is emailed by a non-lawyer safety manager to plant operations. You are reviewing the OSHA report itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The OSHA inspection report is a government document — not attorney-client communication or work product.'},
   {cat:'regulators',text:'Outside regulatory counsel drafts a "Draft Response to SEC Comment Letter" with argumentation and proposed edits. Circulated only to GC and CFO.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:3,fb:'Both ACP and WPP. Legal advice on how to respond (ACP) AND prepared in anticipation of potential enforcement (WPP).'},
   {cat:'cip',text:'Two co-defendants sign a Joint Defense Agreement. Outside counsel for Defendant A sends outside counsel for Defendant B: "Here is our draft motion to dismiss, shared under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:3,fb:'CIP. Co-defendants with a JDA sharing litigation strategy = textbook CIP.'},
-  {cat:'cip',text:'Company X and Company Y (both sued by same plaintiff) — two employees (no lawyers) email each other: "Let\'s share our documents and come up with a plan." No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no JDA, no legal interest established. Two individuals sharing ideas without privilege protection.'},
+  {cat:'cip',text:'Company X and Company Y (both sued by same plaintiff) — two employees (no lawyers) email each other: "Let\'s share our documents and come up with a plan." No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no JDA, no legal interest established.'},
   {cat:'cip',text:'Company C\'s outside counsel emails Company D\'s outside counsel: "We both are FERC investigation targets. Attached is our privileged strategy memo. Please coordinate under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Counsel-to-counsel communication for separate investigation targets under a CIP agreement.'},
   {cat:'cip',text:'Two companies discussing a potential joint venture — BUSINESS TEAMS email financial models. Casually mention "lawyers will sort out legal issues later." No lawyers on the emails, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal strategy, no JDA. A shared commercial interest is NOT enough for CIP.'},
   {cat:'cip',text:'Three co-defendants sign a written Joint Defense Agreement. Outside counsel for Company F sends counsel for G and H: "Attached is our draft settlement analysis memo, shared under our common interest arrangement."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Settlement analysis shared among co-defendants\' counsel under a JDA = textbook CIP.'},
+  {cat:'withhold',text:'An email from a CEO to the company lawyer asking: "Can we legally fire John?" — The entire email is about legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:1,fb:'Privilege WITHHOLD. The entire purpose of the document is legal advice. There is nothing non-privileged to share. Withhold the whole thing.'},
+  {cat:'withhold',text:'A 10-page Weekly Meeting Minutes document. Pages 1–9 discuss sales goals. Page 10 has one paragraph where the company lawyer gives legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:2,fb:'Privilege REDACT. The document is mostly business (pages 1–9). Only the small legal advice paragraph on page 10 needs a black box.'},
+  {cat:'withhold',text:'What is the simple rule for choosing between Withhold and Redact?',ch:['If the document has a lawyer → Withhold; if not → Redact','If the whole document is a secret → Withhold; if only a small piece is a secret → Redact','If it is ACP → Withhold; if it is WPP → Redact','If it is over 5 pages → Withhold; if shorter → Redact'],c:1,fb:'Simple Rule: If the WHOLE document is a secret → WITHHOLD. If only a SMALL PIECE is a secret → REDACT.'},
+  {cat:'withhold',text:'When you Privilege Withhold a document, what does the opposing side receive?',ch:['A summary of the document\'s contents','The document with black boxes over privileged parts','Nothing — just a blank placeholder (slipsheet)','A copy with the attorney\'s name removed'],c:2,fb:'When you Withhold, the opposing side gets NOTHING but a blank placeholder called a slipsheet.'},
+  {cat:'withhold',text:'When you Privilege Redact a document, what does the opposing side receive?',ch:['Nothing at all','The entire document unaltered','The document with only the privileged portions blacked out','A PLOG entry only'],c:2,fb:'With Redact, the opposing side receives the document with the privileged portions blacked out. They see the non-privileged parts.'},
+  {cat:'withhold',text:'A confidential legal strategy memo written entirely by outside counsel analyzing litigation risk. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','No action needed'],c:1,fb:'Privilege WITHHOLD. The entire document IS the legal strategy. There is no non-privileged portion to share.'},
+  {cat:'withhold',text:'A contract between two companies that is mostly standard business terms, but contains two sentences of legal advice from in-house counsel in section 7.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product'],c:2,fb:'Privilege REDACT. The contract is mostly standard business — it must be produced. Only the two sentences of legal advice in section 7 should be blacked out.'},
+  {cat:'withhold',text:'An email from in-house counsel to the CEO containing ONLY a legal risk analysis of a proposed merger.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product only'],c:1,fb:'Privilege WITHHOLD. The entire email is legal advice. Nothing can be shared with the opposing side.'},
+  {cat:'withhold',text:'A 50-page financial report with one paragraph on page 23 where outside counsel comments on legal exposure.',ch:['Privilege Withhold the whole report','Privilege Redact just the legal paragraph on page 23','Not Privileged — financial reports are never privileged','Work Product'],c:1,fb:'Privilege REDACT. The financial report is a business document that must be produced. Only the legal advice paragraph on page 23 gets a black box.'},
+  {cat:'withhold',text:'A litigation hold notice sent by in-house counsel to employees instructing them not to delete emails related to the lawsuit.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','No privilege applies'],c:1,fb:'Privilege WITHHOLD. A litigation hold notice is a legal communication from counsel regarding litigation. The entire document is privileged.'},
+  {cat:'withhold',text:'What must you always create when you Withhold or Redact a document?',ch:['A summary email to your supervisor','A PLOG (Privilege Log) entry','A copy of the document for your records','A note in the document itself'],c:1,fb:'When you Withhold OR Redact, you must always create a PLOG (Privilege Log) entry.'},
+  {cat:'withhold',text:'What is a PLOG?',ch:['A type of privilege claim for social media posts','The Privilege Log — a list of withheld/redacted documents given to the opposing side','A code name for attorney-client privilege','A summary of all responsive documents'],c:1,fb:'PLOG = Privilege Log. The list we create to show the opposing side WHICH documents we are withholding or redacting.'},
+  {cat:'withhold',text:'Which of these is a BAD PLOG description?',ch:['Email reflecting legal advice regarding contract validity','Email from lawyer saying we will lose the case because our contract is illegal','Memorandum prepared in anticipation of litigation regarding patent claims','Email reflecting legal advice regarding employee termination'],c:1,fb:'BAD PLOG. This gives away the actual secret — that your contract is illegal and you expect to lose.'},
+  {cat:'withhold',text:'Which of these is a GOOD PLOG description for an ACP document?',ch:['Email about legal stuff','Email','Email reflecting legal advice regarding employee termination','Confidential email between lawyer and CEO about firing'],c:2,fb:'GOOD PLOG. Template: [Document Type] reflecting legal advice regarding [General Topic]. Identifies the document without giving away the privileged content.'},
+  {cat:'withhold',text:'True or False: Writing "Privileged and Confidential" at the top of a document automatically makes it legally privileged.',ch:['True — the label creates the privilege','False — lawyers put this on everything; you must still apply the four-step test','True — if a lawyer wrote it','False — only if it is a formal legal memo'],c:1,fb:'FALSE. "Privileged and Confidential" is a standard label. It does NOT magically create privilege. You must still apply the four-step test.'},
+  {cat:'withhold',text:'What does GC stand for in corporate emails?',ch:['Government Contractor','General Counsel — the top in-house lawyer','Group Chat','General Compliance'],c:1,fb:'GC = General Counsel. The absolute top, head lawyer inside the company.'},
+  {cat:'withhold',text:'What does PLOG stand for?',ch:['Personal Legal Opinion Guide','Privilege Log — the list of withheld/redacted documents','Project Log','Preliminary Legal Opinion Guide'],c:1,fb:'PLOG = Privilege Log.'},
+  {cat:'withhold',text:'What does JDA stand for in privilege review?',ch:['Joint Document Archive','Joint Defense Agreement — the contract allowing two parties to share legal secrets','Judicial Discovery Application','Joint Disclosure Agreement'],c:1,fb:'JDA = Joint Defense Agreement. When you see JDA, code as Common Interest Privilege (CIP).'},
+  {cat:'withhold',text:'In the Decision Flowchart, what is Step 1?',ch:['Is it legal advice?','Is it Work Product?','Are there lawyers involved?','Is it completely private?'],c:2,fb:'Step 1: "Are there lawyers involved?" YES → go to Step 3. NO → go to Step 2 (Is it Work Product?).'},
+  {cat:'withhold',text:'In the Decision Flowchart, what happens if outside strangers are on the email?',ch:['The document becomes more privileged','Privilege is broken — NOT PRIVILEGED','Redact the strangers\' names only','Escalate to PM/RM'],c:1,fb:'If outside strangers (non-agents, third parties) are present, privilege is BROKEN. NOT PRIVILEGED.'},
+  {cat:'withhold',text:'What is the formula for Attorney-Client Privilege?',ch:['Lawyer + Document + Company = ACP','Lawyer + Client + Private Setting + Legal Advice = ACP','Lawyer + Email + Confidentiality Label = ACP','Lawyer + Business Advice + Client = ACP'],c:1,fb:'ACP Formula: Lawyer + Client + Private Setting + Legal Advice = ACP. ALL four elements must be present.'},
+  {cat:'withhold',text:'What is the "CC Rule" for privilege?',ch:['CC\'ing a lawyer automatically makes the email privileged','CC\'ing a lawyer does NOT automatically make the email privileged','CC stands for Confidential Communication','Any email with CC must be redacted'],c:1,fb:'CC\'ing a lawyer "just to keep them in the loop" does NOT make the email privileged. There must be actual legal advice sought or given.'},
+  {cat:'withhold',text:'What is the "Family Rule" in document review?',ch:['Documents from the same law firm travel together','Usually, if an email is privileged, its attachments are too — and vice versa','All documents from the same custodian have the same privilege status','Family members\' documents are always privileged'],c:1,fb:'The Family Rule: Usually, if an email (parent) is privileged, its attachments are also privileged. They travel together as a "Family."'},
+  {cat:'withhold',text:'What does the "Protocol Rule" mean?',ch:['Always follow standard privilege rules regardless of the project','Always read your project-specific instructions — the Protocol always overrides this playbook','Protocols are optional guidelines only','The protocol refers to how many documents to review per hour'],c:1,fb:'ALWAYS READ YOUR PROJECT INSTRUCTIONS FIRST. The Project Protocol ALWAYS overrides general rules.'},
+  {cat:'withhold',text:'What is the risk of over-withholding documents?',ch:['No risk — it is always better to withhold','The court may sanction the party and order production of improperly withheld documents','The opposing side will never notice','The PLOG will be rejected'],c:1,fb:'Over-withholding is risky. The court may order you to produce those documents AND may sanction the party for improper withholding.'},
+  {cat:'withhold',text:'What is the risk of under-redacting documents?',ch:['No risk','Privileged content becomes visible to opposing counsel, potentially exposing the client\'s legal strategy','The document will be rejected','The PLOG entry will be incorrect'],c:1,fb:'Under-redacting is extremely dangerous. If privileged content slips through, opposing counsel can read your client\'s legal strategy.'},
+  {cat:'withhold',text:'What is a "slipsheet" in the context of document production?',ch:['A document summarizing privileged content for the opposing side','A blank placeholder that replaces a withheld document in the production set','A cover page for the PLOG','A redaction label'],c:1,fb:'A slipsheet is a blank placeholder that replaces a withheld document. The opposing side sees it so they know a document exists there, but cannot see the content.'},
+  {cat:'withhold',text:'Can a document be both Responsive AND Privileged?',ch:['No — if it is privileged it cannot be responsive','Yes — a document can be relevant to the case (responsive) but still protected from production (privileged)','No — if it is responsive it must be produced','Only if the court orders it'],c:1,fb:'YES. Responsive + Privileged = Withhold or Redact the document and log it on the PLOG.'},
+  {cat:'withhold',text:'What does "Lit" or "Litigation" signal in a document?',ch:['Nothing','A strong signal to watch for Work Product privilege','The document is automatically privileged','The document should be withheld'],c:1,fb:'"Lit" or "Litigation" is a massive red flag to watch for Work Product privilege.'},
+  {cat:'withhold',text:'What does NDA stand for?',ch:['Non-Disclosure Agreement — a contract to keep secrets','National Document Archive','No Disclosure Allowed','Non-Discoverable Attachment'],c:0,fb:'NDA = Non-Disclosure Agreement. A legal contract where parties promise to keep certain information secret.'},
+  {cat:'withhold',text:'A document prepared by a paralegal at the request of outside counsel to help prepare for trial. Is this Work Product?',ch:['No — paralegals cannot create work product','Yes — work product covers documents prepared by the legal team including paralegals','Only if the paralegal is a licensed attorney','No — only attorneys can create work product'],c:1,fb:'YES, Work Product. WP covers documents prepared by or for the legal team — including paralegals at counsel\'s direction.'},
+  {cat:'withhold',text:'What does it mean to "produce" a document?',ch:['To create a new document','To hand over a document to the opposing side as part of discovery','To file a document with the court','To upload a document to the review platform'],c:1,fb:'To "produce" = hand over to the opposing side as part of discovery. Privileged documents are withheld or redacted before production.'},
+  {cat:'withhold',text:'A contract has a handwritten note in the margin from outside counsel: "This clause is legally risky." The contract itself is non-privileged. How do you code it?',ch:['Not Privileged — the contract is not privileged','Withhold the entire contract','Redact the attorney\'s handwritten note; produce the rest of the contract','Work Product — it was written by outside counsel'],c:2,fb:'Privilege REDACT. The contract is non-privileged and must be produced. However, the attorney\'s handwritten note reflects legal judgment. Redact only the note.'},
+  {cat:'withhold',text:'A document has been labeled "Highly Confidential" by the company\'s IT department for data security reasons. Does this make it legally privileged?',ch:['Yes — confidential = privileged','No — business confidentiality classifications do not create legal privilege','Yes — if a lawyer also has access to it','No — only court orders can create privilege'],c:1,fb:'NO. Business confidentiality labels do NOT create legal privilege. You must still apply the four-step privilege test independently.'},
+  {cat:'withhold',text:'When is it appropriate to ask your supervisor for help?',ch:['Only when you are completely certain','Only when the document is longer than 10 pages','Whenever you are in doubt — ALWAYS ask your supervisor','Only after trying to decide for 10 minutes first'],c:2,fb:'"WHENEVER IN DOUBT ALWAYS ASK YOUR SUPERVISOR FOR HELP." No minimum threshold of confusion required.'},
 ];
 
-  // ── WITHHOLD vs REDACT (100+ questions) ──
-  {cat:'withhold',text:'An email from a CEO to the company lawyer asking: "Can we legally fire John?" — The entire email is about legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:1,fb:'Privilege WITHHOLD. The entire purpose of the document is legal advice. There is nothing non-privileged to share. Withhold the whole thing.'},
-  {cat:'withhold',text:'A 10-page Weekly Meeting Minutes document. Pages 1–9 discuss sales goals. Page 10 has one paragraph where the company lawyer gives legal advice. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:2,fb:'Privilege REDACT. The document is mostly business (pages 1–9). Only the small legal advice paragraph on page 10 needs a black box. Give the rest to the opposing side.'},
-  {cat:'withhold',text:'What is the simple rule for choosing between Withhold and Redact?',ch:['If the document has a lawyer → Withhold; if not → Redact','If the whole document is a secret → Withhold; if only a small piece is a secret → Redact','If it is ACP → Withhold; if it is WPP → Redact','If it is over 5 pages → Withhold; if shorter → Redact'],c:1,fb:'Simple Rule: If the WHOLE document is a secret → WITHHOLD. If only a SMALL PIECE is a secret → REDACT. This is the core distinction.'},
-  {cat:'withhold',text:'When you Privilege Withhold a document, what does the opposing side receive?',ch:['A summary of the document\'s contents','The document with black boxes over privileged parts','Nothing — just a blank placeholder (slipsheet)','A copy with the attorney\'s name removed'],c:2,fb:'When you Withhold, the opposing side gets NOTHING but a blank placeholder called a slipsheet. They know a document exists but cannot see any of it.'},
-  {cat:'withhold',text:'When you Privilege Redact a document, what does the opposing side receive?',ch:['Nothing at all','The entire document unaltered','The document with only the privileged portions blacked out','A PLOG entry only'],c:2,fb:'With Redact, the opposing side receives the document BUT with the privileged portions blacked out (digital black box). They see the non-privileged parts.'},
-  {cat:'withhold',text:'A confidential legal strategy memo written entirely by outside counsel analyzing litigation risk. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','No action needed'],c:1,fb:'Privilege WITHHOLD. The entire document IS the legal strategy. There is no non-privileged portion to share. Withhold the whole document.'},
-  {cat:'withhold',text:'A contract between two companies that is mostly standard business terms, but contains two sentences of legal advice from in-house counsel in section 7. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product'],c:2,fb:'Privilege REDACT. The contract is mostly standard business — it must be produced. Only the two sentences of legal advice in section 7 should be blacked out.'},
-  {cat:'withhold',text:'An email from in-house counsel to the CEO containing ONLY a legal risk analysis of a proposed merger. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product only'],c:1,fb:'Privilege WITHHOLD. The entire email is legal advice. Nothing can be shared with the opposing side. Withhold the whole document.'},
-  {cat:'withhold',text:'A 50-page financial report with one paragraph on page 23 where outside counsel comments on legal exposure. How should you code it?',ch:['Privilege Withhold the whole report','Privilege Redact just the legal paragraph on page 23','Not Privileged — financial reports are never privileged','Work Product'],c:1,fb:'Privilege REDACT. The 50-page financial report is a business document that must be produced. Only the legal advice paragraph on page 23 gets a black box.'},
-  {cat:'withhold',text:'A litigation hold notice sent by in-house counsel to employees instructing them not to delete emails related to the lawsuit. How should you code it?',ch:['Not Privileged','Privilege Withhold','Privilege Redact','No privilege applies'],c:1,fb:'Privilege WITHHOLD. A litigation hold notice is a legal communication from counsel regarding litigation. The entire document is privileged — withhold the whole thing.'},
-  {cat:'withhold',text:'Meeting minutes where the first 8 pages cover quarterly budgets, and the last page contains a paragraph labeled "Attorney Update" with legal strategy notes from GC. How should you code it?',ch:['Withhold the entire minutes','Redact only the Attorney Update paragraph','Not Privileged — meeting minutes are never privileged','Work Product'],c:1,fb:'Privilege REDACT. The budget pages must be produced. Only the "Attorney Update" paragraph with legal strategy gets a black box. The document is mostly business.'},
-  {cat:'withhold',text:'An email chain where the first three emails are between non-lawyers about HR issues. The fourth email adds in-house counsel who gives legal advice. How should you code the ENTIRE chain?',ch:['Withhold the whole chain','Redact only the in-house counsel email','Not Privileged — the chain started without lawyers','Work Product'],c:1,fb:'Privilege REDACT. The entire chain must be reviewed carefully. The non-lawyer emails remain non-privileged and should be produced. Only the in-house counsel\'s specific legal advice email should be redacted within the chain.'},
-  {cat:'withhold',text:'What must you always create when you Withhold or Redact a document?',ch:['A summary email to your supervisor','A PLOG (Privilege Log) entry','A copy of the document for your records','A note in the document itself'],c:1,fb:'When you Withhold OR Redact, you must always create a PLOG (Privilege Log) entry. This tells the opposing side that a document exists and is being withheld/redacted, without revealing the actual privileged content.'},
-  {cat:'withhold',text:'What is a PLOG?',ch:['A type of privilege claim for social media posts','The Privilege Log — a list of withheld/redacted documents given to the opposing side','A code name for attorney-client privilege','A summary of all responsive documents'],c:1,fb:'PLOG = Privilege Log. It is the list we create to show the opposing side WHICH documents we are withholding or redacting — but without revealing the actual privileged content.'},
-  {cat:'withhold',text:'Which of these is a BAD PLOG description?',ch:['Email reflecting legal advice regarding contract validity','Email from lawyer saying we will lose the case because our contract is illegal','Memorandum prepared in anticipation of litigation regarding patent claims','Email reflecting legal advice regarding employee termination'],c:1,fb:'BAD PLOG. This gives away the actual secret — that your contract is illegal and you expect to lose. A PLOG must identify the document\'s existence without revealing the privileged content.'},
-  {cat:'withhold',text:'Which of these is a GOOD PLOG description for an ACP document?',ch:['Email about legal stuff','Email','Email reflecting legal advice regarding employee termination','Confidential email between lawyer and CEO about firing'],c:2,fb:'GOOD PLOG. It follows the correct template: [Document Type] reflecting legal advice regarding [General Topic]. It identifies the document without giving away the privileged content.'},
-  {cat:'withhold',text:'Which PLOG template is correct for a Work Product document?',ch:['[Document Type] reflecting legal advice regarding [General Topic]','[Document Type] prepared in anticipation of litigation regarding [General Topic]','[Document Type] — privileged and confidential','[Document Type] created by attorney for client'],c:1,fb:'Correct WP PLOG template: "[Document Type] prepared in anticipation of litigation regarding [General Topic]." Example: "Memorandum prepared in anticipation of litigation regarding patent claims."'},
-  {cat:'withhold',text:'True or False: Writing "Privileged and Confidential" at the top of a document automatically makes it legally privileged.',ch:['True — the label creates the privilege','False — lawyers put this on everything; you must still apply the four-step test','True — if a lawyer wrote it','False — only if it is a formal legal memo'],c:1,fb:'FALSE. "Privileged and Confidential" is a standard label lawyers put on many emails automatically. It does NOT magically create privilege. You must still apply the four-step test and verify actual legal advice is present.'},
-  {cat:'withhold',text:'An executive emails their team and types "Priv:" at the top of an email about sales targets. How should you treat this?',ch:['Automatically Privilege Withhold it','Automatically Privilege Redact it','Apply the four-step privilege test — the label alone does not create privilege','Escalate immediately'],c:2,fb:'The "Priv:" label means nothing on its own. You must apply the four-step privilege test. If the email is about sales targets with no legal advice, it is NOT privileged regardless of the label.'},
-  {cat:'withhold',text:'What does GC stand for in corporate emails?',ch:['Government Contractor','General Counsel — the top in-house lawyer','Group Chat','General Compliance'],c:1,fb:'GC = General Counsel. This is the absolute top, head lawyer who works inside the company. When you see GC on a document, it is a strong signal to check for privilege.'},
-  {cat:'withhold',text:'What does IHC stand for?',ch:['International Holding Company','In-House Counsel — a lawyer employed directly by the company','Internal HR Committee','Independent Holding Corporation'],c:1,fb:'IHC = In-House Counsel. Any regular lawyer who works as a direct employee of the company (as opposed to Outside Counsel who come from a law firm).'},
-  {cat:'withhold',text:'What does OC stand for in privilege review?',ch:['Official Communication','Outside Counsel — lawyers hired from an outside law firm','Office of Compliance','Opposing Counsel'],c:1,fb:'OC = Outside Counsel. These are lawyers hired from an outside law firm to help the company fight a specific case. Their communications with the client are generally privileged if they contain legal advice.'},
-  {cat:'withhold',text:'What does PLOG stand for?',ch:['Personal Legal Opinion Guide','Privilege Log — the list of withheld/redacted documents','Project Log — tracking document review progress','Preliminary Legal Opinion Guide'],c:1,fb:'PLOG = Privilege Log. The list created to show the opposing side which documents are being withheld or redacted, without revealing the privileged content itself.'},
-  {cat:'withhold',text:'What does NDA stand for?',ch:['Non-Disclosure Agreement — a contract to keep secrets','National Document Archive','No Disclosure Allowed','Non-Discoverable Attachment'],c:0,fb:'NDA = Non-Disclosure Agreement. A legal contract where parties promise to keep certain information secret. NDAs are common in corporate dealings and may contain privileged negotiations.'},
-  {cat:'withhold',text:'What does JDA stand for in privilege review?',ch:['Joint Document Archive','Joint Defense Agreement — the contract allowing two parties to share legal secrets','Judicial Discovery Application','Joint Disclosure Agreement'],c:1,fb:'JDA = Joint Defense Agreement. The specific contract two companies sign so they can share each other\'s legal secrets without breaking privilege. When you see JDA, code as Common Interest Privilege (CIP).'},
-  {cat:'withhold',text:'What does "Lit" or "Litigation" signal in a document?',ch:['Nothing — it is just a formatting term','A strong signal to watch for Work Product privilege','The document is automatically privileged','The document should be withheld'],c:1,fb:'"Lit" or "Litigation" is a massive red flag to watch for Work Product privilege. If a document was created because of active or anticipated litigation, it may be WP-protected even without a lawyer\'s name on it.'},
-  {cat:'withhold',text:'What does "Depo" or "Deposition" signal in a document?',ch:['Nothing significant','A strong signal that Work Product may apply — someone is preparing for legal proceedings','The document is automatically ACP','The document should be redacted'],c:1,fb:'"Depo" = Deposition. An official interview under oath before trial. Documents created to prepare for a deposition are strong Work Product candidates. Watch for this term as a WP trigger.'},
-  {cat:'withhold',text:'An email says "Per the Subpoena, please gather all contracts from 2019." How should you treat documents gathered in response to this?',ch:['Not Privileged — gathering documents is not legal advice','Potentially Work Product — the gathering was directed by legal process','ACP — the subpoena involves a lawyer','Automatically Privilege Withhold everything gathered'],c:1,fb:'Documents gathered specifically in response to a subpoena may be Work Product if they were compiled at counsel\'s direction in anticipation of litigation. Evaluate each document on its own merits and escalate if uncertain.'},
-  {cat:'withhold',text:'What does MSA stand for?',ch:['Master Services Agreement — the main contract between two companies','Management Strategy Agreement','Mutual Secrecy Agreement','Master Security Access'],c:0,fb:'MSA = Master Services Agreement. The main, big-picture contract between two companies doing business together. MSAs themselves are generally not privileged, but legal advice about them may be.'},
-  {cat:'withhold',text:'A document is labeled "AWP" at the top. What does this mean?',ch:['Approved Work Plan','Attorney Work Product — a claim that the document is Work Product privilege','Authorized Work Protocol','Advanced Writing Process'],c:1,fb:'AWP = Attorney Work Product. When you see this label, the person is claiming Work Product privilege. You must still verify the document was actually created in anticipation of litigation — the label alone is not enough.'},
-  {cat:'withhold',text:'In the Decision Flowchart, what is Step 1?',ch:['Is it legal advice?','Is it Work Product?','Are there lawyers involved?','Is it completely private?'],c:2,fb:'Step 1 is: "Are there lawyers involved?" Check the sender, receivers, and the text. YES → go to Step 3 (Is it legal advice?). NO → go to Step 2 (Is it Work Product?).'},
-  {cat:'withhold',text:'In the Decision Flowchart, if there are NO lawyers involved, what do you check next?',ch:['Whether it is completely private','Whether it is legal advice','Whether it is Work Product','Whether to Withhold or Redact'],c:2,fb:'If no lawyers are involved, go to Step 2: Is it Work Product? Even without a lawyer, a document created specifically to prepare for a lawsuit can still be protected as Work Product.'},
-  {cat:'withhold',text:'In the Decision Flowchart, what happens if outside strangers (vendors, reporters) are on the email?',ch:['The document becomes more privileged','Privilege is broken — NOT PRIVILEGED','Redact the strangers\' names only','Escalate to PM/RM'],c:1,fb:'If outside strangers (non-agents, non-attorneys, third parties) are present on the communication, privilege is BROKEN. The document is NOT PRIVILEGED. This is the third-party waiver rule.'},
-  {cat:'withhold',text:'What is Step 5 in the Decision Flowchart?',ch:['Check if lawyers are involved','Determine if it is legal advice','Choose between Withhold and Redact','Check if it is completely private'],c:2,fb:'Step 5 is the final decision: Withhold or Redact? If the ENTIRE document is about legal advice → WITHHOLD. If it is mostly business with a little legal advice inside → REDACT.'},
-  {cat:'withhold',text:'An email from a manager to a lawyer saying only: "Are you coming to the office holiday party?" How should you code it?',ch:['ACP — a lawyer received it','Work Product — office events involve planning','Not Privileged — social chat, no legal advice','Privilege Withhold'],c:2,fb:'NOT PRIVILEGED. This is social chat with no legal advice. The fact that a lawyer received it is irrelevant. There must be actual legal advice sought or given for ACP to apply.'},
-  {cat:'withhold',text:'An email from an employee to a lawyer asking: "Does our new advertisement break any copyright laws?" How should you code it?',ch:['Not Privileged — marketing questions are not legal','ACP — asking for clear legal advice','Work Product — it involves planning','Not Privileged — it is just a question'],c:1,fb:'ACP. The employee is directly asking for legal advice (whether the advertisement violates copyright law). This is a textbook attorney-client communication seeking legal guidance.'},
-  {cat:'withhold',text:'A spreadsheet made by a manager tracking everyday employee attendance over the past year. How should you code it?',ch:['Work Product — HR documents are always WP','ACP — managers report to legal','Not Privileged — normal business document','Privilege Withhold'],c:2,fb:'NOT PRIVILEGED. This is a normal business document created for routine HR purposes, not in anticipation of litigation. Everyday business records are not Work Product.'},
-  {cat:'withhold',text:'A spreadsheet made by a manager tracking how much money the company will lose in the lawsuit. How should you code it?',ch:['Not Privileged — financial spreadsheets are business documents','Work Product — created specifically for the lawsuit','ACP — involves financial legal advice','Not Privileged — no lawyer made it'],c:1,fb:'WORK PRODUCT. This spreadsheet was created SPECIFICALLY because of the lawsuit — to calculate damages exposure. That is the definition of Work Product. You do not need a lawyer\'s name on it.'},
-  {cat:'withhold',text:'What is the "CC Rule" for privilege?',ch:['CC\'ing a lawyer automatically makes the email privileged','CC\'ing a lawyer does NOT automatically make the email privileged','CC stands for Confidential Communication','Any email with CC must be redacted'],c:1,fb:'The CC Rule: CC\'ing a lawyer "just to keep them in the loop" does NOT make the email privileged. There must be actual legal advice being sought or given. The lawyer must be involved for a legal purpose.'},
-  {cat:'withhold',text:'What is the formula for Attorney-Client Privilege?',ch:['Lawyer + Document + Company = ACP','Lawyer + Client + Private Setting + Legal Advice = ACP','Lawyer + Email + Confidentiality Label = ACP','Lawyer + Business Advice + Client = ACP'],c:1,fb:'The ACP Formula: Lawyer + Client + Private Setting + Legal Advice = ACP. ALL four elements must be present. Business advice from a lawyer does NOT qualify, even if it is between a lawyer and client in private.'},
-  {cat:'withhold',text:'What is the formula for Work Product?',ch:['Lawyer + Client + Document = WP','Active or Expected Lawsuit + Document Created to Prepare for It = WP','Any document with "litigation" in it = WP','Document created by a lawyer = WP'],c:1,fb:'Work Product Formula: Active (or expected) Lawsuit + Document Created to Prepare for It = WP. The key is that the document was created BECAUSE of the lawsuit, not just that a lawsuit happened to exist.'},
-  {cat:'withhold',text:'What is the formula for Joint Defense / Common Interest Privilege?',ch:['Two lawyers + One client = Joint Defense','Two separate groups + Shared Legal Enemy + Sharing Legal Strategy = Joint Defense','Two companies + NDA = Joint Defense','Two companies negotiating a sales contract = Joint Defense'],c:1,fb:'Joint Defense Formula: Two separate groups + Shared Legal Enemy + Sharing Legal Strategy = Joint Defense/CIP. They must share a LEGAL interest — not just a business interest. Normal business negotiations between companies do NOT qualify.'},
-  {cat:'withhold',text:'Two companies are negotiating a normal sales contract. They share their financial projections with each other. Does Common Interest Privilege apply?',ch:['Yes — two companies sharing information = CIP','No — they need a shared legal enemy and a JDA, not just a business deal','Yes — if lawyers are involved in the negotiation','Yes — financial projections are always privileged'],c:1,fb:'NO. CIP does NOT apply to normal business negotiations. The companies need a SHARED LEGAL ENEMY (like a joint lawsuit) and must be sharing LEGAL STRATEGY, not just business information.'},
-  {cat:'withhold',text:'A lawyer gives advice saying: "I think buying this building is a bad financial investment." Is this ACP?',ch:['Yes — a lawyer gave it','Yes — it was given privately','No — it is business advice, not legal advice','Yes — if the client asked for it'],c:2,fb:'NOT ACP. This is BUSINESS advice (financial investment opinion), not LEGAL advice. The ACP formula requires legal advice specifically. A lawyer can give business opinions — those are not automatically privileged.'},
-  {cat:'withhold',text:'What does the "Four Corners" rule mean in document review?',ch:['Only documents longer than four pages need privilege review','Only look at the words actually written on the page — do not guess what the author was thinking','Check all four corners of the email header for attorney names','Documents must have four parties to be reviewed'],c:1,fb:'Four Corners means: code based ONLY on what is actually written on the page in front of you. Do not guess the author\'s intent, assume based on the custodian\'s usual role, or infer from what other documents say.'},
-  {cat:'withhold',text:'What is the "Family Rule" in document review?',ch:['Documents from the same law firm travel together','Usually, if an email is privileged, its attachments are too — and vice versa — they travel together','All documents from the same custodian have the same privilege status','Family members\' documents are always privileged'],c:1,fb:'The Family Rule: Usually, if an email (parent) is privileged, its attachments are also privileged — and vice versa. They travel together as a "Family." Always check both the parent email and attachments together.'},
-  {cat:'withhold',text:'What does the "Protocol Rule" mean?',ch:['Always follow standard privilege rules regardless of the project','Always read your project-specific instructions — the Protocol always overrides this playbook','Protocols are optional guidelines only','The protocol refers to how many documents to review per hour'],c:1,fb:'The Protocol Rule: ALWAYS READ YOUR PROJECT INSTRUCTIONS FIRST. Every project has a specific Protocol or SOP. It will tell you exactly which labels to use and who the lawyers are for that specific case. The Project Protocol ALWAYS overrides general rules.'},
-  {cat:'withhold',text:'An email is marked "For Your Review" at the top. Does this automatically make it privileged?',ch:['Yes — "for review" means legal review','No — "for your review" might just mean reviewing for typos; it must be for LEGAL review to be privileged','Yes — if a lawyer sent it','No — only if a court order is mentioned'],c:1,fb:'NOT automatically privileged. "For your review" might just mean reviewing for typos, formatting, or business approval. The review must be for LEGAL purposes (legal advice, compliance with law, litigation prep) to create privilege.'},
-  {cat:'withhold',text:'What does LOI stand for?',ch:['Legal Opinion Issued','Letter of Intent — a document saying parties plan to make a deal','Law Office Instruction','Litigation Opinion Index'],c:1,fb:'LOI = Letter of Intent. A document signed before the final official contract saying "we plan to make a deal." LOIs themselves are generally not privileged, but legal advice about them may be.'},
-  {cat:'withhold',text:'What does MOU stand for?',ch:['Master Operating Unit','Memo of Understanding — similar to LOI, a pre-contract planning document','Management Oversight Unit','Multi-Office Union'],c:1,fb:'MOU = Memo of Understanding. Similar to an LOI, it is a document expressing mutual intent before a formal contract is signed. The document itself is not privileged, but legal advice given about it may be.'},
-  {cat:'withhold',text:'What does SOW stand for?',ch:['Statement of Work — a document listing specific tasks to be done','Standard Operating Worksheet','Summary of Witnesses','Scope of Work Waiver'],c:0,fb:'SOW = Statement of Work. A smaller, specific document that lists exactly what tasks will be done under a Master Services Agreement (MSA). SOWs are business documents and generally not privileged.'},
-  {cat:'withhold',text:'A document is labeled "A/C" at the top. What does this mean and what should you do?',ch:['Accounting/Corporate — ignore it','Attorney/Client — this is a claim of ACP; you must still verify legal advice is actually present','Authorized Copy — the document is not privileged','Always Confidential — automatically withhold'],c:1,fb:'"A/C" is shorthand for Attorney/Client (Attorney-Client Privilege). However, you MUST still verify that actual legal advice is present. The label is a signal to investigate further, not a free pass to withhold.'},
-  {cat:'withhold',text:'A document has "WP" stamped on it. What should you do?',ch:['Automatically Privilege Withhold it','Verify that the document was actually created in anticipation of litigation before coding as WP','Ignore the stamp — it has no meaning','Redact the WP stamp and produce the document'],c:1,fb:'"WP" is a claim of Work Product privilege. You must VERIFY that the document was actually created in anticipation of litigation. The stamp alone does not create privilege — you must check the substance.'},
-  {cat:'withhold',text:'What does "Depo prep" in an email subject line likely signal?',ch:['Nothing significant','A strong Work Product signal — materials for deposition preparation are typically WP','The document is ACP because a lawyer is involved','The document should be produced to the opposing side'],c:1,fb:'"Depo prep" = Deposition preparation materials. These are strongly Work Product. Materials created to prepare a witness for their deposition are classic WP — they reflect the legal team\'s strategy and mental impressions.'},
-  {cat:'withhold',text:'You find a document with "DOJ" in the subject line and it was sent by in-house counsel to the CEO. How should you approach this?',ch:['Not Privileged — government letters are not privileged','High privilege risk — DOJ signals a government investigation; likely ACP or WP; review carefully','Automatically Privilege Withhold','Not Privileged — DOJ letters are public records'],c:1,fb:'HIGH PRIVILEGE RISK. DOJ signals the company is being investigated by the Department of Justice. Documents involving counsel + government agency investigation are very likely to be ACP or Work Product. Review carefully and escalate if unsure.'},
-  {cat:'withhold',text:'What is the correct PLOG description for a Work Product memo about an antitrust investigation?',ch:['Memo about antitrust — this is secret','Memorandum prepared in anticipation of litigation regarding antitrust investigation','Legal memo — privileged','Memo from lawyer — do not produce'],c:1,fb:'Correct WP PLOG: "Memorandum prepared in anticipation of litigation regarding antitrust investigation." It follows the template, identifies the document type and general topic, without revealing the actual strategy or conclusions.'},
-  {cat:'withhold',text:'What is the risk of over-withholding documents?',ch:['No risk — it is always better to withhold','The court may sanction the party and order production of improperly withheld documents','The opposing side will never notice','The PLOG will be rejected'],c:1,fb:'Over-withholding is risky. If you withhold documents that are not actually privileged, the opposing side can challenge your PLOG. The court may order you to produce those documents AND may sanction the party for improper withholding.'},
-  {cat:'withhold',text:'What is the risk of under-redacting documents?',ch:['No risk — giving more information is always better','Privileged content becomes visible to opposing counsel, potentially exposing the client\'s legal strategy','The document will be rejected by the review platform','The PLOG entry will be incorrect'],c:1,fb:'Under-redacting is extremely dangerous. If privileged content slips through to the opposing side, they can read your client\'s legal strategy. This can cause irreparable harm to the case and may result in disciplinary action.'},
-  {cat:'withhold',text:'A marketing report contains 20 pages of campaign analysis. On page 15, there is a paragraph that starts: "Per GC\'s advice, we should avoid the following claims to prevent regulatory action..." How do you code it?',ch:['Withhold the entire 20-page report','Redact only the paragraph containing GC\'s legal advice on page 15','Not Privileged — marketing reports are business documents','Work Product — it involves regulatory compliance'],c:1,fb:'Privilege REDACT. The 20-page marketing report is a business document that must be produced. Only the paragraph referencing and containing the GC\'s legal advice gets a black box on page 15.'},
-  {cat:'withhold',text:'An email thread has 8 emails. The first 6 are between business people. Email 7 adds outside counsel who gives legal advice. Email 8 is a business person forwarding counsel\'s advice to a vendor. How do you code Email 8?',ch:['Privilege Withhold — counsel was involved in the thread','Privilege Redact or Not Privileged — forwarding privileged advice to a vendor (third party) likely breaks privilege','ACP — the thread includes counsel','Work Product'],c:1,fb:'Forwarding privileged legal advice to a VENDOR (outside third party) likely BREAKS privilege. The vendor is not part of the privileged circle. This is a potential waiver situation — code carefully and escalate for PM/RM guidance.'},
-  {cat:'withhold',text:'What is a "slipsheet" in the context of document production?',ch:['A document summarizing privileged content for the opposing side','A blank placeholder that replaces a withheld document in the production set','A cover page for the PLOG','A redaction label'],c:1,fb:'A slipsheet is a blank placeholder that replaces a withheld document in the production set. The opposing side sees the slipsheet (which may say "Document Withheld – Privileged") so they know a document exists there, but they cannot see the actual content.'},
-  {cat:'withhold',text:'True or False: If an attachment is privileged, the parent email must automatically be withheld too.',ch:['True — families always travel together','False — each document must be evaluated; the Family Rule is a general guide, not absolute','True — the Protocol always requires this','False — attachments are always separate from parent emails'],c:1,fb:'Generally the Family Rule says they travel together, but you must still evaluate each document. Some projects have specific protocol rules about families. If the parent email is a blank "please see attached" with no legal content, it may not be independently privileged — always check the protocol.'},
-  {cat:'withhold',text:'An email is from a lawyer to a client discussing ONLY the timing of a business meeting. Is it ACP?',ch:['Yes — any communication from a lawyer is ACP','No — scheduling/logistics emails from lawyers are not ACP','Yes — lawyers are always in a legal capacity','Yes — it is private communication'],c:1,fb:'NOT ACP. Scheduling and logistics emails from lawyers (even private ones between lawyer and client) are not ACP because they do not contain legal advice. The purpose must be seeking or giving legal advice.'},
-  {cat:'withhold',text:'What is the difference between BCC and CC in an email, and why does it matter for privilege?',ch:['No difference — both break privilege equally','CC = Carbon Copy (visible); BCC = Blind Carbon Copy (hidden). Both can affect privilege if the recipient is a third party outside the privileged circle','CC breaks privilege; BCC never does','BCC = privileged; CC = not privileged'],c:1,fb:'CC = Carbon Copy (all recipients can see the list). BCC = Blind Carbon Copy (hidden recipient). Both matter for privilege — if either CC or BCC includes a third party outside the privileged circle (a non-agent, non-attorney stranger), it can break privilege.'},
-  {cat:'withhold',text:'A document prepared by a paralegal at the request of outside counsel to help prepare for trial. Is this Work Product?',ch:['No — paralegals cannot create work product','Yes — work product covers documents prepared by the legal team, including paralegals, at counsel\'s request','Only if the paralegal is a licensed attorney','No — only attorneys can create work product'],c:1,fb:'YES, Work Product. WP covers documents and materials prepared by or for the legal team — including paralegals, legal assistants, and other agents working under counsel\'s direction. The key is that it was prepared for litigation.'},
-  {cat:'withhold',text:'An internal HR investigation report was prepared before any lawsuit was filed or threatened. Is it Work Product?',ch:['Yes — HR investigations always create WP','No — WP requires an active or anticipated lawsuit at the time of creation; routine HR investigations generally do not qualify','Yes — if it was prepared by HR counsel','No — HR documents are never privileged'],c:1,fb:'Generally NO. Work Product requires an active OR anticipated lawsuit at the time of creation. A routine HR investigation conducted as standard practice (not in response to a specific threatened lawsuit) is generally not WP. Context matters — escalate if uncertain.'},
-  {cat:'withhold',text:'What should you write in the PLOG for a redacted document (vs. a fully withheld document)?',ch:['The same as a withheld document — there is no difference','A description noting the document is being produced with redactions and identifying the general topic of the redacted portion','Nothing — redacted documents do not need PLOG entries','Just write "Redacted" with no further description'],c:1,fb:'For redacted documents, the PLOG entry should note that the document is being produced with redactions and identify the general topic of the redacted portion. Example: "Meeting minutes containing redacted legal advice regarding regulatory compliance."'},
-  {cat:'withhold',text:'An email from an executive to the GC says: "Legally, are we okay to proceed with this acquisition?" followed by GC\'s reply with a detailed legal analysis. Both emails are in the same chain. How do you code the chain?',ch:['Withhold the entire chain','Redact only the GC\'s reply','Not Privileged — business acquisitions are business matters','Work Product only'],c:0,fb:'Privilege WITHHOLD the entire chain. Both the question (seeking legal advice) and the answer (giving legal advice) are ACP. The entire chain exists for the purpose of legal consultation. Withhold the whole thing.'},
-  {cat:'withhold',text:'You encounter a document and are genuinely 50/50 on whether to Withhold or Redact. What should you do?',ch:['Guess and move on','Default to Redact — it is safer','Code as Withhold and escalate to your supervisor for guidance','Code as Not Privileged to avoid over-withholding'],c:2,fb:'When genuinely uncertain between Withhold and Redact, err on the conservative side (Withhold is more protective) and ESCALATE to your supervisor. This is a judgment call that requires human review. Never guess on these decisions.'},
-  {cat:'withhold',text:'A contract has a handwritten note in the margin from outside counsel that says "This clause is legally risky — see my memo." The contract itself is non-privileged. How do you code it?',ch:['Not Privileged — the contract is not privileged so the note is not either','Withhold the entire contract','Redact the attorney\'s handwritten note; produce the rest of the contract','Work Product — it was written by outside counsel'],c:2,fb:'Privilege REDACT. The contract itself is non-privileged and must be produced. However, the attorney\'s handwritten note reflects legal judgment and Work Product. Redact only the attorney\'s note and produce the rest of the contract.'},
-  {cat:'withhold',text:'What does it mean to "produce" a document?',ch:['To create a new document','To hand over a document to the opposing side as part of discovery','To file a document with the court','To upload a document to the review platform'],c:1,fb:'To "produce" a document means to hand it over to the opposing side as part of the discovery process in litigation. Non-privileged, responsive documents are produced. Privileged documents are withheld or redacted before production.'},
-  {cat:'withhold',text:'An email says "Re: Subpoena Response — please prepare the attached document list per OC\'s instructions." Is the attached document list Work Product?',ch:['No — lists are not Work Product','Yes — it was compiled at Outside Counsel\'s direction specifically in response to a legal subpoena','No — only attorneys can create Work Product','Yes — any attachment to a legal email is Work Product'],c:1,fb:'YES, likely Work Product. The list was compiled at Outside Counsel\'s direction specifically for responding to a legal subpoena — that is classic WP. The document exists BECAUSE of the legal proceeding.'},
-  {cat:'withhold',text:'In a PLOG, should you ever write: "Email from GC saying the company\'s environmental policy violates EPA regulations"?',ch:['Yes — full disclosure is required in the PLOG','No — this gives away the actual privileged secret. A PLOG describes the document without revealing the privileged conclusion','Yes — the opposing side has a right to know the general topic','Only if the court orders it'],c:1,fb:'NEVER write this in a PLOG. It gives away the actual secret — that the company\'s policy violates regulations. The correct version: "Email reflecting legal advice regarding environmental policy compliance." Same topic, no secret revealed.'},
-  {cat:'withhold',text:'What is the purpose of the PLOG from the opposing side\'s perspective?',ch:['It shows them all the privileged content','It lets them know which documents are being withheld so they can challenge the privilege claims if needed','It helps them build their case','It is just an administrative formality with no practical use'],c:1,fb:'The PLOG lets the opposing side know WHICH documents are being withheld. They can then review the PLOG and challenge specific privilege claims they believe are improper. This is how courts ensure privilege is not being abused.'},
-  {cat:'withhold',text:'An email is sent from CEO to GC with the subject "Quick question about our contract" and the body says only: "See you at golf Saturday!" Is this ACP?',ch:['Yes — GC received it','Yes — the subject mentions a contract','No — the actual content is social; no legal advice was sought or given','Yes — any CEO-to-GC communication is privileged'],c:2,fb:'NOT ACP. Despite being addressed to the GC and mentioning "contract" in the subject, the actual body is a social invitation. Privilege is based on the ACTUAL CONTENT (four corners), not the subject line or who received it.'},
-  {cat:'withhold',text:'Under the Decision Flowchart Step 3, what makes something "legal advice" vs "business advice"?',ch:['Legal advice is given by anyone with a law degree','Legal advice addresses legal rights, risks, obligations, or compliance with law; business advice addresses strategy, operations, or financial decisions','Legal advice is always written; business advice is verbal','Legal advice always mentions a lawsuit'],c:1,fb:'Legal advice addresses legal rights, risks, obligations, or compliance with law (e.g., "This contract clause is unenforceable"). Business advice addresses strategy, operations, or financial matters (e.g., "I think we should expand to Region B"). Only legal advice is ACP-protected.'},
-  {cat:'withhold',text:'True or False: You should always read the actual text of a document before deciding on privilege, even if the subject line looks privileged.',ch:['True — you must always apply the four corners test and read the actual content','False — a privileged-looking subject line is sufficient to withhold','True — but only for emails longer than one page','False — subject lines are reliable indicators'],c:0,fb:'TRUE. Always read the actual content. Subject lines can be misleading. A subject saying "Legal Advice on Contract" might contain only social chat. You must apply the four corners test and read what is actually written.'},
-  {cat:'withhold',text:'A document has been labeled "Highly Confidential" by the company\'s IT department for data security reasons. Does this make it legally privileged?',ch:['Yes — confidential = privileged','No — business confidentiality classifications do not create legal privilege; you must still apply the privilege test','Yes — if a lawyer also has access to it','No — only court orders can create privilege'],c:1,fb:'NO. Business confidentiality labels (like "Highly Confidential," "Internal Only," "Proprietary") are data security/business classifications. They do NOT create legal privilege. You must still apply the four-step privilege test independently.'},
-  {cat:'withhold',text:'What are the three types of privilege covered in the Ultimate Privilege Review Playbook?',ch:['ACP, Work Product, and Trade Secret','Attorney-Client Privilege (ACP), Work Product (WP), and Joint Defense/Common Interest','ACP, Bank Examination Privilege, and Common Interest','Attorney-Client Privilege, Marital Privilege, and Work Product'],c:1,fb:'The three types are: (1) Attorney-Client Privilege (ACP), (2) Work Product (WP), and (3) Joint Defense / Common Interest Privilege. These are the three main categories you will encounter in document review.'},
-  {cat:'withhold',text:'When is it appropriate to ask your supervisor for help according to the Playbook?',ch:['Only when you are completely certain a document is privileged','Only when the document is longer than 10 pages','Whenever you are in doubt — ALWAYS ask your supervisor','Only after trying to decide for 10 minutes first'],c:2,fb:'The Playbook is clear: "WHENEVER IN DOUBT ALWAYS ASK YOUR SUPERVISOR FOR HELP." There is no minimum threshold of confusion required. If you are uncertain, escalate immediately.'},
-  {cat:'withhold',text:'An email thread starts with non-privileged business emails, and then in-house counsel is added and gives legal advice in the final email. How is the PLOG entry written for this situation?',ch:['Log the entire thread as one entry','Log only the in-house counsel\'s final email','Log each email in the thread separately if they have different privilege statuses','No PLOG needed since some emails are not privileged'],c:2,fb:'When a thread has mixed privilege status, log each separately if needed. The non-privileged earlier emails are produced; the in-house counsel\'s legal advice email is withheld/redacted and logged on the PLOG with its specific description.'},
-  {cat:'withhold',text:'A Privilege Redaction label must be placed over the redacted content in the produced document. What label is typically used?',ch:['REMOVED','REDACTED – PRIVILEGED','CLASSIFIED','WITHHELD'],c:1,fb:'"REDACTED – PRIVILEGED" (or similar per your project protocol) is the standard label placed as a black box over redacted privileged content. Always check your project-specific protocol for the exact label format required.'},
-  {cat:'withhold',text:'Can a document be both Responsive AND Privileged?',ch:['No — if it is privileged it cannot be responsive','Yes — a document can be relevant to the case (responsive) but still protected from production (privileged)','No — if it is responsive it must be produced','Only if the court orders it'],c:1,fb:'YES. A document can absolutely be both responsive (relevant to the case issues) AND privileged (protected from production). Responsive + Privileged = Withhold or Redact the document and log it on the PLOG.'},
-  {cat:'withhold',text:'What is the difference between "privilege is broken" and "privilege never existed"?',ch:['They are the same thing','Privilege is broken means it once existed but was waived (e.g., by sharing with a third party); privilege never existed means the document never qualified in the first place','Privilege is broken only applies to ACP; privilege never existed applies to WP','Privilege is broken is worse than privilege never existing'],c:1,fb:'Important distinction: "Privilege never existed" means the document never met the requirements (no lawyer, no legal advice, etc.). "Privilege broken/waived" means it WAS privileged, but someone destroyed it (e.g., by sharing with a third party). Both result in the document being non-privileged, but for different reasons.'},
-];
+// ── ADAPTIVE QUIZ ENGINE ──
 let qCat='all',qPool=[],qIdx=0,qScore=0,qMissed=[],qAns=null;
 let missedBank=[],roundNum=0,roundHistory=[],sessionActive=false,initialCount=20;
 
 function selCat(c,btn){qCat=c;document.querySelectorAll('.q-filters button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
 
 function initQuizPage(){
-  const li=!!SB.user;
+  var li=!!SB.user;
   document.getElementById('quiz-gate').style.display=li?'none':'block';
   document.getElementById('quiz-start').style.display=li?'block':'none';
   document.getElementById('quiz-area').style.display='none';
@@ -1009,19 +1114,19 @@ function initQuizPage(){
 }
 
 async function loadUserStats(){
-  const {data}=await SB.getUserScores(SB.user.id);
-  const el=document.getElementById('quiz-stats');
+  var r=await SB.getUserScores(SB.user.id);var data=r.data;
+  var el=document.getElementById('quiz-stats');
   if(!data||!data.length){el.innerHTML='<span style="color:var(--muted);font-size:.84rem">No quiz attempts yet. Take your first quiz!</span>';return;}
-  const best=Math.max(...data.map(s=>s.pct));
-  const avg=Math.round(data.reduce((a,s)=>a+s.pct,0)/data.length);
-  const mastered=data.filter(s=>s.category&&s.category.includes('★MASTERY')).length;
-  el.innerHTML=`<div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Best Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">${best}%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Avg Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--accent)">${avg}%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Mastery Awards</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">${mastered}</div></div>`;
+  var best=Math.max(...data.map(function(s){return s.pct;}));
+  var avg=Math.round(data.reduce(function(a,s){return a+s.pct;},0)/data.length);
+  var mastered=data.filter(function(s){return s.category&&s.category.includes('★MASTERY');}).length;
+  el.innerHTML='<div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Best Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">'+best+'%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Avg Score</div><div style="font-size:1.2rem;font-weight:800;color:var(--accent)">'+avg+'%</div></div><div class="info-card" style="padding:10px 14px;text-align:left"><div style="font-size:.75rem;color:var(--muted)">Mastery Awards</div><div style="font-size:1.2rem;font-weight:800;color:var(--gold)">'+mastered+'</div></div>';
 }
 
 function startQuiz(){
-  let pool=qCat==='all'?Qs:Qs.filter(q=>q.cat===qCat);
+  var pool=qCat==='all'?Qs:Qs.filter(function(q){return q.cat===qCat;});
   initialCount=parseInt(document.getElementById('qcount').value);
-  qPool=shuffle([...pool]).slice(0,Math.min(initialCount,pool.length));
+  qPool=shuffle(pool.slice()).slice(0,Math.min(initialCount,pool.length));
   qIdx=0;qScore=0;qMissed=[];qAns=null;
   missedBank=[];roundNum=1;roundHistory=[];sessionActive=true;
   document.getElementById('quiz-start').style.display='none';
@@ -1032,115 +1137,92 @@ function startQuiz(){
   renderQ();
 }
 
-const catLabels={privilege:'🔒 Privilege',responsiveness:'📄 Responsiveness',inhouse:'👔 In-House',regulators:'🏛️ Regulators',cip:'🤝 CIP',withhold:'⚫ Withhold vs Redact'};
+var catLabels={privilege:'🔒 Privilege',responsiveness:'📄 Responsiveness',inhouse:'👔 In-House',regulators:'🏛️ Regulators',cip:'🤝 CIP',withhold:'⚫ Withhold vs Redact'};
+
 function renderQ(){
-  const q=qPool[qIdx];qAns=null;
+  var q=qPool[qIdx];qAns=null;
   document.getElementById('qa-label').textContent='Round '+roundNum+' · Q'+(qIdx+1)+' '+(catLabels[q.cat]||'');
   document.getElementById('qa-ctr').textContent=(qIdx+1)+' / '+qPool.length+' — Score: '+qScore;
   document.getElementById('qa-prog').style.width=(qIdx/qPool.length*100)+'%';
   document.getElementById('qa-text').textContent=q.text;
-  const ch=document.getElementById('qa-choices');ch.innerHTML='';
-  const L=['A','B','C','D','E'];
-  q.ch.forEach((c,i)=>{
-    const b=document.createElement('button');b.className='choice-btn';
-    b.innerHTML=`<span class="cl">${L[i]}.</span><span>${c}</span>`;
-    b.onclick=()=>selectA(i);ch.appendChild(b);
+  var ch=document.getElementById('qa-choices');ch.innerHTML='';
+  var L=['A','B','C','D','E'];
+  q.ch.forEach(function(c,i){
+    var b=document.createElement('button');b.className='choice-btn';
+    b.innerHTML='<span class="cl">'+L[i]+'.</span><span>'+c+'</span>';
+    b.onclick=function(){selectA(i);};ch.appendChild(b);
   });
-  const fb=document.getElementById('qa-fb');fb.className='feedback';
+  var fb=document.getElementById('qa-fb');fb.className='feedback';
   document.getElementById('btn-next').disabled=true;
 }
 
 function selectA(i){
   if(qAns!==null)return;qAns=i;
-  const q=qPool[qIdx];
-  const btns=document.querySelectorAll('.choice-btn');
-  btns.forEach(b=>b.disabled=true);
-  const fb=document.getElementById('qa-fb');
+  var q=qPool[qIdx];
+  var btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(function(b){b.disabled=true;});
+  var fb=document.getElementById('qa-fb');
   if(i===q.c){
     btns[i].classList.add('correct');qScore++;
     fb.textContent='✅ Correct! '+q.fb;fb.className='feedback show c';
   } else {
     btns[i].classList.add('incorrect');btns[q.c].classList.add('reveal');
-    qMissed.push({...q,yourAnswer:q.ch[i]});
+    var missed=Object.assign({},q);missed.yourAnswer=q.ch[i];qMissed.push(missed);
     fb.textContent='❌ Incorrect. Correct: "'+q.ch[q.c]+'". '+q.fb;fb.className='feedback show w';
   }
   document.getElementById('btn-next').disabled=false;
 }
 
-function nextQ(){qIdx++;if(qIdx>=qPool.length){showRoundResults();return;}renderQ()}
-function endQuiz(){if(qIdx>0)showRoundResults();else resetQuiz()}
+function nextQ(){qIdx++;if(qIdx>=qPool.length){showRoundResults();return;}renderQ();}
+function endQuiz(){if(qIdx>0)showRoundResults();else resetQuiz();}
 
 async function showRoundResults(){
   document.getElementById('quiz-area').style.display='none';
-  const pct=Math.round(qScore/qPool.length*100);
-  const isPerfect=pct===100;
-  roundHistory.push({round:roundNum,score:qScore,total:qPool.length,pct});
-
-  // Save round to Supabase
-  let saveMsg='';
+  var pct=Math.round(qScore/qPool.length*100);
+  var isPerfect=pct===100;
+  roundHistory.push({round:roundNum,score:qScore,total:qPool.length,pct:pct});
+  var saveMsg='';
   if(SB.user){
-    const name=SB.user.user_metadata?.display_name||SB.user.email.split('@')[0];
-    const label=isPerfect?(qCat+' ★MASTERY'):qCat;
-    const {error}=await SB.saveScore(SB.user.id,name,label,qScore,qPool.length);
-    saveMsg=error?'⚠️ Could not save score.':'✅ Round score saved!';
+    var name=SB.user.user_metadata?.display_name||SB.user.email.split('@')[0];
+    var label=isPerfect?(qCat+' ★MASTERY'):qCat;
+    var sr=await SB.saveScore(SB.user.id,name,label,qScore,qPool.length);
+    saveMsg=sr.error?'⚠️ Could not save score.':'✅ Round score saved!';
   }
-
   if(isPerfect){showMastery(saveMsg);return;}
-
-  // Merge missed into bank (deduplicate by text)
-  qMissed.forEach(m=>{if(!missedBank.find(x=>x.text===m.text))missedBank.push(m);});
-
-  // Show round results
+  qMissed.forEach(function(m){if(!missedBank.find(function(x){return x.text===m.text;}))missedBank.push(m);});
   document.getElementById('round-results').style.display='block';
   document.getElementById('rr-badge').textContent='Round '+roundNum+' Complete';
-
-  const ring=document.getElementById('rr-ring');
+  var ring=document.getElementById('rr-ring');
   ring.innerHTML=qScore+'/'+qPool.length+'<br><span style="font-size:.82rem">'+pct+'%</span>';
-  const col=pct>=90?'green':pct>=70?'yellow':'red';
+  var col=pct>=90?'green':pct>=70?'yellow':'red';
   ring.className='score-ring '+col;
-
-  const cols={green:'#56d364',yellow:'#e3b341',red:'#ff7b72'};
-  const bb=document.getElementById('rr-band');
-  const bandTxt=pct>=90?'Almost there! One more push.':pct>=70?'Good progress — focus on the misses below.':'Keep going — every round makes you stronger.';
+  var cols={green:'#56d364',yellow:'#e3b341',red:'#ff7b72'};
+  var bb=document.getElementById('rr-band');
+  var bandTxt=pct>=90?'Almost there! One more push.':pct>=70?'Good progress — focus on the misses below.':'Keep going — every round makes you stronger.';
   bb.textContent=bandTxt;
-  bb.style.cssText=`background:${cols[col]}18;border:1px solid ${cols[col]};color:${cols[col]}`;
-
-  document.getElementById('rr-msg').textContent=`You missed ${qMissed.length} question${qMissed.length!==1?'s':''}. Your next round will focus on those exact concepts until you master them.`;
+  bb.style.cssText='background:'+cols[col]+'18;border:1px solid '+cols[col]+';color:'+cols[col];
+  document.getElementById('rr-msg').textContent='You missed '+qMissed.length+' question'+(qMissed.length!==1?'s':'')+'. Your next round will focus on those exact concepts.';
   document.getElementById('rr-save').textContent=saveMsg;
-
-  document.getElementById('rr-history').innerHTML=roundHistory.map(r=>{
-    const cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
-    return`<div class="rh-dot ${cls}" title="Round ${r.round}: ${r.pct}%">R${r.round}<br><span style="font-size:.6rem">${r.pct}%</span></div>`;
+  document.getElementById('rr-history').innerHTML=roundHistory.map(function(r){
+    var cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
+    return'<div class="rh-dot '+cls+'" title="Round '+r.round+': '+r.pct+'%">R'+r.round+'<br><span style="font-size:.6rem">'+r.pct+'%</span></div>';
   }).join('');
-
-  document.getElementById('rr-actions').innerHTML=`
-    <button class="btn btn-gold" onclick="startNextRound()">Round ${roundNum+1}: Fix My Misses →</button>
-    <button class="btn btn-outline btn-sm" onclick="resetQuiz()">End Session</button>
-    <div style="width:100%;text-align:center;font-size:.76rem;color:var(--muted);margin-top:6px">Keep going until you hit 100% — that's mastery. The loop never ends until you do.</div>`;
-
-  // Study guide
-  const sw=document.getElementById('study-card-wrap');
-  const sb=document.getElementById('study-body');
+  document.getElementById('rr-actions').innerHTML='<button class="btn btn-gold" onclick="startNextRound()">Round '+(roundNum+1)+': Fix My Misses →</button><button class="btn btn-outline btn-sm" onclick="resetQuiz()">End Session</button><div style="width:100%;text-align:center;font-size:.76rem;color:var(--muted);margin-top:6px">Keep going until you hit 100% — that\'s mastery.</div>';
+  var sw=document.getElementById('study-card-wrap');
+  var sb=document.getElementById('study-body');
   if(qMissed.length){
     sw.style.display='block';
-    sb.innerHTML=qMissed.map(m=>`
-      <div class="study-card">
-        <div class="sc-q">${m.text}</div>
-        <div class="sc-wrong">✕ You answered: ${m.yourAnswer}</div>
-        <div class="sc-right">✓ Correct answer: ${m.ch[m.c]}</div>
-        <div class="sc-tip">💡 ${m.fb}</div>
-      </div>`).join('');
+    sb.innerHTML=qMissed.map(function(m){return'<div class="study-card"><div class="sc-q">'+m.text+'</div><div class="sc-wrong">✕ You answered: '+m.yourAnswer+'</div><div class="sc-right">✓ Correct answer: '+m.ch[m.c]+'</div><div class="sc-tip">💡 '+m.fb+'</div></div>';}).join('');
   } else sw.style.display='none';
 }
 
 function startNextRound(){
   if(!missedBank.length){showMastery('');return;}
-  const pool=qCat==='all'?Qs:Qs.filter(q=>q.cat===qCat);
-  const notMissed=pool.filter(q=>!missedBank.find(m=>m.text===q.text));
-  const fresh=shuffle([...notMissed]).slice(0,Math.max(0,initialCount-missedBank.length));
-  qPool=shuffle([...missedBank,...fresh]);
-  qIdx=0;qScore=0;qMissed=[];qAns=null;
-  roundNum++;
+  var pool=qCat==='all'?Qs:Qs.filter(function(q){return q.cat===qCat;});
+  var notMissed=pool.filter(function(q){return!missedBank.find(function(m){return m.text===q.text;});});
+  var fresh=shuffle(notMissed.slice()).slice(0,Math.max(0,initialCount-missedBank.length));
+  qPool=shuffle(missedBank.concat(fresh));
+  qIdx=0;qScore=0;qMissed=[];qAns=null;roundNum++;
   document.getElementById('round-results').style.display='none';
   document.getElementById('quiz-area').style.display='block';
   renderQ();
@@ -1150,57 +1232,52 @@ function showMastery(saveMsg){
   document.getElementById('round-results').style.display='none';
   document.getElementById('quiz-area').style.display='none';
   document.getElementById('mastery-screen').style.display='block';
-  const totalRounds=roundHistory.length;
-  document.getElementById('mastery-sub').textContent=`You achieved 100% on Round ${roundNum} after ${totalRounds} round${totalRounds!==1?'s':''}. That's what mastery looks like — keep it consistent!`;
-  document.getElementById('mastery-history').innerHTML=roundHistory.map(r=>{
-    const cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
-    return`<div class="rh-dot ${cls}" title="Round ${r.round}: ${r.pct}%">R${r.round}<br><span style="font-size:.6rem">${r.pct}%</span></div>`;
+  var totalRounds=roundHistory.length;
+  document.getElementById('mastery-sub').textContent='You achieved 100% on Round '+roundNum+' after '+totalRounds+' round'+(totalRounds!==1?'s':'')+'. That\'s what mastery looks like!';
+  document.getElementById('mastery-history').innerHTML=roundHistory.map(function(r){
+    var cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
+    return'<div class="rh-dot '+cls+'">R'+r.round+'<br><span style="font-size:.6rem">'+r.pct+'%</span></div>';
   }).join('');
   document.getElementById('mastery-save').textContent=saveMsg;
+  if(SB.user){var name=SB.user.user_metadata?.display_name||SB.user.email.split('@')[0];SB.saveScore(SB.user.id,name,qCat+' ★MASTERY',qPool.length,qPool.length);}
 }
 
-function resetQuiz(){
-  missedBank=[];roundNum=0;roundHistory=[];sessionActive=false;
-  initQuizPage();
-}
+function resetQuiz(){missedBank=[];roundNum=0;roundHistory=[];sessionActive=false;initQuizPage();}
 
 async function loadLeaderboard(){
-  const {data,error}=await SB.getLeaderboard();
-  const lb=document.getElementById('lb-body');
-  if(error||!data){lb.innerHTML='<p style="color:var(--red);padding:16px">Could not load leaderboard. Check Supabase configuration.</p>';return;}
+  var r=await SB.getLeaderboard();var data=r.data;var error=r.error;
+  var lb=document.getElementById('lb-body');
+  if(error||!data){lb.innerHTML='<p style="color:var(--red);padding:16px">Could not load leaderboard.</p>';return;}
   if(!data.length){lb.innerHTML='<p style="color:var(--muted);padding:16px">No scores yet — be the first!</p>';return;}
-  const map={};
-  data.forEach(s=>{
-    const isMastery=s.category&&s.category.includes('★MASTERY');
+  var map={};
+  data.forEach(function(s){
+    var isMastery=s.category&&s.category.includes('★MASTERY');
     if(!map[s.display_name]){map[s.display_name]=s;return;}
-    const cur=map[s.display_name];
-    const curMastery=cur.category&&cur.category.includes('★MASTERY');
+    var cur=map[s.display_name];var curMastery=cur.category&&cur.category.includes('★MASTERY');
     if(!curMastery&&isMastery){map[s.display_name]=s;return;}
     if(curMastery&&!isMastery)return;
     if(s.pct>cur.pct)map[s.display_name]=s;
   });
-  const top=Object.values(map).sort((a,b)=>{
-    const am=a.category&&a.category.includes('★MASTERY');
-    const bm=b.category&&b.category.includes('★MASTERY');
-    if(am&&!bm)return -1;if(!am&&bm)return 1;
-    return b.pct-a.pct||b.score-a.score;
+  var top=Object.values(map).sort(function(a,b){
+    var am=a.category&&a.category.includes('★MASTERY');var bm=b.category&&b.category.includes('★MASTERY');
+    if(am&&!bm)return -1;if(!am&&bm)return 1;return b.pct-a.pct||b.score-a.score;
   }).slice(0,20);
-  const myName=SB.user?.user_metadata?.display_name||SB.user?.email?.split('@')[0];
-  lb.innerHTML=top.map((s,i)=>{
-    const r=i+1,rc=r===1?'r1':r===2?'r2':r===3?'r3':'';
-    const isMastery=s.category&&s.category.includes('★MASTERY');
-    const masteryBadge=isMastery?` <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:1px 7px;font-size:.68rem;color:var(--gold);font-weight:700;vertical-align:middle">★ Mastered</span>`:'';
-    const isMe=s.display_name===myName;
-    return`<div class="lb-row${isMe?' my-row':''}"><div class="lb-rank ${rc}">${r}</div><div class="lb-name">${s.display_name}${masteryBadge}${isMe?' 👈':''}</div><div><span class="lb-score">${s.pct}%</span><span class="lb-pct">(${s.score}/${s.total})</span></div></div>`;
+  var myName=SB.user?.user_metadata?.display_name||SB.user?.email?.split('@')[0];
+  lb.innerHTML=top.map(function(s,i){
+    var r=i+1,rc=r===1?'r1':r===2?'r2':r===3?'r3':'';
+    var isMastery=s.category&&s.category.includes('★MASTERY');
+    var masteryBadge=isMastery?' <span style="display:inline-flex;align-items:center;gap:3px;background:rgba(201,168,76,.18);border:1px solid rgba(201,168,76,.4);border-radius:10px;padding:1px 7px;font-size:.68rem;color:var(--gold);font-weight:700;vertical-align:middle">★ Mastered</span>':'';
+    var isMe=s.display_name===myName;
+    return'<div class="lb-row'+(isMe?' my-row':'')+'"><div class="lb-rank '+rc+'">'+r+'</div><div class="lb-name">'+s.display_name+masteryBadge+(isMe?' 👈':'')+'</div><div><span class="lb-score">'+s.pct+'%</span><span class="lb-pct">('+s.score+'/'+s.total+')</span></div></div>';
   }).join('');
   if(SB.user){
-    const {data:mine}=await SB.getUserScores(SB.user.id);
-    const ms=document.getElementById('my-scores-card'),mb=document.getElementById('my-scores-body');
+    var mr=await SB.getUserScores(SB.user.id);var mine=mr.data;
+    var ms=document.getElementById('my-scores-card'),mb=document.getElementById('my-scores-body');
     if(mine&&mine.length){
       ms.style.display='block';
-      mb.innerHTML=mine.slice(0,15).map(s=>{
-        const isMastery=s.category&&s.category.includes('★MASTERY');
-        return`<div class="lb-row"><div style="flex:1;font-size:.84rem">${new Date(s.created_at).toLocaleDateString()} <span style="color:var(--muted)">${s.category}</span></div><div><span class="lb-score">${s.pct}%</span><span class="lb-pct">(${s.score}/${s.total})</span>${isMastery?'<span style="color:var(--gold);font-size:.72rem;margin-left:4px">★</span>':''}</div></div>`;
+      mb.innerHTML=mine.slice(0,15).map(function(s){
+        var isMastery=s.category&&s.category.includes('★MASTERY');
+        return'<div class="lb-row"><div style="flex:1;font-size:.84rem">'+new Date(s.created_at).toLocaleDateString()+' <span style="color:var(--muted)">'+s.category+'</span></div><div><span class="lb-score">'+s.pct+'%</span><span class="lb-pct">('+s.score+'/'+s.total+')</span>'+(isMastery?'<span style="color:var(--gold);font-size:.72rem;margin-left:4px">★</span>':'')+'</div></div>';
       }).join('');
     }
   }
@@ -1208,137 +1285,21 @@ async function loadLeaderboard(){
 
 async function loadAdmin(){
   if(!SB.user||SB.user.email!==ADMIN_EMAIL){document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Access denied.</p>';return;}
-  const {data,error}=await SB.getAllScores();
+  var r=await SB.getAllScores();var data=r.data;var error=r.error;
   if(error||!data){document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Error loading data.</p>';return;}
-  const users={};data.forEach(s=>{if(!users[s.user_id])users[s.user_id]={name:s.display_name,count:0,id:s.user_id};users[s.user_id].count++;});
-  document.getElementById('admin-users').innerHTML=Object.values(users).map(u=>`<div class="lb-row"><div class="lb-name">${u.name}</div><div style="color:var(--muted);font-size:.82rem;margin-right:8px">${u.count} attempts</div><button class="btn btn-red btn-sm" onclick="adminReset('${u.id}','${u.name}')">🗑️ Reset</button></div>`).join('');
-  document.getElementById('admin-scores').innerHTML=data.slice(0,60).map(s=>`<div style="display:flex;gap:10px;padding:7px 10px;background:#21262d;border-radius:6px;margin:4px 0;font-size:.81rem;flex-wrap:wrap;align-items:center"><span style="color:var(--accent);min-width:130px;font-weight:500">${s.display_name}</span><span style="color:var(--gold);font-weight:700">${s.pct}%</span><span style="color:var(--muted)">${s.category}</span><span style="color:var(--muted);margin-left:auto">${new Date(s.created_at).toLocaleDateString()}</span></div>`).join('');
+  var users={};data.forEach(function(s){if(!users[s.user_id])users[s.user_id]={name:s.display_name,count:0,id:s.user_id};users[s.user_id].count++;});
+  document.getElementById('admin-users').innerHTML=Object.values(users).map(function(u){return'<div class="lb-row"><div class="lb-name">'+u.name+'</div><div style="color:var(--muted);font-size:.82rem;margin-right:8px">'+u.count+' attempts</div><button class="btn btn-red btn-sm" onclick="adminReset(\''+u.id+'\',\''+u.name+'\')">🗑️ Reset</button></div>';}).join('');
+  document.getElementById('admin-scores').innerHTML=data.slice(0,60).map(function(s){return'<div style="display:flex;gap:10px;padding:7px 10px;background:#21262d;border-radius:6px;margin:4px 0;font-size:.81rem;flex-wrap:wrap;align-items:center"><span style="color:var(--accent);min-width:130px;font-weight:500">'+s.display_name+'</span><span style="color:var(--gold);font-weight:700">'+s.pct+'%</span><span style="color:var(--muted)">'+s.category+'</span><span style="color:var(--muted);margin-left:auto">'+new Date(s.created_at).toLocaleDateString()+'</span></div>';}).join('');
 }
 
 async function adminReset(uid,name){
-  if(!confirm(`Reset ALL quiz scores for "${name}"? This cannot be undone.`))return;
-  const {error}=await SB.deleteUserScores(uid);
-  if(error){alert('Error: '+error);return;}
-  alert(`Scores for "${name}" have been cleared.`);loadAdmin();
+  if(!confirm('Reset ALL quiz scores for "'+name+'"? This cannot be undone.'))return;
+  var r=await SB.deleteUserScores(uid);
+  if(r.error){alert('Error: '+r.error);return;}
+  alert('Scores for "'+name+'" have been cleared.');loadAdmin();
 }
 
-let modalMode='login';
-function openModal(m){modalMode=m;switchModal(m);document.getElementById('modal-bg').classList.add('open')}
-function closeModal(){document.getElementById('modal-bg').classList.remove('open')}
-function switchModal(m){
-  modalMode=m;const isL=m==='login';
-  document.getElementById('modal-title').textContent=isL?'Log In':'Create Account';
-  document.getElementById('modal-submit').textContent=isL?'Log In':'Create Account';
-  document.getElementById('name-group').style.display=isL?'none':'block';
-  document.getElementById('auth-toggle').innerHTML=isL?'Don\'t have an account? <a onclick="switchModal(\'signup\')">Sign up</a>':'Already have an account? <a onclick="switchModal(\'login\')">Log in</a>';
-  document.getElementById('auth-err').style.display='none';
-  document.getElementById('auth-ok').style.display='none';
-}
-
-async function submitAuth(){
-  const email=document.getElementById('inp-email').value.trim();
-  const pass=document.getElementById('inp-pass').value;
-  const name=document.getElementById('inp-name').value.trim();
-  const errEl=document.getElementById('auth-err'),okEl=document.getElementById('auth-ok');
-  errEl.style.display='none';okEl.style.display='none';
-  if(!email||!pass){errEl.textContent='Please fill in all fields.';errEl.style.display='block';return;}
-  const btn=document.getElementById('modal-submit');
-  btn.innerHTML='<span class="spinner"></span>Please wait...';btn.disabled=true;
-  if(modalMode==='signup'){
-    if(!name){errEl.textContent='Please enter a display name.';errEl.style.display='block';btn.innerHTML='Create Account';btn.disabled=false;return;}
-    const {data,error}=await SB.signUp(email,pass,name);
-    btn.innerHTML='Create Account';btn.disabled=false;
-    if(error){errEl.textContent=error;errEl.style.display='block';return;}
-    okEl.textContent='Account created! Check your email to confirm, then log in.';okEl.style.display='block';
-    setTimeout(()=>switchModal('login'),2500);
-  } else {
-    const {data,error}=await SB.signIn(email,pass);
-    btn.innerHTML='Log In';btn.disabled=false;
-    if(error){errEl.textContent=error;errEl.style.display='block';return;}
-    onLogin();closeModal();
-  }
-}
-
-function onLogin(){
-  const u=SB.user,name=u.user_metadata?.display_name||u.email.split('@')[0];
-  document.getElementById('user-pill').textContent='👤 '+name;
-  document.getElementById('user-pill').style.display='inline-block';
-  document.getElementById('btn-login').style.display='none';
-  document.getElementById('btn-logout').style.display='inline-block';
-  if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
-  if(currentPage==='quiz')initQuizPage();
-}
-
-async function logout(){
-  await SB.signOut();
-  document.getElementById('user-pill').style.display='none';
-  document.getElementById('btn-login').style.display='inline-block';
-  document.getElementById('btn-logout').style.display='none';
-  document.getElementById('btn-admin').style.display='none';
-  if(currentPage==='quiz')initQuizPage();
-}
-
-// ── PASSWORD RESET HANDLER ──
-// Runs on page load — checks if URL contains a reset token from Supabase
-async function checkForPasswordReset(){
-  const hash=window.location.hash;
-  const params=new URLSearchParams(hash.replace('#',''));
-  const type=params.get('type');
-  const accessToken=params.get('access_token');
-
-  // Supabase sends #access_token=...&type=recovery for password resets
-  if(type==='recovery' && accessToken){
-    // Set the session with the recovery token so we can update the password
-    SB.token=accessToken;
-    // Show the password reset modal
-    document.getElementById('reset-overlay').style.display='flex';
-    // Clean the URL so the token isn't visible
-    window.history.replaceState(null,'',window.location.pathname);
-  }
-}
-
-async function submitPasswordReset(){
-  const pass=document.getElementById('reset-pass').value;
-  const pass2=document.getElementById('reset-pass2').value;
-  const errEl=document.getElementById('reset-err');
-  const okEl=document.getElementById('reset-ok');
-  errEl.style.display='none';okEl.style.display='none';
-
-  if(!pass||pass.length<6){errEl.textContent='Password must be at least 6 characters.';errEl.style.display='block';return;}
-  if(pass!==pass2){errEl.textContent='Passwords do not match.';errEl.style.display='block';return;}
-
-  const btn=document.getElementById('reset-submit');
-  btn.innerHTML='<span class="spinner"></span>Updating...';btn.disabled=true;
-
-  try{
-    const r=await axios({
-      method:'PUT',
-      url:SB.url+'/auth/v1/user',
-      headers:SB.hdr(),
-      data:{password:pass}
-    });
-    btn.innerHTML='Update Password';btn.disabled=false;
-    if(r.data?.id){
-      okEl.textContent='✅ Password updated successfully! You can now log in.';
-      okEl.style.display='block';
-      setTimeout(()=>{
-        document.getElementById('reset-overlay').style.display='none';
-        openModal('login');
-      },2000);
-    } else {
-      errEl.textContent='Something went wrong. Please try the reset link again.';
-      errEl.style.display='block';
-    }
-  }catch(e){
-    btn.innerHTML='Update Password';btn.disabled=false;
-    errEl.textContent=e.response?.data?.message||'Error updating password. Please try again.';
-    errEl.style.display='block';
-  }
-}
-
-// Run on page load
-checkForPasswordReset();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
-document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal()});
+function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 </script>
 </body>
 </html>
