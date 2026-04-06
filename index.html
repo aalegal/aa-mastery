@@ -255,9 +255,111 @@ tr:nth-child(even) td{background:#0d162080}
   #hero h1{font-size:1.4rem}#topnav button{padding:4px 7px;font-size:.7rem}
   .site-logo-text span{display:none}.do-dont{grid-template-columns:1fr}
 }
+
+/* ── LOGIN WALL ── */
+#login-wall{
+  position:fixed;inset:0;z-index:999;
+  background:linear-gradient(160deg,#040810 0%,#06101e 40%,#071224 70%,#040810 100%);
+  display:flex;align-items:center;justify-content:center;padding:20px;
+}
+#login-wall::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 50% at 50% 30%,rgba(10,36,99,.5),transparent);
+  pointer-events:none;
+}
+#login-wall::after{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 50% 40% at 50% 80%,rgba(0,77,64,.25),transparent);
+  pointer-events:none;
+}
+.lw-box{
+  background:var(--card);border:1px solid var(--border2);border-radius:14px;
+  padding:40px 36px;width:100%;max-width:440px;position:relative;z-index:1;
+  box-shadow:0 30px 80px rgba(0,0,0,.7),0 0 0 1px rgba(212,168,42,.08);
+  text-align:center;
+}
+.lw-logo{margin:0 auto 20px;display:block}
+.lw-title{font-size:1.5rem;font-weight:800;background:var(--gold-metallic);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:6px}
+.lw-sub{color:var(--muted);font-size:.86rem;margin-bottom:28px;line-height:1.6}
+.lw-form .form-group{margin-bottom:14px;text-align:left}
+.lw-form label{display:block;font-size:.78rem;color:var(--muted);margin-bottom:5px;font-weight:600;letter-spacing:.3px;text-transform:uppercase}
+.lw-form input{width:100%;background:#111827;border:1px solid var(--border2);color:var(--text);padding:10px 13px;border-radius:7px;font-size:.9rem;transition:border-color .2s}
+.lw-form input:focus{outline:none;border-color:var(--accent)}
+.lw-err{color:#ff5252;font-size:.8rem;margin-bottom:12px;display:none;background:#e5393518;border:1px solid #e5393544;border-radius:6px;padding:8px 10px;text-align:left}
+.lw-ok{color:#4caf50;font-size:.8rem;margin-bottom:12px;display:none;background:#26a69a18;border:1px solid #26a69a44;border-radius:6px;padding:8px 10px;text-align:left}
+.lw-divider{display:flex;align-items:center;gap:10px;margin:14px 0;color:var(--muted);font-size:.75rem}
+.lw-divider::before,.lw-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+.lw-toggle{font-size:.82rem;color:var(--muted);margin-top:14px}
+.lw-toggle a{color:var(--accent);cursor:pointer;text-decoration:none;font-weight:600}
+.lw-view{display:none}.lw-view.active{display:block}
+#lw-ghost-links{display:flex;gap:16px;justify-content:center;margin-top:12px;flex-wrap:wrap}
+#lw-ghost-links button{background:transparent;border:none;color:var(--muted);font-size:.79rem;cursor:pointer;text-decoration:underline;padding:0}
+#lw-ghost-links button:hover{color:var(--accent)}
 </style>
 </head>
 <body>
+
+<!-- ══════ LOGIN WALL ══════ -->
+<div id="login-wall">
+  <div class="lw-box">
+    <svg class="lw-logo" width="56" height="56" viewBox="0 0 100 100" fill="none"><defs><linearGradient id="lw-bg" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#1a2a4a"/><stop offset="100%" stop-color="#0e1a2e"/></linearGradient><linearGradient id="lw-tg" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f5d060"/><stop offset="50%" stop-color="#d4a82a"/><stop offset="100%" stop-color="#7eb8f7"/></linearGradient></defs><rect width="100" height="100" rx="22" fill="url(#lw-bg)"/><path d="M50 14 L86 74 L14 74 Z" stroke="url(#lw-tg)" stroke-width="5" fill="none" stroke-linejoin="round"/><path d="M50 30 L72 68 L28 68 Z" fill="url(#lw-tg)" opacity="0.9"/></svg>
+    <div class="lw-title">AA Team Mastery</div>
+    <div class="lw-sub">Privilege &amp; Coding Mastery Hub<br>Log in to access all training materials</div>
+    <div class="lw-err" id="lw-err"></div>
+    <div class="lw-ok" id="lw-ok"></div>
+    <!-- LOGIN VIEW -->
+    <div id="lw-login" class="lw-view active">
+      <div class="lw-form">
+        <div class="form-group"><label>Email</label><input type="email" id="lw-email" placeholder="you@example.com" onkeydown="if(event.key==='Enter')lwDoLogin()"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="lw-pass" placeholder="••••••••" onkeydown="if(event.key==='Enter')lwDoLogin()"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px;font-size:.92rem" id="lw-login-btn" onclick="lwDoLogin()">Log In →</button>
+        <div class="lw-divider">or</div>
+        <button class="btn btn-outline" style="width:100%;padding:10px" onclick="lwShowView('magic')">✉️ Send Magic Link</button>
+      </div>
+      <div id="lw-ghost-links">
+        <button onclick="lwShowView('signup')">Create Account</button>
+        <button onclick="lwShowView('forgot')">Forgot Password?</button>
+      </div>
+    </div>
+    <!-- SIGNUP VIEW -->
+    <div id="lw-signup" class="lw-view">
+      <div class="lw-form">
+        <div class="form-group"><label>Display Name</label><input type="text" id="lw-name" placeholder="Your name (shown on leaderboard)"></div>
+        <div class="form-group"><label>Email</label><input type="email" id="lw-email-s" placeholder="you@example.com"></div>
+        <div class="form-group"><label>Password</label><input type="password" id="lw-pass-s" placeholder="Min 6 characters"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-signup-btn" onclick="lwDoSignup()">Create Account</button>
+      </div>
+      <div class="lw-toggle">Already have an account? <a onclick="lwShowView('login')">Log in</a></div>
+    </div>
+    <!-- FORGOT VIEW -->
+    <div id="lw-forgot" class="lw-view">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Enter your email and we'll send you a reset link.</p>
+      <div class="lw-form">
+        <div class="form-group"><label>Email</label><input type="email" id="lw-email-f" placeholder="you@example.com"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-forgot-btn" onclick="lwDoForgot()">Send Reset Link</button>
+      </div>
+      <div class="lw-toggle"><a onclick="lwShowView('login')">← Back to Login</a></div>
+    </div>
+    <!-- MAGIC VIEW -->
+    <div id="lw-magic" class="lw-view">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Enter your email for a one-click login — no password needed.</p>
+      <div class="lw-form">
+        <div class="form-group"><label>Email</label><input type="email" id="lw-email-m" placeholder="you@example.com"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-magic-btn" onclick="lwDoMagic()">✉️ Send Magic Link</button>
+      </div>
+      <div class="lw-toggle"><a onclick="lwShowView('login')">← Back to Login</a></div>
+    </div>
+    <!-- RESET PASSWORD VIEW -->
+    <div id="lw-reset" class="lw-view">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Enter your new password below.</p>
+      <div class="lw-form">
+        <div class="form-group"><label>New Password</label><input type="password" id="lw-pass-r" placeholder="Min 6 characters"></div>
+        <div class="form-group"><label>Confirm Password</label><input type="password" id="lw-pass-r2" placeholder="Confirm new password"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-reset-btn" onclick="lwDoReset()">Update Password</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div id="topbar">
   <div class="site-logo">
@@ -635,10 +737,10 @@ tr:nth-child(even) td{background:#0d162080}
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:4px">Training handbook for reviewers, supervisors, and QC — Version 1.1 | March 31, 2026</p>
     <p style="font-size:.79rem;color:var(--muted);margin-bottom:14px;padding:8px 12px;background:#0e1420;border-radius:6px;border-left:3px solid var(--gold)">⚠️ <strong style="color:var(--gold-light)">Important:</strong> Project-specific instructions always control. If a case team, client, or agency gives a different rule, follow that rule first and use this playbook as the baseline.</p>
     <div class="pb-agency-tabs">
-      <button class="pb-atab pl active" onclick="showAgency('pl',this)">🏛️ PL — Purpose Legal</button>
-      <button class="pb-atab alt" onclick="showAgency('alt',this)">⚖️ ALT — ALTorney</button>
-      <button class="pb-atab cds" onclick="showAgency('cds',this)">📋 CDS</button>
-      <button class="pb-atab tp" onclick="showAgency('tp',this)">🚀 TP — TransPerfect</button>
+      <button class="pb-atab pl active" onclick="showAgency('pl',this)">🏛️ P</button>
+      <button class="pb-atab alt" onclick="showAgency('alt',this)">⚖️ A</button>
+      <button class="pb-atab cds" onclick="showAgency('cds',this)">📋 C</button>
+      <button class="pb-atab tp" onclick="showAgency('tp',this)">🚀 T</button>
       <button class="pb-atab core" onclick="showAgency('core',this)">📌 Core Standards</button>
     </div>
   </div>
@@ -662,7 +764,7 @@ tr:nth-child(even) td{background:#0d162080}
 
   <!-- PL -->
   <div id="pb-pane-pl" class="pb-pane">
-    <div class="agency-header pl"><div class="agency-badge pl">🏛️ PL — Purpose Legal</div><h2 style="color:#7eb8f7;margin-bottom:4px;font-size:1.08rem">Strict and Defensible</h2><p style="font-size:.83rem;color:var(--text2)">Precision matters more than aggressive speed. Best fit: reviewers who can follow rules closely and write clean notes.</p></div>
+    <div class="agency-header pl"><div class="agency-badge pl">🏛️ P</div><h2 style="color:#7eb8f7;margin-bottom:4px;font-size:1.08rem">Strict and Defensible</h2><p style="font-size:.83rem;color:var(--text2)">Precision matters more than aggressive speed. Best fit: reviewers who can follow rules closely and write clean notes.</p></div>
     <div class="card">
       <div class="pb-section"><div class="pb-section-title">Agency Priorities</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><span class="agency-badge pl">Exact rule-following</span><span class="agency-badge pl">Clean escalation</span><span class="agency-badge pl">Low error rate</span><span class="agency-badge pl">Defensible coding</span></div></div>
       <div class="pb-section"><div class="pb-section-title">Unique Rules</div><ul><li>Do not assume documents are non-responsive just because they look routine</li><li>Privilege issues should be escalated early</li><li>Double-check emails with legal counsel names or law firm domains</li></ul></div>
@@ -690,7 +792,7 @@ tr:nth-child(even) td{background:#0d162080}
       <h3 style="color:var(--gold-light);margin-bottom:10px">🖥️ Review Platform Training</h3>
       <div class="platform-tab-bar">
         <button class="platform-tab active" onclick="showPlatform('pl','rel',this)">Relativity</button>
-        <button class="platform-tab" onclick="showPlatform('pl','elv',this)">Elevate</button>
+        <button class="platform-tab" onclick="showPlatform('pl','elv',this)">Everlaw</button>
         <button class="platform-tab" onclick="showPlatform('pl','dis',this)">DISCO</button>
       </div>
       <div id="pl-rel" class="platform-pane active"><ul style="font-size:.82rem"><li>Open a document from the queue, batch, or saved search</li><li>Use the document viewer to read text, email thread, and attachments</li><li>Apply coding in the coding pane or layout fields</li><li>Use highlight tools to find names, dates, privilege clues, and key terms</li><li style="color:#ff8a65">❌ Common mistake: coding before reading attachments or context</li><li style="color:var(--gold-light)">💡 Learn keyboard shortcuts — but never let shortcuts replace judgment</li></ul></div>
@@ -708,7 +810,7 @@ tr:nth-child(even) td{background:#0d162080}
 
   <!-- ALT -->
   <div id="pb-pane-alt" class="pb-pane" style="display:none">
-    <div class="agency-header alt"><div class="agency-badge alt">⚖️ ALT — ALTorney</div><h2 style="color:#4caf50;margin-bottom:4px;font-size:1.08rem">Balanced, Analytical, Discussion-Driven</h2><p style="font-size:.83rem;color:var(--text2)">Attorney-heavy workflow. Pay attention to legal advice hidden in business language. Best fit: reviewers who can think clearly and explain their decisions.</p></div>
+    <div class="agency-header alt"><div class="agency-badge alt">⚖️ A</div><h2 style="color:#4caf50;margin-bottom:4px;font-size:1.08rem">Balanced, Analytical, Discussion-Driven</h2><p style="font-size:.83rem;color:var(--text2)">Attorney-heavy workflow. Pay attention to legal advice hidden in business language. Best fit: reviewers who can think clearly and explain their decisions.</p></div>
     <div class="card">
       <div class="pb-section"><div class="pb-section-title">Agency Priorities</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><span class="agency-badge alt">Context analysis</span><span class="agency-badge alt">Privilege spotting</span><span class="agency-badge alt">Reasoned escalation</span><span class="agency-badge alt">Consistent issue coding</span></div></div>
       <div class="pb-section"><div class="pb-section-title">Unique Rules</div><ul><li>Look for legal advice hidden inside business language</li><li>Do not ignore attachment chains</li><li>Notes should explain the logic behind a call</li></ul></div>
@@ -723,7 +825,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div class="card"><h3 style="color:var(--gold-light);margin-bottom:8px">⚡ Pace: <strong>40–55 docs/hour</strong></h3>
       <div class="platform-tab-bar" style="margin-top:14px">
         <button class="platform-tab active" onclick="showPlatform('alt','rel',this)">Relativity</button>
-        <button class="platform-tab" onclick="showPlatform('alt','elv',this)">Elevate</button>
+        <button class="platform-tab" onclick="showPlatform('alt','elv',this)">Everlaw</button>
         <button class="platform-tab" onclick="showPlatform('alt','dis',this)">DISCO</button>
       </div>
       <div id="alt-rel" class="platform-pane active"><ul style="font-size:.82rem"><li>Open a document from the queue, batch, or saved search</li><li>Use the document viewer to read text, email thread, and attachments</li><li>Apply coding in the coding pane or layout fields</li><li style="color:#ff8a65">❌ Common mistake: coding before reading attachments or context</li></ul></div>
@@ -735,7 +837,7 @@ tr:nth-child(even) td{background:#0d162080}
 
   <!-- CDS -->
   <div id="pb-pane-cds" class="pb-pane" style="display:none">
-    <div class="agency-header cds"><div class="agency-badge cds">📋 CDS — Complete Discovery Source</div><h2 style="color:#b39ddb;margin-bottom:4px;font-size:1.08rem">Structured and Workflow-Heavy</h2><p style="font-size:.83rem;color:var(--text2)">Highly process-oriented. Focus on consistency, documentation, and reliable production flow. Best fit: organized reviewers who are careful with platform steps.</p></div>
+    <div class="agency-header cds"><div class="agency-badge cds">📋 C — Complete Discovery Source</div><h2 style="color:#b39ddb;margin-bottom:4px;font-size:1.08rem">Structured and Workflow-Heavy</h2><p style="font-size:.83rem;color:var(--text2)">Highly process-oriented. Focus on consistency, documentation, and reliable production flow. Best fit: organized reviewers who are careful with platform steps.</p></div>
     <div class="card">
       <div class="pb-section"><div class="pb-section-title">Agency Priorities</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><span class="agency-badge cds">Batch discipline</span><span class="agency-badge cds">Consistency</span><span class="agency-badge cds">Clean tagging</span><span class="agency-badge cds">Low rework</span></div></div>
       <div class="pb-section"><div class="pb-section-title">Unique Rules</div><ul><li>Follow folder, batch, and queue rules exactly</li><li>Keep an eye on saved searches and document sets</li><li>Do not drift from the batch standard because a document looks unusual</li></ul></div>
@@ -747,7 +849,7 @@ tr:nth-child(even) td{background:#0d162080}
 
   <!-- TP -->
   <div id="pb-pane-tp" class="pb-pane" style="display:none">
-    <div class="agency-header tp"><div class="agency-badge tp">🚀 TP — TransPerfect</div><h2 style="color:#ff8a65;margin-bottom:4px;font-size:1.08rem">Operational, Metrics-Aware, Production-Oriented</h2><p style="font-size:.83rem;color:var(--text2)">Production-focused. Projects move quickly — balance pace with quality. Rewards clean throughput, strong discipline, and fast escalation of exceptions.</p></div>
+    <div class="agency-header tp"><div class="agency-badge tp">🚀 T</div><h2 style="color:#ff8a65;margin-bottom:4px;font-size:1.08rem">Operational, Metrics-Aware, Production-Oriented</h2><p style="font-size:.83rem;color:var(--text2)">Production-focused. Projects move quickly — balance pace with quality. Rewards clean throughput, strong discipline, and fast escalation of exceptions.</p></div>
     <div class="card">
       <div class="pb-section"><div class="pb-section-title">Agency Priorities</div><div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:6px"><span class="agency-badge tp">Throughput</span><span class="agency-badge tp">Clear communication</span><span class="agency-badge tp">Exception handling</span><span class="agency-badge tp">Reliable accuracy</span></div></div>
       <div class="pb-section"><div class="pb-section-title">Unique Rules</div><ul><li>Do not hide uncertainty</li><li>Use short and direct escalation notes</li><li>Watch deadlines and production checkpoints closely</li></ul></div>
@@ -1394,6 +1496,135 @@ async function adminReset(uid,name){
   if(r.error){alert('Error: '+r.error);return;}
   alert('Scores for "'+name+'" have been cleared.');loadAdmin();
 }
+
+
+// ══════════════════════════════════════════
+// LOGIN WALL
+// ══════════════════════════════════════════
+function lwShowView(v){
+  document.querySelectorAll('.lw-view').forEach(function(el){el.classList.remove('active');});
+  var el=document.getElementById('lw-'+v);if(el)el.classList.add('active');
+  lwClear();
+}
+function lwClear(){
+  var e=document.getElementById('lw-err'),o=document.getElementById('lw-ok');
+  e.style.display='none';e.textContent='';o.style.display='none';o.textContent='';
+}
+function lwErr(msg){var e=document.getElementById('lw-err');e.textContent=msg;e.style.display='block';}
+function lwOk(msg){var o=document.getElementById('lw-ok');o.textContent=msg;o.style.display='block';}
+
+function lwHide(){
+  var wall=document.getElementById('login-wall');
+  wall.style.opacity='0';wall.style.transition='opacity .4s';
+  setTimeout(function(){wall.style.display='none';},420);
+}
+
+async function lwDoLogin(){
+  var email=document.getElementById('lw-email').value.trim();
+  var pass=document.getElementById('lw-pass').value;
+  lwClear();
+  if(!email||!pass){lwErr('Please enter your email and password.');return;}
+  var btn=document.getElementById('lw-login-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Logging in...';
+  var r=await SB.signIn(email,pass);
+  btn.disabled=false;btn.innerHTML='Log In →';
+  if(r.error){lwErr(r.error);return;}
+  onLogin();lwHide();
+}
+
+async function lwDoSignup(){
+  var name=document.getElementById('lw-name').value.trim();
+  var email=document.getElementById('lw-email-s').value.trim();
+  var pass=document.getElementById('lw-pass-s').value;
+  lwClear();
+  if(!name||!email||!pass){lwErr('Please fill in all fields.');return;}
+  if(pass.length<6){lwErr('Password must be at least 6 characters.');return;}
+  var btn=document.getElementById('lw-signup-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account...';
+  var r=await SB.signUp(email,pass,name);
+  btn.disabled=false;btn.innerHTML='Create Account';
+  if(r.error){lwErr(r.error);return;}
+  lwOk('\u2705 Account created! Check your email to confirm, then log in.');
+  setTimeout(function(){lwShowView('login');},3000);
+}
+
+async function lwDoForgot(){
+  var email=document.getElementById('lw-email-f').value.trim();
+  lwClear();
+  if(!email){lwErr('Please enter your email address.');return;}
+  var btn=document.getElementById('lw-forgot-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
+  var r=await SB.sendPasswordReset(email);
+  btn.disabled=false;btn.innerHTML='Send Reset Link';
+  if(r.error){lwErr(r.error);return;}
+  lwOk('\u2705 Reset link sent! Check your email inbox.');
+}
+
+async function lwDoMagic(){
+  var email=document.getElementById('lw-email-m').value.trim();
+  lwClear();
+  if(!email){lwErr('Please enter your email address.');return;}
+  var btn=document.getElementById('lw-magic-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
+  var r=await SB.sendMagicLink(email);
+  btn.disabled=false;btn.innerHTML='\u2709\ufe0f Send Magic Link';
+  if(r.error){lwErr(r.error);return;}
+  lwOk('\u2705 Magic link sent! Check your email.');
+}
+
+async function lwDoReset(){
+  var p1=document.getElementById('lw-pass-r').value;
+  var p2=document.getElementById('lw-pass-r2').value;
+  lwClear();
+  if(!p1||p1.length<6){lwErr('Password must be at least 6 characters.');return;}
+  if(p1!==p2){lwErr('Passwords do not match.');return;}
+  var btn=document.getElementById('lw-reset-btn');
+  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Updating...';
+  var r=await SB.updatePassword(p1);
+  btn.disabled=false;btn.innerHTML='Update Password';
+  if(r.error){lwErr(r.error);return;}
+  lwOk('\u2705 Password updated! Logging you in...');
+  setTimeout(function(){onLogin();lwHide();},1800);
+}
+
+// Override onLogin to also hide the wall
+var _originalOnLogin = onLogin;
+onLogin = function(){
+  _originalOnLogin();
+  lwHide();
+};
+
+// Override logout to show the wall again
+var _originalLogout = logout;
+logout = async function(){
+  await SB.signOut();
+  document.getElementById('user-pill').style.display='none';
+  document.getElementById('btn-login').style.display='inline-block';
+  document.getElementById('btn-logout').style.display='none';
+  document.getElementById('btn-admin').style.display='none';
+  if(currentPage==='quiz')initQuizPage();
+  // Show wall again
+  var wall=document.getElementById('login-wall');
+  wall.style.display='flex';wall.style.opacity='0';
+  setTimeout(function(){wall.style.transition='opacity .4s';wall.style.opacity='1';},10);
+  lwShowView('login');
+};
+
+// Handle password reset token on wall
+(function checkWallReset(){
+  var wall=document.getElementById('login-wall');
+  if(!wall)return;
+  // If token was a recovery token, show reset form on the wall
+  var hash=window.location.hash;
+  if(hash){
+    var params=new URLSearchParams(hash.replace('#',''));
+    if(params.get('type')==='recovery'&&params.get('access_token')){
+      SB.token=params.get('access_token');
+      window.history.replaceState(null,'',window.location.pathname);
+      lwShowView('reset');
+    }
+  }
+})();
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 </script>
