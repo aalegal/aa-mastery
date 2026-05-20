@@ -1425,16 +1425,7 @@ const SB={
   async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)}
 };
 
-(function checkAuthToken(){
-  const hash=window.location.hash;if(!hash)return;
-  const params=new URLSearchParams(hash.replace('#',''));
-  const type=params.get('type'),accessToken=params.get('access_token');
-  if(!accessToken)return;
-  window.history.replaceState(null,'',window.location.pathname);
-  SB.token=accessToken;
-  if(type==='recovery'){openModal('reset');}
-  else if(type==='magiclink'||type==='signup'||type==='email'){axios({method:'GET',url:SB.url+'/auth/v1/user',headers:SB.hdr()}).then(function(r){if(r.data?.id){SB.user=r.data;onLogin();}}).catch(function(){});}
-})();
+// Token handling moved to checkWallToken() below — runs after DOM is ready
 
 let currentPage='home';
 function nav(p){
@@ -1890,39 +1881,71 @@ async function adminReset(uid,name){
 
 
 // ══════════════════════════════════════════
-// LOGIN WALL
+// LOGIN WALL — CLEAN IMPLEMENTATION
 // ══════════════════════════════════════════
 function lwShowView(v){
   document.querySelectorAll('.lw-view').forEach(function(el){el.classList.remove('active');});
-  var el=document.getElementById('lw-'+v);if(el)el.classList.add('active');
+  var el=document.getElementById('lw-'+v);
+  if(el) el.classList.add('active');
   lwClear();
 }
+
 function lwClear(){
-  var e=document.getElementById('lw-err'),o=document.getElementById('lw-ok');
-  e.style.display='none';e.textContent='';o.style.display='none';o.textContent='';
+  var e=document.getElementById('lw-err');
+  var o=document.getElementById('lw-ok');
+  if(e){e.style.display='none';e.textContent='';}
+  if(o){o.style.display='none';o.textContent='';}
 }
-function lwErr(msg){var e=document.getElementById('lw-err');e.textContent=msg;e.style.display='block';}
-function lwOk(msg){var o=document.getElementById('lw-ok');o.textContent=msg;o.style.display='block';}
+
+function lwErr(msg){
+  var e=document.getElementById('lw-err');
+  if(e){e.textContent=msg;e.style.display='block';}
+}
+
+function lwOk(msg){
+  var o=document.getElementById('lw-ok');
+  if(o){o.textContent=msg;o.style.display='block';}
+}
 
 function lwHide(){
   var wall=document.getElementById('login-wall');
-  wall.style.opacity='0';wall.style.transition='opacity .4s';
-  setTimeout(function(){wall.style.display='none';},420);
+  if(!wall) return;
+  wall.style.transition='opacity .35s';
+  wall.style.opacity='0';
+  setTimeout(function(){wall.style.display='none';},380);
 }
 
+function lwShow(){
+  var wall=document.getElementById('login-wall');
+  if(!wall) return;
+  wall.style.display='flex';
+  wall.style.opacity='0';
+  setTimeout(function(){wall.style.transition='opacity .35s';wall.style.opacity='1';},10);
+  lwShowView('login');
+}
+
+// ── SIGN IN ──
 async function lwDoLogin(){
   var email=document.getElementById('lw-email').value.trim();
   var pass=document.getElementById('lw-pass').value;
   lwClear();
   if(!email||!pass){lwErr('Please enter your email and password.');return;}
   var btn=document.getElementById('lw-login-btn');
-  btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Logging in...';
+  btn.disabled=true;
+  btn.innerHTML='<span class="spinner"></span>Logging in...';
   var r=await SB.signIn(email,pass);
-  btn.disabled=false;btn.innerHTML='Log In →';
-  if(r.error){lwErr(r.error);return;}
-  onLogin();lwHide();
+  btn.disabled=false;
+  btn.innerHTML='Log In \u2192';
+  if(r.error){
+    lwErr(r.error);
+    return;
+  }
+  // Successful login
+  lwHide();
+  onLogin();
 }
 
+// ── SIGN UP ──
 async function lwDoSignup(){
   var name=document.getElementById('lw-name').value.trim();
   var email=document.getElementById('lw-email-s').value.trim();
@@ -1939,6 +1962,7 @@ async function lwDoSignup(){
   setTimeout(function(){lwShowView('login');},3000);
 }
 
+// ── FORGOT PASSWORD ──
 async function lwDoForgot(){
   var email=document.getElementById('lw-email-f').value.trim();
   lwClear();
@@ -1948,9 +1972,10 @@ async function lwDoForgot(){
   var r=await SB.sendPasswordReset(email);
   btn.disabled=false;btn.innerHTML='Send Reset Link';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Reset link sent! Check your email inbox.');
+  lwOk('\u2705 Reset link sent! Check your inbox.');
 }
 
+// ── MAGIC LINK ──
 async function lwDoMagic(){
   var email=document.getElementById('lw-email-m').value.trim();
   lwClear();
@@ -1963,6 +1988,7 @@ async function lwDoMagic(){
   lwOk('\u2705 Magic link sent! Check your email.');
 }
 
+// ── RESET PASSWORD ──
 async function lwDoReset(){
   var p1=document.getElementById('lw-pass-r').value;
   var p2=document.getElementById('lw-pass-r2').value;
@@ -1974,46 +2000,42 @@ async function lwDoReset(){
   var r=await SB.updatePassword(p1);
   btn.disabled=false;btn.innerHTML='Update Password';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Password updated! Logging you in...');
-  setTimeout(function(){onLogin();lwHide();},1800);
+  lwOk('\u2705 Password updated!');
+  setTimeout(function(){lwHide();onLogin();},1800);
 }
 
-// Override onLogin to also hide the wall
-var _originalOnLogin = onLogin;
-onLogin = function(){
-  _originalOnLogin();
-  lwHide();
-};
-
-// Override logout to show the wall again
-var _originalLogout = logout;
-logout = async function(){
+// ── LOGOUT → show wall ──
+var _origLogout=logout;
+logout=async function(){
   await SB.signOut();
   document.getElementById('user-pill').style.display='none';
   document.getElementById('btn-login').style.display='inline-block';
   document.getElementById('btn-logout').style.display='none';
   document.getElementById('btn-admin').style.display='none';
-  if(currentPage==='quiz')initQuizPage();
-  // Show wall again
-  var wall=document.getElementById('login-wall');
-  wall.style.display='flex';wall.style.opacity='0';
-  setTimeout(function(){wall.style.transition='opacity .4s';wall.style.opacity='1';},10);
-  lwShowView('login');
+  if(currentPage==='quiz') initQuizPage();
+  lwShow();
 };
 
-// Handle password reset token on wall
-(function checkWallReset(){
-  var wall=document.getElementById('login-wall');
-  if(!wall)return;
-  // If token was a recovery token, show reset form on the wall
+// ── MAGIC LINK / PASSWORD RESET token handling ──
+(function checkWallToken(){
   var hash=window.location.hash;
-  if(hash){
-    var params=new URLSearchParams(hash.replace('#',''));
-    if(params.get('type')==='recovery'&&params.get('access_token')){
-      SB.token=params.get('access_token');
-      window.history.replaceState(null,'',window.location.pathname);
-      lwShowView('reset');
-    }
+  if(!hash) return;
+  var params=new URLSearchParams(hash.replace('#',''));
+  var type=params.get('type');
+  var token=params.get('access_token');
+  if(!token) return;
+  window.history.replaceState(null,'',window.location.pathname);
+  SB.token=token;
+  if(type==='recovery'){
+    lwShowView('reset');
+  } else if(type==='magiclink'||type==='signup'||type==='email'){
+    axios({method:'GET',url:SB.url+'/auth/v1/user',headers:SB.hdr()}).then(function(res){
+      if(res.data&&res.data.id){
+        SB.user=res.data;
+        lwHide();
+        onLogin();
+      }
+    }).catch(function(){});
   }
 })();
 
@@ -2030,15 +2052,15 @@ const REL_DOCS = [
     subject:'Re: Final Day Logistics',
     from:'Bukando <bukando@jobacompany.com>', to:'Adaeze Nwosu (HR) <hr@jobacompany.com>',
     date:'March 14, 2024 · 4:47 PM', hasAttachment:true, attachmentName:'offboarding_checklist.pdf', attachmentSize:'118 KB',
-    body:`Adaeze,
+    body:'Adaeze,
 
-Thanks for sending over the offboarding checklist. I'll have everything squared away before EOD Friday.
+Thanks for sending over the offboarding checklist. I\'ll have everything squared away before EOD Friday.
 
-I did want to flag — I've been backing up some of my personal project files to my external drive over the past week. These are documents I personally authored during my time here that I believe I'm entitled to retain. I'll make sure to delete any Joba-owned materials before I go.
+I did want to flag — I\'ve been backing up some of my personal project files to my external drive over the past week. These are documents I personally authored during my time here that I believe I\'m entitled to retain. I\'ll make sure to delete any Joba-owned materials before I go.
 
-Let me know if there's anything else you need from my side.
+Let me know if there\'s anything else you need from my side.
 
-Bukando`,
+Bukando',
     thread: [
       {from:'Adaeze Nwosu (HR)', date:'March 14, 2024 · 9:12 AM', text:'Hi Bukando, please see the attached offboarding checklist. IT will collect your laptop on Friday at 3pm. Please ensure all company data is removed from personal devices. Thank you.'}
     ],
@@ -2050,9 +2072,9 @@ Bukando`,
     subject:'PRIVILEGED AND CONFIDENTIAL: Initial Assessment — Bukando Matter',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'March 18, 2024 · 10:22 AM', hasAttachment:false,
-    body:`Kwame,
+    body:'Kwame,
 
-I'm writing pursuant to your request for legal advice on the Bukando matter. This communication is protected by attorney-client privilege and should not be forwarded or shared.
+I\'m writing pursuant to your request for legal advice on the Bukando matter. This communication is protected by attorney-client privilege and should not be forwarded or shared.
 
 Based on my initial review:
 
@@ -2062,10 +2084,10 @@ Based on my initial review:
 
 3. I recommend we preserve all IT logs, access records, and USB transfer records immediately.
 
-I'll have a full memorandum ready by end of week.
+I\'ll have a full memorandum ready by end of week.
 
 Mariam
-Mariam & Associates LLP`,
+Mariam & Associates LLP',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged — classic ACP. Mariam is acting as outside legal counsel, providing legal advice to the client (CEO Joba) on the merits of the claim. Responsive to Issues 1 and 2. Must be withheld and logged on the privilege log. Attorneys Eyes Only.'
   },
@@ -2075,7 +2097,7 @@ Mariam & Associates LLP`,
     from:'Adaeze Nwosu (HR) <hr@jobacompany.com>', to:'Bukando <bukando@jobacompany.com>',
     cc:'Manager Tolu Adeyemi <tolu@jobacompany.com>',
     date:'January 8, 2024 · 2:15 PM', hasAttachment:true, attachmentName:'Q4_2023_Performance_Review_Bukando.pdf', attachmentSize:'245 KB',
-    body:`Dear Bukando,
+    body:'Dear Bukando,
 
 Please find attached your Q4 2023 performance review. Overall, your rating is "Meets Expectations" (3/5).
 
@@ -2087,7 +2109,7 @@ Key observations from your manager:
 Please sign and return the attached form by January 15. A follow-up meeting has been scheduled for January 12 at 10am.
 
 Adaeze
-HR Director, Joba Company`,
+HR Director, Joba Company',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4 (Wrongful Termination Counterclaim). Bukando will argue this review proves he was performing adequately and that termination was pretextual. Not privileged — HR communication, no legal advice.'
   },
@@ -2096,15 +2118,15 @@ HR Director, Joba Company`,
     subject:'Re: Exciting Opportunity — Rival Analytics',
     from:'Bukando <bukandopersonal@gmail.com>', to:'Rival Analytics Recruiter <talent@rivalanalytics.com>',
     date:'February 28, 2024 · 9:03 PM', hasAttachment:false,
-    body:`Hi Farida,
+    body:'Hi Farida,
 
-Thank you for reaching out. I've given this a lot of thought and I'm genuinely excited about the Senior Engineer role at Rival Analytics.
+Thank you for reaching out. I\'ve given this a lot of thought and I\'m genuinely excited about the Senior Engineer role at Rival Analytics.
 
-I should mention — I've been working on some algorithms at Joba that I believe have real commercial potential beyond what they're using them for. I'd love to discuss how my work experience might translate to what Rival is building.
+I should mention — I\'ve been working on some algorithms at Joba that I believe have real commercial potential beyond what they\'re using them for. I\'d love to discuss how my work experience might translate to what Rival is building.
 
 I can start in April. Looking forward to speaking more.
 
-Bukando`,
+Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Highly responsive to Issues 2 and 3. Bukando's statement that his algorithms "have real commercial potential beyond what Joba is using them for" is a strong indicator of misappropriation intent. Sent from personal email account — no privilege applies.'
   },
@@ -2114,9 +2136,9 @@ Bukando`,
     from:'IT Security <security@jobacompany.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     cc:'Adaeze Nwosu (HR) <hr@jobacompany.com>',
     date:'March 15, 2024 · 7:44 AM', hasAttachment:true, attachmentName:'USB_transfer_log_Mar14.xlsx', attachmentSize:'87 KB',
-    body:`Dear Mr. Joba,
+    body:'Dear Mr. Joba,
 
-Our security monitoring system flagged unusual activity on Bukando's workstation on March 14, 2024 between 6:02 PM and 8:47 PM.
+Our security monitoring system flagged unusual activity on Bukando\'s workstation on March 14, 2024 between 6:02 PM and 8:47 PM.
 
 Summary:
 - USB device connected: SanDisk 64GB (Serial: SD-8847-XX)
@@ -2128,7 +2150,7 @@ The folders accessed contain proprietary source code and client data models clas
 
 Please advise on next steps. The logs are attached.
 
-IT Security`,
+IT Security',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Core responsive document for Issue 2. The IT security alert is direct evidence of the trade secret theft — specific folders, file counts, and timestamps. No privilege — this is a business email from IT to management, not legal advice.'
   },
@@ -2137,7 +2159,7 @@ IT Security`,
     subject:'FW: PRIVILEGED: Litigation Hold Notice — All Staff',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'March 20, 2024 · 11:00 AM', hasAttachment:true, attachmentName:'Litigation_Hold_Notice_March2024.pdf', attachmentSize:'92 KB',
-    body:`Kwame,
+    body:'Kwame,
 
 Attached is the litigation hold notice I recommend we issue immediately to all relevant custodians. This preserves our obligations and protects the evidentiary record.
 
@@ -2145,7 +2167,7 @@ The notice covers: all communications with or about Bukando, all access logs and
 
 Please approve and I will arrange distribution today.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP. Mariam is counsel issuing a litigation hold — a core attorney function. The attached hold notice is also privileged. Both parent email and attachment must be withheld.'
   },
@@ -2154,7 +2176,7 @@ Mariam`,
     subject:'Q1 2024 All-Hands Meeting Agenda',
     from:'CEO Kwame Joba <ceo@jobacompany.com>', to:'All Staff <allstaff@jobacompany.com>',
     date:'January 15, 2024 · 8:30 AM', hasAttachment:false,
-    body:`Team,
+    body:'Team,
 
 Joining us for the Q1 all-hands on January 22 at 2pm EST. Agenda includes:
 
@@ -2165,7 +2187,7 @@ Joining us for the Q1 all-hands on January 22 at 2pm EST. Agenda includes:
 
 Lunch will be provided. See you there!
 
-Kwame`,
+Kwame',
     answer:{responsive:'non-responsive', privilege:'not-privileged', issues:[], action:'produce', conf:'standard'},
     explanation:'Non-responsive. This is a routine all-hands meeting agenda with no connection to the NDA, trade secrets, Bukando's termination, or competitive damage. The custodian (CEO) is relevant to the case but this document has no case-relevant content.'
   },
@@ -2174,7 +2196,7 @@ Kwame`,
     subject:'Re: Formal Complaint — Hostile Work Environment',
     from:'Bukando <bukando@jobacompany.com>', to:'Adaeze Nwosu (HR) <hr@jobacompany.com>',
     date:'February 5, 2024 · 3:28 PM', hasAttachment:false,
-    body:`Adaeze,
+    body:'Adaeze,
 
 I want to formally document my complaint against my direct manager, Tolu Adeyemi. Over the past three months, I have been:
 
@@ -2184,7 +2206,7 @@ I want to formally document my complaint against my direct manager, Tolu Adeyemi
 
 I believe this constitutes a hostile work environment and is affecting my ability to perform. I am requesting a formal HR investigation.
 
-Bukando`,
+Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. This is Bukando's formal complaint establishing the factual basis for his wrongful termination counterclaim (constructive dismissal). Kiwingo LLP will use this to argue the termination was retaliatory.'
   },
@@ -2193,20 +2215,20 @@ Bukando`,
     subject:'PRIVILEGED: Strategy Call — Injunction Options',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'Litigation Partner Dele Okafor <dele@mariamassociates.com>',
     date:'March 22, 2024 · 4:15 PM', hasAttachment:false,
-    body:`Dele,
+    body:'Dele,
 
 Following up on our call re: the Bukando matter. I want to document our strategic thinking (attorney WP).
 
 We have three viable paths:
 1. Preliminary injunction to prevent Rival Analytics from using the stolen code
 2. TRO if we can show imminent irreparable harm
-3. Letter to Rival's counsel demanding a forensic audit of Bukando's work
+3. Letter to Rival\'s counsel demanding a forensic audit of Bukando\'s work
 
 The USB logs are our strongest evidence right now. We need the forensic expert report before we can establish exactly what was taken.
 
-I'll draft the injunction motion for your review. Keep this strictly between us.
+I\'ll draft the injunction motion for your review. Keep this strictly between us.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Both ACP and Work Product. This is an attorney-to-attorney strategy memo about litigation options — the epitome of attorney work product. Also ACP as legal advice. Must be withheld, logged as ACP+WPP, Attorneys Eyes Only.'
   },
@@ -2215,15 +2237,15 @@ Mariam`,
     subject:'Personal: Job Hunting Update',
     from:'Bukando <bukandopersonal@gmail.com>', to:'Friend Emeka <emeka.obi@gmail.com>',
     date:'February 20, 2024 · 10:14 PM', hasAttachment:false,
-    body:`Emeka,
+    body:'Emeka,
 
-Bro, things at Joba are getting bad. I've been looking around. You know how it is — when they start sidelining you it's only a matter of time.
+Bro, things at Joba are getting bad. I\'ve been looking around. You know how it is — when they start sidelining you it\'s only a matter of time.
 
-I got a call from Rival Analytics last week. Good money, interesting work. I'm thinking about it.
+I got a call from Rival Analytics last week. Good money, interesting work. I\'m thinking about it.
 
-How's your side going?
+How\'s your side going?
 
-Bukando`,
+Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. This personal email shows Bukando was already planning to leave and felt marginalized at Joba — relevant to the constructive dismissal counterclaim. No privilege — personal email between friends.'
   },
@@ -2232,9 +2254,9 @@ Bukando`,
     subject:'DataPulse v3 — Repository Access Log Request',
     from:'CEO Kwame Joba <ceo@jobacompany.com>', to:'IT Security <security@jobacompany.com>',
     date:'March 16, 2024 · 9:30 AM', hasAttachment:false,
-    body:`IT Team,
+    body:'IT Team,
 
-Following yesterday's USB alert, please pull complete access logs for the following for the past 90 days:
+Following yesterday\'s USB alert, please pull complete access logs for the following for the past 90 days:
 
 - DataPulse v3 source repository
 - Pricing Engine models directory
@@ -2242,7 +2264,7 @@ Following yesterday's USB alert, please pull complete access logs for the follow
 
 I need to understand the full scope of what was accessed and when. Please treat this as urgent.
 
-Kwame`,
+Kwame',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 2. The CEO's instruction to pull access logs is a key step in establishing what trade secrets were accessed and potentially stolen. Not privileged — internal business communication, no lawyer involved.'
   },
@@ -2251,19 +2273,19 @@ Kwame`,
     subject:'Re: Engagement Letter — Forensic Expert',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'Digital Forensics Expert Dr. Ling Wu <ling@techforensics.com>',
     date:'March 25, 2024 · 2:00 PM', hasAttachment:false,
-    body:`Dr. Wu,
+    body:'Dr. Wu,
 
 Thank you for agreeing to serve as our forensic expert in the above matter. As discussed, you are being engaged at the direction of litigation counsel (Mariam & Associates LLP) to:
 
-1. Analyze the USB transfer logs from Bukando's workstation
+1. Analyze the USB transfer logs from Bukando\'s workstation
 2. Identify all files transferred on March 14, 2024
-3. Compare against Joba Company's proprietary code repository to determine overlap
+3. Compare against Joba Company\'s proprietary code repository to determine overlap
 
 All findings should be reported directly and exclusively to me. This engagement is covered by attorney-client privilege and work product protection.
 
 Please execute the attached engagement letter and return by March 27.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP + WPP. Mariam is retaining a forensic expert for litigation purposes — the expert's work will be work product. The engagement letter itself is a privileged attorney communication. Withhold entirely.'
   },
@@ -2273,19 +2295,19 @@ Mariam`,
     from:'Adaeze Nwosu (HR) <hr@jobacompany.com>', to:'Bukando <bukando@jobacompany.com>',
     cc:'CEO Kwame Joba <ceo@jobacompany.com>', date:'March 15, 2024 · 5:00 PM', hasAttachment:true,
     attachmentName:'Termination_Letter_Bukando_Mar2024.pdf', attachmentSize:'156 KB',
-    body:`Dear Bukando,
+    body:'Dear Bukando,
 
 This letter serves as formal notice that your employment with Joba Company is terminated effective immediately, March 15, 2024, for cause.
 
 The basis for termination is as follows:
 - Unauthorized transfer of company proprietary data
 - Violation of your Employment Agreement and NDA dated January 10, 2020
-- Breach of Joba Company's Data Security Policy
+- Breach of Joba Company\'s Data Security Policy
 
 You are required to return all company property immediately. You are reminded that your confidentiality obligations survive termination.
 
 Adaeze Nwosu
-HR Director`,
+HR Director',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1','issue4'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issues 1 and 4. This is the actual termination notice — the central document in the wrongful termination counterclaim and it references NDA breach as the cause. No privilege — HR letter, not a legal communication.'
   },
@@ -2294,7 +2316,7 @@ HR Director`,
     subject:'Fwd: Rival Analytics Product Launch — DataFlow Pro',
     from:'CEO Kwame Joba <ceo@jobacompany.com>', to:'Mariam Osei (GC) <mariam@mariamassociates.com>',
     date:'April 8, 2024 · 7:22 AM', hasAttachment:false,
-    body:`Mariam,
+    body:'Mariam,
 
 See below. Rival Analytics just launched "DataFlow Pro" this week. The pricing model and data architecture in their marketing materials look almost identical to what we built in DataPulse v3.
 
@@ -2307,7 +2329,7 @@ From: Tech Newsletter <news@techinsider.com>
 
 Rival Analytics Disrupts Market with DataFlow Pro Launch...
 The new product, DataFlow Pro, features an AI-driven pricing algorithm and enterprise data model that has analysts comparing it favorably to the industry-leading DataPulse platform...
-`,
+',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issues 2 and 3. The CEO forwarding a competitor's product launch that mirrors Joba's proprietary tech is direct evidence of competitive damage from the alleged trade secret theft. The CEO's instruction to Mariam is business direction — not requesting legal advice in the email itself, so no privilege applies to this email (though Mariam's response would be).'
   },
@@ -2316,11 +2338,11 @@ The new product, DataFlow Pro, features an AI-driven pricing algorithm and enter
     subject:'Re: NDA Acknowledgment — 2020 Annual Review',
     from:'Bukando <bukando@jobacompany.com>', to:'Adaeze Nwosu (HR) <hr@jobacompany.com>',
     date:'January 14, 2020 · 11:05 AM', hasAttachment:false,
-    body:`Hi Adaeze,
+    body:'Hi Adaeze,
 
-Acknowledged. I've read and understood the NDA. Signing now.
+Acknowledged. I\'ve read and understood the NDA. Signing now.
 
-Bukando`,
+Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 1. This email is Bukando's acknowledgment of the NDA — foundational evidence that he knew about and agreed to the confidentiality obligations he is accused of breaching. No privilege.'
   },
@@ -2329,13 +2351,13 @@ Bukando`,
     subject:'Holiday Party — December 20 RSVP',
     from:'Adaeze Nwosu (HR) <hr@jobacompany.com>', to:'All Staff <allstaff@jobacompany.com>',
     date:'December 5, 2023 · 10:00 AM', hasAttachment:false,
-    body:`Hi everyone,
+    body:'Hi everyone,
 
 Please RSVP for the Joba Company Holiday Party on December 20 at 6pm at The Grand Pavilion.
 
 Food, drinks, and awards ceremony included. Partners welcome!
 
-Adaeze`,
+Adaeze',
     answer:{responsive:'non-responsive', privilege:'not-privileged', issues:[], action:'produce', conf:'standard'},
     explanation:'Non-responsive. Holiday party invitation. No connection to any case issue despite HR custodian. The Four Corners test requires actual case-relevant content within the document itself.'
   },
@@ -2344,7 +2366,7 @@ Adaeze`,
     subject:'PRIVILEGED: Draft Complaint — Joba Company v. Bukando',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'April 1, 2024 · 5:45 PM', hasAttachment:true, attachmentName:'Draft_Complaint_v1.docx', attachmentSize:'310 KB',
-    body:`Kwame,
+    body:'Kwame,
 
 Attached is the draft complaint for your review. The claims are:
 
@@ -2355,7 +2377,7 @@ Count IV: Tortious Interference (against Rival Analytics)
 
 Please review and flag any factual corrections. Do not share with anyone outside counsel.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP + WPP. Draft complaint prepared by outside counsel is quintessential attorney work product. Also ACP — legal advice from counsel to client. Both email and attachment are privileged. Withhold and log.'
   },
@@ -2364,11 +2386,11 @@ Mariam`,
     subject:'Re: Bukando Promotion Decision',
     from:'CEO Kwame Joba <ceo@jobacompany.com>', to:'Manager Tolu Adeyemi <tolu@jobacompany.com>',
     date:'November 15, 2023 · 6:30 PM', hasAttachment:false,
-    body:`Tolu,
+    body:'Tolu,
 
-On reflection, let's hold off on the Bukando promotion for now. He's good technically but the culture fit concerns are real. Keep this between us for now — I don't want it turning into a thing.
+On reflection, let\'s hold off on the Bukando promotion for now. He\'s good technically but the culture fit concerns are real. Keep this between us for now — I don\'t want it turning into a thing.
 
-Kwame`,
+Kwame',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 4. The CEO secretly blocking Bukando's promotion and telling the manager to keep it quiet is critical evidence for the wrongful termination / constructive dismissal counterclaim. No privilege — business email, no legal advice.'
   },
@@ -2377,15 +2399,15 @@ Kwame`,
     subject:'Re: Welcome to Rival Analytics — Onboarding Week',
     from:'Rival Analytics HR <hr@rivalanalytics.com>', to:'Bukando <bukando@rivalanalytics.com>',
     date:'April 8, 2024 · 9:00 AM', hasAttachment:false,
-    body:`Welcome Bukando!
+    body:'Welcome Bukando!
 
-We're thrilled to have you join our engineering team. Your first week schedule is attached. You'll be working directly with the DataFlow Pro team starting Monday.
+We\'re thrilled to have you join our engineering team. Your first week schedule is attached. You\'ll be working directly with the DataFlow Pro team starting Monday.
 
 Please bring any personal work files or notes that might be helpful for your onboarding.
 
 Looking forward to having you!
 
-Rival Analytics HR`,
+Rival Analytics HR',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 3. This confirms Bukando started working on DataFlow Pro (the product that allegedly incorporates Joba's stolen trade secrets) immediately upon joining Rival. The invitation to "bring personal work files" is also notable.'
   },
@@ -2394,20 +2416,20 @@ Rival Analytics HR`,
     subject:'Forensic Expert Report — Findings Summary',
     from:'Dr. Ling Wu <ling@techforensics.com>', to:'Mariam Osei (GC) <mariam@mariamassociates.com>',
     date:'April 15, 2024 · 3:00 PM', hasAttachment:true, attachmentName:'Forensic_Report_Bukando_FINAL.pdf', attachmentSize:'1.8 MB',
-    body:`Dear Ms. Osei,
+    body:'Dear Ms. Osei,
 
 Please find attached the final forensic report as requested.
 
 Executive Summary:
 - 1,247 files identified as Joba proprietary source code were copied to the USB device
-- 89% overlap identified between Bukando's USB contents and Joba's DataPulse v3 repository
+- 89% overlap identified between Bukando\'s USB contents and Joba\'s DataPulse v3 repository
 - Pricing engine algorithm (PEA-v2.3) copied in full
 - Transfer timestamps: March 14, 2024, 6:02 PM – 8:47 PM
 
 Full technical findings in the attached report.
 
 Dr. Ling Wu
-TechForensics LLC`,
+TechForensics LLC',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged WPP (and ACP). The forensic report was commissioned by counsel for litigation purposes — it is attorney work product. The 89% code overlap finding is explosive evidence. Withhold from production. Log as WPP.'
   },
@@ -2416,11 +2438,11 @@ TechForensics LLC`,
     subject:'Re: DataPulse v3 — Code Review Request',
     from:'Bukando <bukando@jobacompany.com>', to:'Dev Team <devteam@jobacompany.com>',
     date:'February 1, 2024 · 2:30 PM', hasAttachment:false,
-    body:`Team,
+    body:'Team,
 
-Here are my final notes on the DataPulse v3 pricing engine module. I've documented the full algorithm logic including the adaptive weighting parameters — this is the secret sauce that makes our pricing 40% more accurate than the market.
+Here are my final notes on the DataPulse v3 pricing engine module. I\'ve documented the full algorithm logic including the adaptive weighting parameters — this is the secret sauce that makes our pricing 40% more accurate than the market.
 
-Bukando`,
+Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 2. Bukando himself describes the pricing engine as "secret sauce" and documents the full algorithm — showing he had access to and deep knowledge of the core trade secret in question. Not privileged.'
   },
@@ -2429,13 +2451,13 @@ Bukando`,
     subject:'Re: Client Inquiry — DataPulse Enterprise',
     from:'Enterprise Client TechCorp <enterprise@techcorp.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'May 3, 2024 · 11:00 AM', hasAttachment:false,
-    body:`Kwame,
+    body:'Kwame,
 
-We've reviewed both DataPulse and the new DataFlow Pro from Rival Analytics. We've decided to go with Rival. Their pricing model is remarkably similar to yours but offered at a lower price point.
+We\'ve reviewed both DataPulse and the new DataFlow Pro from Rival Analytics. We\'ve decided to go with Rival. Their pricing model is remarkably similar to yours but offered at a lower price point.
 
 We appreciate the relationship but hope you understand.
 
-TechCorp Procurement`,
+TechCorp Procurement',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 3 (Competitive Damage). A major client choosing Rival Analytics over Joba specifically citing Rival's pricing model (the alleged stolen algorithm) is direct evidence of competitive harm. No privilege.'
   },
@@ -2444,7 +2466,7 @@ TechCorp Procurement`,
     subject:'PRIVILEGED: Demand Letter — Kiwingo LLP',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'Kiwingo LLP <counsel@kiwingollp.com>',
     date:'March 28, 2024 · 9:00 AM', hasAttachment:true, attachmentName:'Demand_Letter_Bukando_Mar2024.pdf', attachmentSize:'205 KB',
-    body:`Dear Counsel,
+    body:'Dear Counsel,
 
 We represent Joba Company. This letter constitutes formal demand that your client, Mr. Bukando, immediately:
 
@@ -2456,7 +2478,7 @@ We represent Joba Company. This letter constitutes formal demand that your clien
 Failure to comply within 7 days will result in litigation without further notice.
 
 Mariam Osei
-Mariam & Associates LLP`,
+Mariam & Associates LLP',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1','issue2'], action:'produce', conf:'standard'},
     explanation:'Not privileged! The demand letter was sent to opposing counsel — it was meant to be disclosed. Once a privileged document is intentionally sent to the opposing side, it is no longer confidential. Responsive to Issues 1 and 2. Produce.'
   },
@@ -2465,13 +2487,13 @@ Mariam & Associates LLP`,
     subject:'Bukando — Disciplinary Warning — Attendance',
     from:'Adaeze Nwosu (HR) <hr@jobacompany.com>', to:'Bukando <bukando@jobacompany.com>',
     date:'November 20, 2023 · 10:00 AM', hasAttachment:false,
-    body:`Dear Bukando,
+    body:'Dear Bukando,
 
 This serves as a formal written warning regarding your attendance record. You have been absent or late on 8 occasions in October-November without adequate notice.
 
 This is your first written warning. A second warning may result in further disciplinary action including termination.
 
-Adaeze`,
+Adaeze',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. This disciplinary warning is part of the employment record relevant to the wrongful termination counterclaim. Bukando may argue this was pretextual targeting. Not privileged.'
   },
@@ -2480,14 +2502,14 @@ Adaeze`,
     subject:'DataPulse IP Registration — Patent Application',
     from:'Patent Attorney <patent@iplaw.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'September 5, 2023 · 3:30 PM', hasAttachment:false,
-    body:`Kwame,
+    body:'Kwame,
 
-I'm pleased to confirm that US Patent Application No. 18/441,872 for the DataPulse Adaptive Pricing Engine has been filed with the USPTO. The application covers the core algorithm including the adaptive weighting parameters.
+I\'m pleased to confirm that US Patent Application No. 18/441,872 for the DataPulse Adaptive Pricing Engine has been filed with the USPTO. The application covers the core algorithm including the adaptive weighting parameters.
 
 This filing strengthens your trade secret protections and establishes priority date of September 5, 2023.
 
 Best,
-IP Counsel`,
+IP Counsel',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 2. The patent filing establishes that Joba took reasonable steps to protect the trade secret (patent application) and confirms the pricing algorithm's proprietary status — key for the trade secret claim. Not privileged (patent applications are public).'
   },
@@ -2496,13 +2518,13 @@ IP Counsel`,
     subject:'PRIVILEGED: Rival Analytics — Third Party Discovery',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'Litigation Partner Dele Okafor <dele@mariamassociates.com>',
     date:'April 20, 2024 · 4:00 PM', hasAttachment:false,
-    body:`Dele,
+    body:'Dele,
 
-I think we should subpoena Rival Analytics' source code repository directly. If there's 89% overlap in Bukando's USB contents and our codebase, I want to see what they actually deployed in DataFlow Pro.
+I think we should subpoena Rival Analytics\' source code repository directly. If there\'s 89% overlap in Bukando\'s USB contents and our codebase, I want to see what they actually deployed in DataFlow Pro.
 
 This is attorney work product — keep internal.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue2','issue3'], action:'withhold', conf:'aeo'},
     explanation:'ACP + WPP. Attorney-to-attorney litigation strategy email. Withhold.'
   },
@@ -2511,13 +2533,13 @@ Mariam`,
     subject:'Re: Request for References — Bukando',
     from:'Rival Analytics Recruiter <talent@rivalanalytics.com>', to:'Manager Tolu Adeyemi <tolu@jobacompany.com>',
     date:'March 5, 2024 · 10:00 AM', hasAttachment:false,
-    body:`Hi Tolu,
+    body:'Hi Tolu,
 
-I'm reaching out regarding Bukando's application at Rival Analytics. Could you provide a reference and confirm his employment dates and role?
+I\'m reaching out regarding Bukando\'s application at Rival Analytics. Could you provide a reference and confirm his employment dates and role?
 
 Thank you,
 Farida
-Rival Analytics Talent`,
+Rival Analytics Talent',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. This confirms Bukando was actively job-searching while still employed, relevant to the timeline of the dispute and the constructive dismissal claim. Not privileged.'
   },
@@ -2526,13 +2548,13 @@ Rival Analytics Talent`,
     subject:'Monthly Security Report — February 2024',
     from:'IT Security <security@jobacompany.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'March 1, 2024 · 9:00 AM', hasAttachment:false,
-    body:`Monthly Security Summary — February 2024
+    body:'Monthly Security Summary — February 2024
 
 No security incidents detected.
 All systems nominal.
 USB device monitoring active on all workstations.
 
-IT Security Team`,
+IT Security Team',
     answer:{responsive:'non-responsive', privilege:'not-privileged', issues:[], action:'produce', conf:'standard'},
     explanation:'Non-responsive. Routine monthly security report showing no issues in February — before the March 14 USB incident. No case-relevant content despite the IT/security custodian.'
   },
@@ -2541,9 +2563,9 @@ IT Security Team`,
     subject:'PRIVILEGED: NDA Enforceability Analysis',
     from:'Mariam Osei (GC) <mariam@mariamassociates.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'March 19, 2024 · 3:00 PM', hasAttachment:false,
-    body:`Kwame,
+    body:'Kwame,
 
-Per your request, my analysis of the NDA's enforceability:
+Per your request, my analysis of the NDA\'s enforceability:
 
 1. DURATION: The 3-year post-employment restriction is within enforceable limits in this jurisdiction.
 2. SCOPE: The definition of "Confidential Information" in Section 2(a) is broad enough to cover source code and data models.
@@ -2551,7 +2573,7 @@ Per your request, my analysis of the NDA's enforceability:
 
 In summary, the NDA is well-drafted and enforceable. Bukando is clearly in breach.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP. This is legal analysis of NDA enforceability requested by the client. Classic attorney-client privilege — outside counsel providing legal opinion to client on a key legal question in the case. Withhold.'
   },
@@ -2560,13 +2582,13 @@ Mariam`,
     subject:'Re: DataPulse Competitive Analysis Q1 2024',
     from:'Product Manager Sana Obi <product@jobacompany.com>', to:'CEO Kwame Joba <ceo@jobacompany.com>',
     date:'April 25, 2024 · 11:00 AM', hasAttachment:true, attachmentName:'Competitor_Analysis_Q1_2024.xlsx', attachmentSize:'780 KB',
-    body:`Kwame,
+    body:'Kwame,
 
-Attached is the Q1 competitive analysis. Key finding: Rival Analytics' DataFlow Pro is pricing 22% below our DataPulse rates using what appears to be a similar algorithmic structure. Their time to market was unusually fast — 6 weeks from Bukando's hire date.
+Attached is the Q1 competitive analysis. Key finding: Rival Analytics\' DataFlow Pro is pricing 22% below our DataPulse rates using what appears to be a similar algorithmic structure. Their time to market was unusually fast — 6 weeks from Bukando\'s hire date.
 
-This is concerning. Normal product cycles take 12-18 months. Something doesn't add up.
+This is concerning. Normal product cycles take 12-18 months. Something doesn\'t add up.
 
-Sana`,
+Sana',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issues 2 and 3. The competitive analysis shows Rival launched a nearly identical product 6 weeks after hiring Bukando — corroborating the trade secret theft theory. The timeline anomaly is powerful circumstantial evidence.'
   },
@@ -2575,7 +2597,7 @@ Sana`,
     id:'JB-0031', type:'attachment', custodian:'cust-bukando', tags:['issue1'],
     subject:'NDA — Bukando Employment Agreement (Attachment to JB-0015)',
     from:'[Attachment — Parent: JB-0015]', to:'', date:'January 10, 2020', hasAttachment:false,
-    body:`NON-DISCLOSURE AGREEMENT
+    body:'NON-DISCLOSURE AGREEMENT
 
 This Non-Disclosure Agreement ("Agreement") is entered into as of January 10, 2020, by and between Joba Company ("Company") and Bukando ("Employee").
 
@@ -2592,7 +2614,7 @@ This Non-Disclosure Agreement ("Agreement") is entered into as of January 10, 20
 
 [SIGNED]
 Bukando: /s/ Bukando — January 10, 2020
-Joba Company: /s/ Kwame Joba — January 10, 2020`,
+Joba Company: /s/ Kwame Joba — January 10, 2020',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 1. This is the actual NDA — the foundational document for the entire NDA breach claim. Not privileged — the NDA is a business contract, not an attorney communication. Produce.'
   },
@@ -2600,7 +2622,7 @@ Joba Company: /s/ Kwame Joba — January 10, 2020`,
     id:'JB-0032', type:'attachment', custodian:'cust-it', tags:['issue2'],
     subject:'USB Transfer Log March 14 2024 (Attachment to JB-0005)',
     from:'[Attachment — Parent: JB-0005]', to:'', date:'March 15, 2024', hasAttachment:false,
-    body:`JOBA COMPANY — USB TRANSFER SECURITY LOG
+    body:'JOBA COMPANY — USB TRANSFER SECURITY LOG
 Generated: March 15, 2024 07:30 AM | IT Security System v4.2
 
 Device: SanDisk 64GB USB | Serial: SD-8847-XX
@@ -2617,7 +2639,7 @@ FILES TRANSFERRED:
 [...2,842 additional files...]
 
 TOTAL: 2,847 files | 14.3 GB
-CLASSIFICATION: CONFIDENTIAL per Joba Data Policy §4.2`,
+CLASSIFICATION: CONFIDENTIAL per Joba Data Policy §4.2',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Highly responsive to Issue 2. This is the smoking gun — a precise record of every file Bukando transferred, including the exact pricing engine files. The client profiles transferred also add potential data breach issues. Produce.'
   },
@@ -2625,13 +2647,13 @@ CLASSIFICATION: CONFIDENTIAL per Joba Data Policy §4.2`,
     id:'JB-0033', type:'attachment', custodian:'cust-hr', tags:['issue4'],
     subject:'Q4 2023 Performance Review — Bukando (Attachment to JB-0003)',
     from:'[Attachment — Parent: JB-0003]', to:'', date:'January 8, 2024', hasAttachment:false,
-    body:`JOBA COMPANY — EMPLOYEE PERFORMANCE REVIEW
+    body:'JOBA COMPANY — EMPLOYEE PERFORMANCE REVIEW
 Employee: Bukando | Period: Q4 2023 | Reviewer: Tolu Adeyemi
 
 OVERALL RATING: 3/5 — Meets Expectations
 
 TECHNICAL SKILLS: 5/5
-Comments: Exceptional. Bukando's work on DataPulse v3 pricing engine is outstanding and has been central to product success.
+Comments: Exceptional. Bukando\'s work on DataPulse v3 pricing engine is outstanding and has been central to product success.
 
 COLLABORATION: 2/5
 Comments: Interpersonal friction with analytics team. Some meetings skipped without notice.
@@ -2641,7 +2663,7 @@ Comments: Multiple late arrivals and absences in Oct-Nov.
 
 MANAGER RECOMMENDATION: Continue current role. Not recommended for promotion at this time due to conduct concerns.
 
-[Note added by CEO — internal only]: Hold on all promotions for this employee until further notice. — KJ`,
+[Note added by CEO — internal only]: Hold on all promotions for this employee until further notice. — KJ',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. Crucially, the internal CEO note blocking promotions while rating technical skills at 5/5 supports Bukando's constructive dismissal claim. Produce — this is powerful counterclaim evidence.'
   },
@@ -2649,7 +2671,7 @@ MANAGER RECOMMENDATION: Continue current role. Not recommended for promotion at 
     id:'JB-0034', type:'attachment', custodian:'cust-mariam', tags:['issue1','issue2'],
     subject:'Litigation Hold Notice (Attachment to JB-0006)',
     from:'[Attachment — Parent: JB-0006]', to:'', date:'March 20, 2024', hasAttachment:false,
-    body:`LITIGATION HOLD NOTICE
+    body:'LITIGATION HOLD NOTICE
 MARIAM & ASSOCIATES LLP
 
 TO: All Joba Company Employees
@@ -2667,7 +2689,7 @@ Joba Company is involved or anticipates litigation in connection with the depart
 
 Do NOT delete, alter, or destroy any of the above. Contact Mariam Osei with questions.
 
-Failure to comply may result in sanctions.`,
+Failure to comply may result in sanctions.',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP. A litigation hold notice is a quintessential attorney-client privilege document — it is legal counsel directing the client on evidence preservation for litigation. Withhold. (Note: the underlying facts it describes are not privileged, but this document itself is.)'
   },
@@ -2675,7 +2697,7 @@ Failure to comply may result in sanctions.`,
     id:'JB-0035', type:'attachment', custodian:'cust-hr', tags:['issue4'],
     subject:'Termination Letter (Attachment to JB-0013)',
     from:'[Attachment — Parent: JB-0013]', to:'', date:'March 15, 2024', hasAttachment:false,
-    body:`JOBA COMPANY
+    body:'JOBA COMPANY
 TERMINATION LETTER
 
 Date: March 15, 2024
@@ -2698,7 +2720,7 @@ You are required to:
 Your post-employment NDA obligations remain in full effect.
 
 Joba Company
-/s/ CEO Kwame Joba`,
+/s/ CEO Kwame Joba',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1','issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issues 1 and 4. The formal termination letter — key document for both the NDA breach claim and the wrongful termination counterclaim. Not privileged — it's a business letter, not an attorney communication.'
   },
@@ -2706,7 +2728,7 @@ Joba Company
     id:'JB-0036', type:'attachment', custodian:'cust-mariam', tags:['issue1','issue2'],
     subject:'Draft Complaint v1 (Attachment to JB-0017)',
     from:'[Attachment — Parent: JB-0017]', to:'', date:'April 1, 2024', hasAttachment:false,
-    body:`UNITED STATES DISTRICT COURT
+    body:'UNITED STATES DISTRICT COURT
 DRAFT — PRIVILEGED ATTORNEY WORK PRODUCT
 
 JOBA COMPANY, Plaintiff
@@ -2722,7 +2744,7 @@ COMPLAINT FOR:
 [DRAFT — Attorney work product — Do not distribute]
 
 Paragraph 1: Plaintiff Joba Company brings this action...
-[Content redacted for training purposes]`,
+[Content redacted for training purposes]',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged WPP + ACP. Draft complaint prepared by outside counsel is core attorney work product — it reflects counsel's mental impressions and legal strategy. Withhold.'
   },
@@ -2730,12 +2752,12 @@ Paragraph 1: Plaintiff Joba Company brings this action...
     id:'JB-0037', type:'attachment', custodian:'cust-mariam', tags:['issue2'],
     subject:'Forensic Expert Report FINAL (Attachment to JB-0020)',
     from:'[Attachment — Parent: JB-0020]', to:'', date:'April 15, 2024', hasAttachment:false,
-    body:`TECHFORENSICS LLC — FORENSIC ANALYSIS REPORT
+    body:'TECHFORENSICS LLC — FORENSIC ANALYSIS REPORT
 CONFIDENTIAL — ATTORNEY WORK PRODUCT
 Matter: Joba Company v. Bukando
 
 EXECUTIVE SUMMARY:
-89% of files transferred via USB on March 14, 2024 match Joba Company's proprietary DataPulse v3 repository.
+89% of files transferred via USB on March 14, 2024 match Joba Company\'s proprietary DataPulse v3 repository.
 
 FINDINGS:
 1. Pricing Engine Algorithm (PEA-v2.3): FULL COPY confirmed
@@ -2749,7 +2771,7 @@ Analysis of DataFlow Pro marketing materials and publicly available code samples
 CONCLUSION: High probability that misappropriated Joba code was used in Rival Analytics DataFlow Pro.
 
 Dr. Ling Wu, CISSP, CISM
-TechForensics LLC`,
+TechForensics LLC',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged WPP. Expert report commissioned by counsel for litigation — quintessential work product. 89% code match finding and 73% DataFlow Pro similarity are explosive but protected. Withhold and log.'
   },
@@ -2757,7 +2779,7 @@ TechForensics LLC`,
     id:'JB-0038', type:'attachment', custodian:'cust-mariam', tags:['issue1','issue2'],
     subject:'Demand Letter (Attachment to JB-0023)',
     from:'[Attachment — Parent: JB-0023]', to:'', date:'March 28, 2024', hasAttachment:false,
-    body:`MARIAM & ASSOCIATES LLP
+    body:'MARIAM & ASSOCIATES LLP
 ATTORNEY-CLIENT PRIVILEGED
 
 March 28, 2024
@@ -2775,7 +2797,7 @@ We represent Joba Company. Pursuant to the NDA dated January 10, 2020 and applic
 Failure to comply will result in immediate motion for emergency injunctive relief.
 
 Mariam Osei
-Mariam & Associates LLP`,
+Mariam & Associates LLP',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1','issue2'], action:'produce', conf:'standard'},
     explanation:'Not privileged — sent to opposing counsel, so it was intentionally disclosed. No privilege. Responsive to Issues 1 and 2. Produce.'
   },
@@ -2783,7 +2805,7 @@ Mariam & Associates LLP`,
     id:'JB-0039', type:'attachment', custodian:'cust-joba-ceo', tags:['issue2','issue3'],
     subject:'Q1 Competitor Analysis Spreadsheet (Attachment to JB-0030)',
     from:'[Attachment — Parent: JB-0030]', to:'', date:'April 25, 2024', hasAttachment:false,
-    body:`JOBA COMPANY — Q1 2024 COMPETITIVE ANALYSIS
+    body:'JOBA COMPANY — Q1 2024 COMPETITIVE ANALYSIS
 [Spreadsheet Summary]
 
 RIVAL ANALYTICS — DataFlow Pro:
@@ -2798,9 +2820,9 @@ JOBA DataPulse v3:
 • Development Time: 18 months
 • Patents Filed: Sep 2023
 
-KEY ANOMALY: Rival Analytics' 6-week product cycle is unprecedented for this type of system. Normal development baseline is 12-18 months minimum.
+KEY ANOMALY: Rival Analytics\' 6-week product cycle is unprecedented for this type of system. Normal development baseline is 12-18 months minimum.
 
-Confidential — Internal Use Only`,
+Confidential — Internal Use Only',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issues 2 and 3. The 6-week vs. 12-18 month development timeline is strong circumstantial evidence that Rival used stolen code. The competitive damage data is also key. Produce.'
   },
@@ -2808,7 +2830,7 @@ Confidential — Internal Use Only`,
     id:'JB-0040', type:'attachment', custodian:'cust-it', tags:['issue2'],
     subject:'DataPulse v3 Repository Access Log 90 Days (Attachment to JB-0011 response)',
     from:'[Attachment — IT Security]', to:'', date:'March 17, 2024', hasAttachment:false,
-    body:`JOBA COMPANY — REPOSITORY ACCESS LOG
+    body:'JOBA COMPANY — REPOSITORY ACCESS LOG
 DataPulse v3 | Past 90 Days
 
 USER: Bukando
@@ -2820,7 +2842,7 @@ USER: Bukando
 03/14/2024 18:00 — USB device connected
 [USB transfer begins]
 
-NOTE: Unusual access pattern flagged — bulk read of entire repo immediately before USB connection.`,
+NOTE: Unusual access pattern flagged — bulk read of entire repo immediately before USB connection.',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 2. The access log shows Bukando systematically accessed the pricing engine and client profiles in the days leading up to the USB transfer — showing premeditation. Produce.'
   },
@@ -2829,7 +2851,7 @@ NOTE: Unusual access pattern flagged — bulk read of entire repo immediately be
     id:'JB-0041', type:'memo', custodian:'cust-mariam', tags:['issue1','issue2'],
     subject:'PRIVILEGED — Legal Memorandum: Trade Secret Claim Analysis',
     from:'Mariam Osei (GC)', to:'File / CEO Kwame Joba', date:'March 21, 2024', hasAttachment:false,
-    body:`MEMORANDUM
+    body:'MEMORANDUM
 PRIVILEGED AND CONFIDENTIAL — ATTORNEY CLIENT PRIVILEGE
 
 TO: CEO Kwame Joba
@@ -2848,9 +2870,9 @@ Element 1 — Trade Secret Exists: The DataPulse pricing engine qualifies as a t
 
 Element 2 — Misappropriation: The USB transfer logs constitute strong evidence of misappropriation by improper means.
 
-Element 3 — Use in Commerce: Rival Analytics' rapid product launch suggests the stolen materials were immediately deployed.
+Element 3 — Use in Commerce: Rival Analytics\' rapid product launch suggests the stolen materials were immediately deployed.
 
-RECOMMENDATION: Proceed to file.`,
+RECOMMENDATION: Proceed to file.',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'Privileged ACP. A legal memorandum analyzing the trade secret claim — this is the definition of attorney-client privilege. Legal advice from counsel to client, requested for the purpose of obtaining legal guidance. Withhold.'
   },
@@ -2858,7 +2880,7 @@ RECOMMENDATION: Proceed to file.`,
     id:'JB-0042', type:'memo', custodian:'cust-hr', tags:['issue4'],
     subject:'HR Investigation Report — Bukando Complaint',
     from:'HR Director Adaeze Nwosu', to:'CEO Kwame Joba', date:'February 20, 2024', hasAttachment:false,
-    body:`HR INVESTIGATION REPORT
+    body:'HR INVESTIGATION REPORT
 Confidential — Internal
 
 RE: Formal Complaint by Bukando (filed February 5, 2024)
@@ -2876,7 +2898,7 @@ CONCLUSION: Complaint not substantiated. No HR action recommended at this time.
 
 Note: Recommend CEO clarify promotion decision rationale for documentation.
 
-Adaeze Nwosu, HR Director`,
+Adaeze Nwosu, HR Director',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. The HR investigation found the CEO directed Bukando's promotion block — this corroborates the constructive dismissal argument. Not privileged — it's an HR report, not an attorney document, despite being confidential.'
   },
@@ -2884,12 +2906,12 @@ Adaeze Nwosu, HR Director`,
     id:'JB-0043', type:'memo', custodian:'cust-it', tags:['issue2'],
     subject:'IT Security Memo — Data Classification Policy Review',
     from:'IT Security', to:'All Staff', date:'June 15, 2023', hasAttachment:false,
-    body:`IT SECURITY MEMO
+    body:'IT SECURITY MEMO
 
 TO: All Joba Company Employees
 RE: Data Classification Policy — Annual Reminder
 
-This memo reminds all employees of Joba's Data Classification Policy:
+This memo reminds all employees of Joba\'s Data Classification Policy:
 
 • CONFIDENTIAL: Source code, algorithms, client data, pricing models
 • INTERNAL: Business plans, financial projections
@@ -2899,7 +2921,7 @@ USB transfers of CONFIDENTIAL data require manager approval via the SecureTransf
 
 Violations may result in disciplinary action including termination.
 
-IT Security`,
+IT Security',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 2. This policy memo establishes that Bukando was explicitly notified that source code and pricing models are CONFIDENTIAL and that USB transfers require approval — directly relevant to showing he knew the restrictions he violated.'
   },
@@ -2907,7 +2929,7 @@ IT Security`,
     id:'JB-0044', type:'memo', custodian:'cust-mariam', tags:['issue1','issue2','issue3'],
     subject:'PRIVILEGED WP — Case Strategy Memorandum',
     from:'Mariam Osei + Dele Okafor (Mariam & Associates)', to:'File — Attorney Work Product', date:'April 5, 2024', hasAttachment:false,
-    body:`ATTORNEY WORK PRODUCT — DO NOT DISCLOSE
+    body:'ATTORNEY WORK PRODUCT — DO NOT DISCLOSE
 Case Strategy Memorandum — Joba v. Bukando
 
 STRENGTHS:
@@ -2919,7 +2941,7 @@ STRENGTHS:
 WEAKNESSES:
 • No direct evidence Rival deployed the code (yet)
 • Bukando will argue he authored the code (joint authorship defense)
-• CEO's internal promotion block email creates exposure on counterclaim
+• CEO\'s internal promotion block email creates exposure on counterclaim
 
 STRATEGY:
 1. File for preliminary injunction immediately
@@ -2927,7 +2949,7 @@ STRATEGY:
 3. Seek declaratory judgment on NDA validity
 4. Settle counterclaim to remove exposure
 
-KEY RISK: Counterclaim discovery will expose CEO emails. Recommend settlement on Issue 4.`,
+KEY RISK: Counterclaim discovery will expose CEO emails. Recommend settlement on Issue 4.',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2','issue3'], action:'withhold', conf:'aeo'},
     explanation:'ACP + WPP. This is a full litigation strategy memorandum — the most protected category of attorney work product. It contains counsel's mental impressions, strengths/weaknesses analysis, and strategic recommendations. Withhold.'
   },
@@ -2935,7 +2957,7 @@ KEY RISK: Counterclaim discovery will expose CEO emails. Recommend settlement on
     id:'JB-0045', type:'memo', custodian:'cust-joba-ceo', tags:['issue3'],
     subject:'Internal Memo — Product Roadmap 2024',
     from:'Product Manager Sana Obi', to:'CEO Kwame Joba', date:'January 20, 2024', hasAttachment:false,
-    body:`INTERNAL MEMO — CONFIDENTIAL
+    body:'INTERNAL MEMO — CONFIDENTIAL
 
 DataPulse 2024 Product Roadmap
 
@@ -2946,7 +2968,7 @@ Q4: International market launch
 
 Projected Revenue Impact: +$4.2M over prior year
 
-This roadmap incorporates the pricing engine improvements Bukando's team completed in Q4 2023.`,
+This roadmap incorporates the pricing engine improvements Bukando\'s team completed in Q4 2023.',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 3. The roadmap shows the commercial value of the pricing engine (projected $4.2M impact) — directly relevant to damages calculation for competitive damage. Not privileged.'
   },
@@ -2954,7 +2976,7 @@ This roadmap incorporates the pricing engine improvements Bukando's team complet
     id:'JB-0046', type:'memo', custodian:'cust-hr', tags:['issue4'],
     subject:'Severance Offer Memo — Bukando',
     from:'HR Director Adaeze Nwosu', to:'CEO Kwame Joba', date:'March 14, 2024', hasAttachment:false,
-    body:`INTERNAL MEMO — CONFIDENTIAL
+    body:'INTERNAL MEMO — CONFIDENTIAL
 
 RE: Severance Package — Bukando
 
@@ -2965,7 +2987,7 @@ Condition: Signed release of all claims against Joba Company.
 
 This would eliminate the wrongful termination counterclaim risk.
 
-Adaeze`,
+Adaeze',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. The severance memo shows Joba was aware of wrongful termination exposure and sought a release — relevant to the counterclaim. Not privileged — HR document, not attorney communication. (Note: Mariam's advice on the release would be privileged, but this HR memo is not.)'
   },
@@ -2973,7 +2995,7 @@ Adaeze`,
     id:'JB-0047', type:'memo', custodian:'cust-mariam', tags:['issue2'],
     subject:'PRIVILEGED — Expert Engagement Instructions',
     from:'Mariam Osei (GC)', to:'Dr. Ling Wu, TechForensics', date:'March 25, 2024', hasAttachment:false,
-    body:`PRIVILEGED AND CONFIDENTIAL
+    body:'PRIVILEGED AND CONFIDENTIAL
 ATTORNEY-DIRECTED EXPERT ENGAGEMENT
 
 Dr. Wu,
@@ -2981,13 +3003,13 @@ Dr. Wu,
 This memo outlines the specific questions I need your forensic analysis to address. These instructions reflect my litigation strategy and are attorney work product.
 
 1. Compare Bukando USB contents against Joba DataPulse v3 full repository
-2. Identify any code identical or substantially similar to Joba's pricing engine
-3. Review Rival Analytics' public DataFlow Pro documentation for algorithmic similarity
+2. Identify any code identical or substantially similar to Joba\'s pricing engine
+3. Review Rival Analytics\' public DataFlow Pro documentation for algorithmic similarity
 4. Provide a probability assessment of independent development vs. derived work
 
 Do not discuss your findings with anyone other than me. All communications go through my office.
 
-Mariam`,
+Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue2'], action:'withhold', conf:'aeo'},
     explanation:'ACP + WPP. Attorney instructions to a retained expert for litigation — this document reflects counsel's mental impressions and strategy. Withhold.'
   },
@@ -2995,7 +3017,7 @@ Mariam`,
     id:'JB-0048', type:'memo', custodian:'cust-it', tags:['issue2'],
     subject:'DataPulse Security Controls Summary',
     from:'IT Security', to:'CEO Kwame Joba', date:'March 17, 2024', hasAttachment:false,
-    body:`SECURITY CONTROLS SUMMARY — DataPulse v3
+    body:'SECURITY CONTROLS SUMMARY — DataPulse v3
 
 Prepared for: Legal proceedings reference
 
@@ -3012,7 +3034,7 @@ TRANSFER CONTROLS:
 
 DATA CLASSIFICATION:
 • All DataPulse v3 source code classified CONFIDENTIAL since March 2023
-• Pricing engine additionally classified TRADE SECRET since September 2023`,
+• Pricing engine additionally classified TRADE SECRET since September 2023',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 2. This memo establishes the "reasonable measures" element of the trade secret claim — Joba had robust access controls and Bukando violated them. Notably, it states Bukando did not request approval. Produce.'
   },
@@ -3021,7 +3043,7 @@ DATA CLASSIFICATION:
     id:'JB-0049', type:'contract', custodian:'cust-hr', tags:['issue1','issue4'],
     subject:'Employment Agreement — Bukando (January 2020)',
     from:'[Contract Document]', to:'', date:'January 10, 2020', hasAttachment:false,
-    body:`EMPLOYMENT AGREEMENT
+    body:'EMPLOYMENT AGREEMENT
 
 This Employment Agreement is entered into as of January 10, 2020
 Between: Joba Company ("Employer") and Bukando ("Employee")
@@ -3032,15 +3054,15 @@ SALARY: Confidential
 REPORTS TO: Engineering Manager
 
 KEY TERMS:
-1. DUTIES: Employee will develop and maintain Joba's data systems including DataPulse.
-2. CONFIDENTIALITY: All work product created during employment is Joba's sole property.
+1. DUTIES: Employee will develop and maintain Joba\'s data systems including DataPulse.
+2. CONFIDENTIALITY: All work product created during employment is Joba\'s sole property.
 3. IP ASSIGNMENT: Employee assigns all inventions created during employment to Joba Company.
 4. TERMINATION: Either party may terminate for cause with immediate effect.
 5. GOVERNING NDA: The separate NDA dated January 10, 2020 is incorporated by reference.
 
 [SIGNED]
 Bukando: /s/ Bukando
-Joba Company: /s/ Kwame Joba`,
+Joba Company: /s/ Kwame Joba',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1','issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issues 1 and 4. The employment agreement establishes the IP assignment clause (all work belongs to Joba) and incorporates the NDA — directly relevant to both the NDA breach and the wrongful termination counterclaim. Not privileged — a business contract.'
   },
@@ -3048,7 +3070,7 @@ Joba Company: /s/ Kwame Joba`,
     id:'JB-0050', type:'contract', custodian:'cust-hr', tags:['issue1'],
     subject:'NDA Amendment — Scope Expansion (2022)',
     from:'[Contract Document]', to:'', date:'March 15, 2022', hasAttachment:false,
-    body:`AMENDMENT TO NON-DISCLOSURE AGREEMENT
+    body:'AMENDMENT TO NON-DISCLOSURE AGREEMENT
 Original NDA Date: January 10, 2020
 Amendment Date: March 15, 2022
 
@@ -3058,11 +3080,11 @@ The parties agree to amend the original NDA to explicitly include:
 2. Customer behavioral data and profile information
 3. Third-party API integrations and related documentation
 
-This amendment was necessitated by Joba Company's expansion into data analytics products including DataPulse.
+This amendment was necessitated by Joba Company\'s expansion into data analytics products including DataPulse.
 
 [SIGNED]
 Bukando: /s/ Bukando — March 15, 2022
-Joba Company: /s/ Kwame Joba — March 15, 2022`,
+Joba Company: /s/ Kwame Joba — March 15, 2022',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 1. The NDA amendment specifically added pricing algorithms and data models — the exact categories of trade secrets Bukando is accused of stealing. This pre-empts any argument that the original NDA didn't cover these materials. Produce.'
   },
@@ -3070,7 +3092,7 @@ Joba Company: /s/ Kwame Joba — March 15, 2022`,
     id:'JB-0051', type:'contract', custodian:'cust-joba-ceo', tags:['issue3'],
     subject:'Vendor Agreement — TechCorp Enterprise License',
     from:'[Contract Document]', to:'', date:'July 1, 2023', hasAttachment:false,
-    body:`ENTERPRISE SOFTWARE LICENSE AGREEMENT
+    body:'ENTERPRISE SOFTWARE LICENSE AGREEMENT
 
 Between: Joba Company ("Licensor") and TechCorp ("Licensee")
 Product: DataPulse v3 Enterprise
@@ -3080,7 +3102,7 @@ Annual License Fee: $240,000
 This agreement grants TechCorp a non-exclusive license to use DataPulse v3...
 [Standard terms follow]
 
-NOTE: TechCorp subsequently terminated this agreement in May 2024 and migrated to Rival Analytics DataFlow Pro.`,
+NOTE: TechCorp subsequently terminated this agreement in May 2024 and migrated to Rival Analytics DataFlow Pro.',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue3'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 3. This contract establishes the commercial value of the TechCorp relationship ($240K/year) that was lost when the client migrated to Rival Analytics — directly establishing damages for competitive harm. Produce.'
   },
@@ -3088,7 +3110,7 @@ NOTE: TechCorp subsequently terminated this agreement in May 2024 and migrated t
     id:'JB-0052', type:'contract', custodian:'cust-mariam', tags:['issue2'],
     subject:'Expert Engagement Letter — TechForensics LLC',
     from:'[Contract Document — Attachment to JB-0012]', to:'', date:'March 27, 2024', hasAttachment:false,
-    body:`EXPERT ENGAGEMENT LETTER
+    body:'EXPERT ENGAGEMENT LETTER
 
 Client: Mariam & Associates LLP (on behalf of Joba Company)
 Expert: TechForensics LLC, Dr. Ling Wu
@@ -3101,7 +3123,7 @@ Fee: $450/hour, not to exceed $35,000 without prior approval.
 
 This engagement is at the direction of litigation counsel. All work product is protected by attorney-client privilege and attorney work product doctrine.
 
-[SIGNED]`,
+[SIGNED]',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue2'], action:'withhold', conf:'aeo'},
     explanation:'ACP + WPP. The expert engagement letter is a contract between counsel and a litigation expert — protected as attorney work product. Withhold.'
   },
@@ -3109,13 +3131,13 @@ This engagement is at the direction of litigation counsel. All work product is p
     id:'JB-0053', type:'contract', custodian:'cust-hr', tags:['issue4'],
     subject:'Severance Agreement Draft — Bukando (unsigned)',
     from:'[Contract Document — DRAFT]', to:'', date:'March 16, 2024', hasAttachment:false,
-    body:`SEVERANCE AGREEMENT AND RELEASE — DRAFT
+    body:'SEVERANCE AGREEMENT AND RELEASE — DRAFT
 DO NOT DISTRIBUTE
 
 This Severance Agreement is offered by Joba Company to Bukando in connection with his separation on March 15, 2024.
 
 Joba Company offers:
-• 2 weeks' severance pay
+• 2 weeks\' severance pay
 • Continuation of health benefits for 30 days
 
 In exchange, Bukando agrees to:
@@ -3123,9 +3145,9 @@ In exchange, Bukando agrees to:
 • Affirm ongoing NDA obligations
 • Not disparage Joba Company publicly
 
-Bukando's deadline to accept: March 22, 2024
+Bukando\'s deadline to accept: March 22, 2024
 
-[NEVER SIGNED — Bukando rejected offer and retained Kiwingo LLP]`,
+[NEVER SIGNED — Bukando rejected offer and retained Kiwingo LLP]',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
     explanation:'Responsive to Issue 4. The draft severance agreement (rejected by Bukando) is directly relevant to the wrongful termination counterclaim — it shows Joba's awareness of legal exposure and Bukando's decision to pursue legal action instead. Not privileged — HR document, not attorney communication.'
   },
@@ -3134,7 +3156,7 @@ Bukando's deadline to accept: March 22, 2024
     id:'JB-0054', type:'chat', custodian:'cust-bukando', tags:['issue2','issue3'],
     subject:'Slack Export — Bukando / Manager Tolu (Direct Messages)',
     from:'[Chat Export — Slack DM]', to:'', date:'March 13-14, 2024', hasAttachment:false,
-    body:`SLACK EXPORT — DIRECT MESSAGES
+    body:'SLACK EXPORT — DIRECT MESSAGES
 Participants: Bukando ↔ Tolu Adeyemi (Manager)
 Exported: March 20, 2024 by IT Security
 
@@ -3150,7 +3172,7 @@ Tolu: 👍
 
 [March 14, 2024 — 8:55 PM]
 Bukando: btw the pricing algo is 🔥 rival is gonna love it
-[Message deleted by Bukando at 9:01 PM — recovered by IT]`,
+[Message deleted by Bukando at 9:01 PM — recovered by IT]',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Smoking gun for Issues 2 and 3. Bukando's own words — "the pricing algo is 🔥 rival is gonna love it" — and the deleted message (recovered by IT) is direct evidence of intentional trade secret theft with intent to use at a competitor. Produce.'
   },
@@ -3158,20 +3180,20 @@ Bukando: btw the pricing algo is 🔥 rival is gonna love it
     id:'JB-0055', type:'chat', custodian:'cust-mariam', tags:['issue1','issue2'],
     subject:'Teams Export — Mariam / Dele (Internal Counsel Discussion)',
     from:'[Chat Export — Microsoft Teams — PRIVILEGED]', to:'', date:'March 22, 2024', hasAttachment:false,
-    body:`MICROSOFT TEAMS EXPORT — PRIVILEGED
+    body:'MICROSOFT TEAMS EXPORT — PRIVILEGED
 Participants: Mariam Osei ↔ Dele Okafor
 Matter: Joba v. Bukando
 
 [March 22, 2024 — 9:15 AM]
-Mariam: Dele the USB logs are airtight. I'm thinking we go for an emergency TRO
+Mariam: Dele the USB logs are airtight. I\'m thinking we go for an emergency TRO
 Dele: Agreed. Can we tie the chat message to intentional theft?
 Mariam: Yes — "rival is gonna love it" shows deliberate misappropriation
 Dele: Perfect. What about the deleted message recovery?
 Mariam: IT forensics confirmed recovery. We can use it.
 Dele: This case settles quickly once they see the evidence
-Mariam: Don't be so sure. Kiwingo will push on the wrongful termination counterclaim. That CEO promotion email is bad for us.
+Mariam: Don\'t be so sure. Kiwingo will push on the wrongful termination counterclaim. That CEO promotion email is bad for us.
 Dele: How bad?
-Mariam: Very. Keep it between us for now.`,
+Mariam: Very. Keep it between us for now.',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
     explanation:'ACP + WPP. Attorney-to-attorney strategy discussion about the case — privileged work product. The candid discussion of weaknesses (CEO promotion email) makes this doubly sensitive. Withhold.'
   }
