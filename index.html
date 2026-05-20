@@ -1568,92 +1568,92 @@ fcRender();
 const Qs=[
   // PRIVILEGE
   {cat:'privilege',text:'An employee emails in-house counsel: "We just received a demand letter. Can you tell me what our legal options are?" No one else is copied.',ch:['Not Privileged','Attorney–Client Privilege (ACP)','Work Product Privilege (WPP)','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:1,fb:'Classic ACP — client seeking legal advice from counsel confidentially. All four ACP elements are met.'},
-  {cat:'privilege',text:'In-house counsel sends a company-wide email to "All Staff" announcing a new parking policy. No legal advice, no mention of lawsuits.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution, no legal advice, no confidential facts. The lawyer\'s title doesn\'t change the analysis.'},
-  {cat:'privilege',text:'A sales manager forwards a non-lawyer email chain to in-house counsel with "FYI – for your awareness." Counsel does not respond.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. FYI forwarding without seeking or receiving legal advice doesn\'t create privilege.'},
-  {cat:'privilege',text:'Internal investigation report prepared by compliance team at the EXPLICIT request of outside litigation counsel, analyzing witness interviews.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product Privilege. Created at counsel\'s request for ongoing litigation. WPP does not require an attorney to be the author.'},
-  {cat:'privilege',text:'A monthly sales dashboard generated every week for five years as routine business reporting. It falls within the litigation date range.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Routine business documents created independent of litigation are not WPP. Existing litigation doesn\'t retroactively protect old business docs.'},
+  {cat:'privilege',text:'In-house counsel sends a company-wide email to "All Staff" announcing a new parking policy. No legal advice, no mention of lawsuits.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution, no legal advice, no confidential facts. The lawyer's title doesn't change the analysis.'},
+  {cat:'privilege',text:'A sales manager forwards a non-lawyer email chain to in-house counsel with "FYI – for your awareness." Counsel does not respond.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. FYI forwarding without seeking or receiving legal advice doesn't create privilege.'},
+  {cat:'privilege',text:'Internal investigation report prepared by compliance team at the EXPLICIT request of outside litigation counsel, analyzing witness interviews.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product Privilege. Created at counsel's request for ongoing litigation. WPP does not require an attorney to be the author.'},
+  {cat:'privilege',text:'A monthly sales dashboard generated every week for five years as routine business reporting. It falls within the litigation date range.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Routine business documents created independent of litigation are not WPP. Existing litigation doesn't retroactively protect old business docs.'},
   {cat:'privilege',text:'Outside counsel drafts a confidential Q&A for executives to prepare them for a deposition in ongoing litigation.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Deposition prep materials show attorney mental impressions and strategy — classic WPP.'},
   {cat:'privilege',text:'Company A and Company B are co-defendants. Their outside counsel share a strategy memo under a signed Joint Defense Agreement (JDA).',ch:['Not Privileged','ACP only','WPP only','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:3,fb:'CIP. Co-defendants with a JDA sharing legal strategy = textbook Common Interest Privilege.'},
   {cat:'privilege',text:'Two companies considering a joint venture have their BUSINESS TEAMS email each other financial models. No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal interest, no JDA. A shared business/profit motive is NOT enough for CIP.'},
   {cat:'privilege',text:'Outside counsel drafts a 10-page memo analyzing whether the client should self-report to the SEC. Sent only to GC and CFO.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:3,fb:'Both ACP and WPP. Legal advice to the client (ACP) AND created in anticipation of potential regulatory action (WPP).'},
   {cat:'privilege',text:'A bank receives a confidential examination report from its federal banking regulator, labeled "CONFIDENTIAL – EXAMINATION MATERIAL."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. Bank examination privilege is special. Always escalate for PM/RM direction.'},
   {cat:'privilege',text:'An engineer writes a technical report about a product failure BEFORE anyone mentioned lawsuits. Months later it gets forwarded to counsel.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The original report was routine business/safety documentation with no litigation nexus at time of creation.'},
-  {cat:'privilege',text:'A formal letter FROM THE SEC to the company requesting documents. You are reviewing the SEC\'s letter itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Government/regulator documents are not attorney-client communications or work product.'},
-  {cat:'privilege',text:'An email from in-house counsel explicitly stating: "Not legal advice – just business thoughts on pricing."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. When counsel explicitly disclaims legal advice and the content is purely business, ACP generally doesn\'t apply.'},
-  {cat:'privilege',text:'Email says "CC\'ing legal just so they\'re in the loop" — but no legal advice is requested or given.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Copying legal alone doesn\'t create privilege. Privilege depends on substance and purpose.'},
+  {cat:'privilege',text:'A formal letter FROM THE SEC to the company requesting documents. You are reviewing the SEC's letter itself.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Government/regulator documents are not attorney-client communications or work product.'},
+  {cat:'privilege',text:'An email from in-house counsel explicitly stating: "Not legal advice – just business thoughts on pricing."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. When counsel explicitly disclaims legal advice and the content is purely business, ACP generally doesn't apply.'},
+  {cat:'privilege',text:'Email says "CC'ing legal just so they're in the loop" — but no legal advice is requested or given.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Copying legal alone doesn't create privilege. Privilege depends on substance and purpose.'},
   {cat:'privilege',text:'An engineer sends a product safety memo to in-house counsel and two managers. No explicit request for legal advice. You are genuinely 50/50.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. When genuinely 50/50, always code Privileged and escalate. Never resolve doubt by removing privilege.'},
   // IN-HOUSE
   {cat:'inhouse',text:'In-house counsel (also Head of Business Strategy) emails: "Our Q4 numbers are weak. I suggest we cut headcount and increase prices." No legal content.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Counsel is wearing the BUSINESS hat. No legal risk, no laws mentioned.'},
   {cat:'inhouse',text:'Same in-house counsel emails: "If we adopt this pricing structure, there is a real antitrust risk. My LEGAL ADVICE is that we change the discount thresholds."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Counsel is clearly wearing the LAWYER hat — analyzing legal risk and giving explicit legal advice.'},
-  {cat:'inhouse',text:'In-house counsel is cc\'d on an email chain between two non-lawyers planning a holiday party. Counsel never replies.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Holiday party planning is not legal advice. An accidental cc doesn\'t create privilege.'},
+  {cat:'inhouse',text:'In-house counsel is cc'd on an email chain between two non-lawyers planning a holiday party. Counsel never replies.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Holiday party planning is not legal advice. An accidental cc doesn't create privilege.'},
   {cat:'inhouse',text:'In-house counsel emails the CEO and HR Director: "After reviewing the investigation, my legal advice is that we terminate Employee X to reduce our exposure under employment discrimination laws."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Counsel in their legal role — analyzing legal exposure and providing legal advice on termination.'},
   {cat:'inhouse',text:'In-house counsel sends an email to the entire Sales Distribution List reminding them not to overpromise delivery dates.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Broad distribution list, general guidance/reminder, no confidential legal analysis.'},
-  {cat:'inhouse',text:'A non-lawyer product manager emails in-house counsel: "I\'m not sure if this contract breach is a legal issue; can you advise?"',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Employee seeking legal advice from counsel confidentially, sharing facts necessary for that advice.'},
+  {cat:'inhouse',text:'A non-lawyer product manager emails in-house counsel: "I'm not sure if this contract breach is a legal issue; can you advise?"',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Employee seeking legal advice from counsel confidentially, sharing facts necessary for that advice.'},
   {cat:'inhouse',text:'Two non-lawyer managers discuss whether to fire an employee. One forwards the chain to counsel asking "any legal risk?" — Counsel has NOT responded yet. Code the ORIGINAL non-lawyer chain.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The original chain was purely business discussion before any legal involvement.'},
-  {cat:'inhouse',text:'Counsel\'s REPLY: "There is moderate risk of a discrimination claim. My legal advice is to either document performance issues thoroughly or consider a PIP first."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Counsel\'s reply is legal risk assessment and legal advice.'},
+  {cat:'inhouse',text:'Counsel's REPLY: "There is moderate risk of a discrimination claim. My legal advice is to either document performance issues thoroughly or consider a PIP first."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:1,fb:'ACP. Counsel's reply is legal risk assessment and legal advice.'},
   {cat:'inhouse',text:'In-house counsel signs an email as "VP of Operations": "Please increase production by 20% next quarter to catch up on back orders."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. Acting in the VP of Operations role — purely operational direction.'},
   // RESPONSIVENESS
-  {cat:'responsiveness',text:'Email: "We should quietly match Competitor A\'s 5% price increase next quarter so we don\'t start a price war." (Issues: 1-Pricing/Antitrust, 2-Safety, 3-Marketing/Misrep, 4-HR/Retaliation)',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3 (Misrepresentation)','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Matching competitors\' prices to avoid a price war is antitrust/pricing coordination.'},
-  {cat:'responsiveness',text:'Email: "We\'ve had 7 customer injuries this month from Product X\'s blade cracking. We should notify QA and legal."',ch:['Non-Responsive','Responsive – Issue 1','Responsive – Issue 2 (Product Safety)','Responsive – Issues 2 and 3','Escalate / Ask'],c:2,fb:'Responsive – Issue 2. Classic product safety/compliance — injuries and defects squarely fit Issue 2.'},
+  {cat:'responsiveness',text:'Email: "We should quietly match Competitor A's 5% price increase next quarter so we don't start a price war." (Issues: 1-Pricing/Antitrust, 2-Safety, 3-Marketing/Misrep, 4-HR/Retaliation)',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3 (Misrepresentation)','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Matching competitors' prices to avoid a price war is antitrust/pricing coordination.'},
+  {cat:'responsiveness',text:'Email: "We've had 7 customer injuries this month from Product X's blade cracking. We should notify QA and legal."',ch:['Non-Responsive','Responsive – Issue 1','Responsive – Issue 2 (Product Safety)','Responsive – Issues 2 and 3','Escalate / Ask'],c:2,fb:'Responsive – Issue 2. Classic product safety/compliance — injuries and defects squarely fit Issue 2.'},
   {cat:'responsiveness',text:'System-generated email: "Your password has been reset successfully. If you did not request this, contact IT."',ch:['Non-Responsive','Responsive – Issue 1','Responsive because it shows employees','Responsive – Issue 4','Escalate / Ask'],c:0,fb:'Non-Responsive. System admin emails with no case-relevant content are not responsive.'},
   {cat:'responsiveness',text:'Email from HR: "We received a formal complaint from Taylor that her manager demoted her after she reported gender discrimination."',ch:['Non-Responsive','Responsive – Issue 2','Responsive – Issue 4 (HR/Retaliation)','Responsive – Issues 2 and 4','Escalate / Ask'],c:2,fb:'Responsive – Issue 4. Complaint followed by adverse action (demotion) = textbook HR/retaliation.'},
-  {cat:'responsiveness',text:'Chat: "Our ad says \'completely safe for children under 3\' but the test team said parts are still a choking hazard."',ch:['Non-Responsive','Responsive – Issue 2 only','Responsive – Issue 3 only','Responsive – Issues 2 and 3','Escalate / Ask'],c:3,fb:'Both Issues 2 and 3. Choking hazard = safety. "Completely safe" claim contradicting tests = misrepresentation.'},
+  {cat:'responsiveness',text:'Chat: "Our ad says 'completely safe for children under 3' but the test team said parts are still a choking hazard."',ch:['Non-Responsive','Responsive – Issue 2 only','Responsive – Issue 3 only','Responsive – Issues 2 and 3','Escalate / Ask'],c:3,fb:'Both Issues 2 and 3. Choking hazard = safety. "Completely safe" claim contradicting tests = misrepresentation.'},
   {cat:'responsiveness',text:'Company newsletter: "Volunteer Day Photos — thank you to everyone who helped at the food bank!"',ch:['Responsive','Non-Responsive','Responsive because employees are pictured','Responsive – Issue 4','Escalate / Ask'],c:1,fb:'Non-Responsive. No connection to any case issue.'},
-  {cat:'responsiveness',text:'Email: "Let\'s give aggressive discounts but only to customers who agree not to buy from Competitor N for two years."',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Tying discounts to exclusivity blocking competitors = classic antitrust issue.'},
-  {cat:'responsiveness',text:'Parent email: "Please review attached complaint. This is the third serious injury we\'ve seen this month with Product X." — Coding the PARENT EMAIL only.',ch:['Parent Non-Responsive, Attachment Responsive','Parent Responsive – Issue 2, Attachment Responsive – Issue 2','Parent Responsive only if protocol says so','Parent Non-Responsive because details are in attachment'],c:1,fb:'Both Responsive – Issue 2. The parent ITSELF contains responsive content within its four corners.'},
+  {cat:'responsiveness',text:'Email: "Let's give aggressive discounts but only to customers who agree not to buy from Competitor N for two years."',ch:['Non-Responsive','Responsive – Issue 1 (Pricing/Antitrust)','Responsive – Issue 3','Responsive – Issues 1 and 3','Escalate / Ask'],c:1,fb:'Responsive – Issue 1. Tying discounts to exclusivity blocking competitors = classic antitrust issue.'},
+  {cat:'responsiveness',text:'Parent email: "Please review attached complaint. This is the third serious injury we've seen this month with Product X." — Coding the PARENT EMAIL only.',ch:['Parent Non-Responsive, Attachment Responsive','Parent Responsive – Issue 2, Attachment Responsive – Issue 2','Parent Responsive only if protocol says so','Parent Non-Responsive because details are in attachment'],c:1,fb:'Both Responsive – Issue 2. The parent ITSELF contains responsive content within its four corners.'},
   {cat:'responsiveness',text:'Email from the Chief Strategy Officer (key antitrust custodian): "Soccer practice schedule for the kids — Monday and Wednesday at 5 pm." Purely personal.',ch:['Responsive – custodian is key','Non-Responsive','Responsive because date is in range','Escalate / Ask'],c:1,fb:'Non-Responsive. Custodian identity is NOT enough under Four Corners. The email has no responsive content.'},
   // REGULATORS
   {cat:'regulators',text:'In-house counsel emails CEO with an attachment titled "SEC Inquiry – Anticipated Questions & Recommended Responses" — a counsel-created summary.',ch:['Not Privileged','ACP','Work Product Privilege (WPP)','CIP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Counsel-created response strategy for a regulatory inquiry = WPP.'},
-  {cat:'regulators',text:'In-house counsel emails CFO: "Please prepare a spreadsheet of all tax positions for the last 7 years for the IRS audit. I will use it for our defense strategy."',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Created specifically at counsel\'s request for defense strategy in an IRS audit.'},
-  {cat:'regulators',text:'A FERC Notice of Inquiry (a public document) downloaded from the FERC website and emailed internally with "FYI."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The regulator\'s own public document.'},
+  {cat:'regulators',text:'In-house counsel emails CFO: "Please prepare a spreadsheet of all tax positions for the last 7 years for the IRS audit. I will use it for our defense strategy."',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:2,fb:'Work Product. Created specifically at counsel's request for defense strategy in an IRS audit.'},
+  {cat:'regulators',text:'A FERC Notice of Inquiry (a public document) downloaded from the FERC website and emailed internally with "FYI."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The regulator's own public document.'},
   {cat:'regulators',text:'The company receives a bank examination report labeled "CONFIDENTIAL – EXAMINATION MATERIAL."',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:4,fb:'Privileged – Protect & Escalate. Bank examination privilege is special. Always escalate.'},
-  {cat:'regulators',text:'The OSHA inspector\'s written report is emailed by a non-lawyer safety manager to plant operations.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The OSHA inspection report is a government document.'},
+  {cat:'regulators',text:'The OSHA inspector's written report is emailed by a non-lawyer safety manager to plant operations.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. The OSHA inspection report is a government document.'},
   {cat:'regulators',text:'Outside regulatory counsel drafts a "Draft Response to SEC Comment Letter" with argumentation and proposed edits. Circulated only to GC and CFO.',ch:['Not Privileged','ACP','WPP','Both ACP and WPP','Privileged – Protect & Escalate'],c:3,fb:'Both ACP and WPP. Legal advice on how to respond (ACP) AND prepared in anticipation of potential enforcement (WPP).'},
   // CIP
   {cat:'cip',text:'Two co-defendants sign a Joint Defense Agreement. Outside counsel for Defendant A sends outside counsel for Defendant B: "Here is our draft motion to dismiss, shared under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','Common Interest Privilege (CIP)','Privileged – Protect & Escalate'],c:3,fb:'CIP. Co-defendants with a JDA sharing litigation strategy = textbook CIP.'},
-  {cat:'cip',text:'Company X and Company Y (both sued by same plaintiff) — two employees (no lawyers) email each other: "Let\'s share our documents and come up with a plan." No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no JDA, no legal interest established.'},
-  {cat:'cip',text:'Company C\'s outside counsel emails Company D\'s outside counsel: "We both are FERC investigation targets. Attached is our privileged strategy memo. Please coordinate under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Counsel-to-counsel communication for separate investigation targets under a CIP agreement.'},
+  {cat:'cip',text:'Company X and Company Y (both sued by same plaintiff) — two employees (no lawyers) email each other: "Let's share our documents and come up with a plan." No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no JDA, no legal interest established.'},
+  {cat:'cip',text:'Company C's outside counsel emails Company D's outside counsel: "We both are FERC investigation targets. Attached is our privileged strategy memo. Please coordinate under our common interest agreement."',ch:['Not Privileged','ACP only','WPP only','CIP','Privileged – Protect & Escalate'],c:3,fb:'CIP. Counsel-to-counsel communication for separate investigation targets under a CIP agreement.'},
   {cat:'cip',text:'Two companies discussing a potential joint venture — BUSINESS TEAMS email financial models. No lawyers, no JDA.',ch:['Not Privileged','ACP','WPP','CIP','Privileged – Protect & Escalate'],c:0,fb:'Not privileged. No lawyers, no legal strategy, no JDA. A shared commercial interest is NOT enough for CIP.'},
   // WITHHOLD/REDACT
   {cat:'withhold',text:'An email from a CEO to the company lawyer asking: "Can we legally fire John?" — The entire email is about legal advice.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:1,fb:'Privilege WITHHOLD. The entire purpose of the document is legal advice. Withhold the whole thing.'},
   {cat:'withhold',text:'A 10-page Weekly Meeting Minutes. Pages 1–9 discuss sales goals. Page 10 has one paragraph where counsel gives legal advice.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','Work Product','Privileged – Protect & Escalate'],c:2,fb:'Privilege REDACT. The document is mostly business. Only the small legal advice paragraph needs a black box.'},
   {cat:'withhold',text:'What is the simple rule for choosing between Withhold and Redact?',ch:['If the document has a lawyer → Withhold; if not → Redact','If the whole document is a secret → Withhold; if only a small piece is a secret → Redact','If it is ACP → Withhold; if it is WPP → Redact','If it is over 5 pages → Withhold; if shorter → Redact'],c:1,fb:'Simple Rule: If the WHOLE document is a secret → WITHHOLD. If only a SMALL PIECE is a secret → REDACT.'},
-  {cat:'withhold',text:'When you Privilege Withhold a document, what does the opposing side receive?',ch:['A summary of the document\'s contents','The document with black boxes over privileged parts','Nothing — just a blank placeholder (slipsheet)','A copy with the attorney\'s name removed'],c:2,fb:'When you Withhold, the opposing side gets NOTHING but a blank placeholder called a slipsheet.'},
+  {cat:'withhold',text:'When you Privilege Withhold a document, what does the opposing side receive?',ch:['A summary of the document's contents','The document with black boxes over privileged parts','Nothing — just a blank placeholder (slipsheet)','A copy with the attorney's name removed'],c:2,fb:'When you Withhold, the opposing side gets NOTHING but a blank placeholder called a slipsheet.'},
   {cat:'withhold',text:'True or False: Writing "Privileged and Confidential" at the top automatically makes it legally privileged.',ch:['True — the label creates the privilege','False — you must still apply the four-step test','True — if a lawyer wrote it','False — only if it is a formal legal memo'],c:1,fb:'FALSE. The label does NOT magically create privilege. You must still apply the four-step test.'},
   {cat:'withhold',text:'A litigation hold notice sent by in-house counsel to employees instructing them not to delete emails related to the lawsuit.',ch:['Not Privileged','Privilege Withhold','Privilege Redact','No privilege applies'],c:1,fb:'Privilege WITHHOLD. A litigation hold notice is a legal communication from counsel regarding litigation.'},
   {cat:'withhold',text:'What must you always create when you Withhold or Redact a document?',ch:['A summary email to your supervisor','A PLOG (Privilege Log) entry','A copy of the document for your records','A note in the document itself'],c:1,fb:'When you Withhold OR Redact, you must always create a PLOG (Privilege Log) entry.'},
   {cat:'withhold',text:'Which of these is a BAD PLOG description?',ch:['Email reflecting legal advice regarding contract validity','Email from lawyer saying we will lose the case because our contract is illegal','Memorandum prepared in anticipation of litigation regarding patent claims','Email reflecting legal advice regarding employee termination'],c:1,fb:'BAD PLOG. This gives away the actual secret — that your contract is illegal.'},
   {cat:'withhold',text:'Can a document be both Responsive AND Privileged?',ch:['No — if it is privileged it cannot be responsive','Yes — a document can be relevant (responsive) but still protected from production (privileged)','No — if it is responsive it must be produced','Only if the court orders it'],c:1,fb:'YES. Responsive + Privileged = Withhold or Redact the document and log it on the PLOG.'},
-  {cat:'withhold',text:'A contract has a handwritten note from outside counsel: "This clause is legally risky." The contract itself is non-privileged.',ch:['Not Privileged — the contract is not privileged','Withhold the entire contract','Redact the attorney\'s note; produce the rest','Work Product'],c:2,fb:'Privilege REDACT. The contract must be produced. The attorney\'s handwritten note reflects legal judgment — redact only the note.'},
+  {cat:'withhold',text:'A contract has a handwritten note from outside counsel: "This clause is legally risky." The contract itself is non-privileged.',ch:['Not Privileged — the contract is not privileged','Withhold the entire contract','Redact the attorney's note; produce the rest','Work Product'],c:2,fb:'Privilege REDACT. The contract must be produced. The attorney's handwritten note reflects legal judgment — redact only the note.'},
   {cat:'withhold',text:'A document has been labeled "Highly Confidential" by IT for data security reasons. Does this make it legally privileged?',ch:['Yes — confidential = privileged','No — business confidentiality classifications do not create legal privilege','Yes — if a lawyer also has access to it','No — only court orders can create privilege'],c:1,fb:'NO. Business confidentiality labels do NOT create legal privilege. You must still apply the four-step privilege test independently.'},
   // eDISCOVERY PLAYBOOK
   {cat:'playbook',text:'According to the eDiscovery Playbook, when there is a conflict between the playbook and project-specific instructions, which controls?',ch:['The eDiscovery Playbook always controls','Project-specific instructions always control','The agency-specific section controls','The most recent instruction controls'],c:1,fb:'Project-specific instructions ALWAYS control. The playbook is the baseline, not the override. This is the single most important rule in the entire playbook.'},
   {cat:'playbook',text:'What is the correct rule priority order when conflicts arise?',ch:['Agency instructions → Project instructions → Playbook','Playbook → Project instructions → Agency instructions','Project instructions → Agency instructions → Playbook','Agency instructions → Playbook → Project instructions'],c:2,fb:'Project instructions first, then agency instructions, then the playbook as the baseline.'},
   {cat:'playbook',text:'What does "coding" mean in document review?',ch:['Writing notes about documents','Selecting the correct status, tags, or labels for each document in the review platform','Translating legal language into plain English','Creating summaries of document sets'],c:1,fb:'Coding means selecting the correct status, tags, or labels for each document in the review platform. It drives what gets produced, withheld, escalated, or sent for QC.'},
-  {cat:'playbook',text:'According to the Core Review Standard, what does "Accuracy" require?',ch:['Code as many documents as possible per hour','Do not guess — review the document, think, and code what the document actually says','Follow the supervisor\'s example exactly','Always escalate when uncertain, even for routine documents'],c:1,fb:'Accuracy means: do not guess. Review the document, think carefully, and code what the document actually says.'},
+  {cat:'playbook',text:'According to the Core Review Standard, what does "Accuracy" require?',ch:['Code as many documents as possible per hour','Do not guess — review the document, think, and code what the document actually says','Follow the supervisor's example exactly','Always escalate when uncertain, even for routine documents'],c:1,fb:'Accuracy means: do not guess. Review the document, think carefully, and code what the document actually says.'},
   {cat:'playbook',text:'What is a "responsive" document?',ch:['Any document that mentions a lawyer','A document that fits the issues in the case','A document that was produced in a previous lawsuit','A document from within the date range'],c:1,fb:'Responsive means: the document fits the issues in the case. A lunch plan with no case content is non-responsive even if it is from a key custodian.'},
   {cat:'playbook',text:'What does "Consistency" mean in the Core Review Standard?',ch:['Reviewing documents at the same speed every day','Using the same rule the same way every time','Keeping the same escalation messages for similar documents','Reviewing the same number of documents each hour'],c:1,fb:'Consistency: use the same rule the same way every time. This is what allows a team of reviewers to produce a defensible, reliable result.'},
-  {cat:'playbook',text:'According to the playbook\'s Pace vs. Accuracy principle, when should a reviewer slow down?',ch:['After every 50 documents','When the supervisor says so','When starting to miss obvious things, or when a document is unclear/important/legally sensitive','Only when approaching the end of a batch'],c:2,fb:'Slow down when you start missing obvious things, or when a document is unclear, important, emotional, or legally sensitive. Speed matters only after accuracy is stable.'},
+  {cat:'playbook',text:'According to the playbook's Pace vs. Accuracy principle, when should a reviewer slow down?',ch:['After every 50 documents','When the supervisor says so','When starting to miss obvious things, or when a document is unclear/important/legally sensitive','Only when approaching the end of a batch'],c:2,fb:'Slow down when you start missing obvious things, or when a document is unclear, important, emotional, or legally sensitive. Speed matters only after accuracy is stable.'},
   {cat:'playbook',text:'What type of reviewer is the best fit for the PL agency?',ch:['Reviewers who can work at high speed with minimal supervision','Reviewers who can follow rules closely and write clean notes','Reviewers who excel at contextual analysis and discussion','Reviewers who are experienced with production metrics'],c:1,fb:'PL is best fit for reviewers who can follow rules closely and write clean notes. The style is strict and defensible.'},
-  {cat:'playbook',text:'What is the PL agency\'s coding style?',ch:['Balanced and analytical','Structured and workflow-heavy','Strict and defensible — precision matters more than aggressive speed','Operational and metrics-aware'],c:2,fb:'PL coding style: Strict and defensible. Precision matters more than aggressive speed. Expected pace: 35–50 documents/hour.'},
-  {cat:'playbook',text:'What is the PL agency\'s expected documents-per-hour pace?',ch:['25-35 documents/hour','35-50 documents/hour','50-70 documents/hour','70-100 documents/hour'],c:1,fb:'PL expected pace: 35–50 documents/hour. Accuracy and defensibility come first.'},
+  {cat:'playbook',text:'What is the PL agency's coding style?',ch:['Balanced and analytical','Structured and workflow-heavy','Strict and defensible — precision matters more than aggressive speed','Operational and metrics-aware'],c:2,fb:'PL coding style: Strict and defensible. Precision matters more than aggressive speed. Expected pace: 35–50 documents/hour.'},
+  {cat:'playbook',text:'What is the PL agency's expected documents-per-hour pace?',ch:['25-35 documents/hour','35-50 documents/hour','50-70 documents/hour','70-100 documents/hour'],c:1,fb:'PL expected pace: 35–50 documents/hour. Accuracy and defensibility come first.'},
   {cat:'playbook',text:'What is a common mistake reviewers make on the Relativity platform (all agencies)?',ch:['Using highlight tools to find key terms','Coding before reading attachments or context','Setting up batch reviews at the start','Using filters to isolate similar documents'],c:1,fb:'Common Relativity mistake: coding before reading attachments or context. Always read the full document and attachments before applying any code.'},
-  {cat:'playbook',text:'What is the ALT agency\'s primary coding style?',ch:['Strict and defensible, precision over speed','Structured and workflow-heavy with batch discipline','Balanced, analytical, and slightly more discussion-driven','Operational, metrics-aware, and production-oriented'],c:2,fb:'ALT: Balanced, analytical, and slightly more discussion-driven. Requires careful reading of context and tone.'},
-  {cat:'playbook',text:'What unique rule does the ALT agency have?',ch:['Never escalate without a supervisor\'s pre-approval','Look for legal advice hidden inside business language — and notes should explain the logic behind a call','Use only Relativity for all coding decisions','Apply batch rules strictly even for unusual documents'],c:1,fb:'ALT unique rule: look for legal advice hidden inside business language. Notes should explain the logic behind a call.'},
-  {cat:'playbook',text:'What is the ALT agency\'s expected documents-per-hour pace?',ch:['25-40 documents/hour','35-50 documents/hour','40-55 documents/hour','60-80 documents/hour'],c:2,fb:'ALT expected pace: 40–55 documents/hour. Accuracy and defensibility come first.'},
-  {cat:'playbook',text:'What is CDS\'s primary focus?',ch:['Speed and volume above all else','Consistency, documentation, and reliable production flow with batch discipline','Attorney-heavy analysis with discussion-driven escalation','Metrics-aware throughput with clear communication'],c:1,fb:'CDS focus: consistency, documentation, and reliable production flow. Four priorities: batch discipline, consistency, clean tagging, and low rework.'},
+  {cat:'playbook',text:'What is the ALT agency's primary coding style?',ch:['Strict and defensible, precision over speed','Structured and workflow-heavy with batch discipline','Balanced, analytical, and slightly more discussion-driven','Operational, metrics-aware, and production-oriented'],c:2,fb:'ALT: Balanced, analytical, and slightly more discussion-driven. Requires careful reading of context and tone.'},
+  {cat:'playbook',text:'What unique rule does the ALT agency have?',ch:['Never escalate without a supervisor's pre-approval','Look for legal advice hidden inside business language — and notes should explain the logic behind a call','Use only Relativity for all coding decisions','Apply batch rules strictly even for unusual documents'],c:1,fb:'ALT unique rule: look for legal advice hidden inside business language. Notes should explain the logic behind a call.'},
+  {cat:'playbook',text:'What is the ALT agency's expected documents-per-hour pace?',ch:['25-40 documents/hour','35-50 documents/hour','40-55 documents/hour','60-80 documents/hour'],c:2,fb:'ALT expected pace: 40–55 documents/hour. Accuracy and defensibility come first.'},
+  {cat:'playbook',text:'What is CDS's primary focus?',ch:['Speed and volume above all else','Consistency, documentation, and reliable production flow with batch discipline','Attorney-heavy analysis with discussion-driven escalation','Metrics-aware throughput with clear communication'],c:1,fb:'CDS focus: consistency, documentation, and reliable production flow. Four priorities: batch discipline, consistency, clean tagging, and low rework.'},
   {cat:'playbook',text:'What unique CDS rule distinguishes it from other agencies?',ch:['Never use highlight tools in Relativity','Do not drift from the batch standard because a document looks unusual','Always code attachments separately from parents','Escalate all privileged documents without coding them'],c:1,fb:'CDS unique rule: do not drift from the batch standard because a document looks unusual. Follow folder, batch, and queue rules exactly.'},
-  {cat:'playbook',text:'What is the TP agency\'s primary coding style?',ch:['Strict and defensible','Structured and workflow-heavy','Balanced and analytical','Operational, metrics-aware, and production-oriented'],c:3,fb:'TP: Operational, metrics-aware, and production-oriented. Projects may move quickly — reviewers must balance pace with quality.'},
-  {cat:'playbook',text:'What is the TP agency\'s expected documents-per-hour pace?',ch:['25-35 documents/hour','35-50 documents/hour','40-50 documents/hour','60-80 documents/hour'],c:2,fb:'TP expected pace: 40–50 documents/hour. Accuracy and defensibility still come first.'},
+  {cat:'playbook',text:'What is the TP agency's primary coding style?',ch:['Strict and defensible','Structured and workflow-heavy','Balanced and analytical','Operational, metrics-aware, and production-oriented'],c:3,fb:'TP: Operational, metrics-aware, and production-oriented. Projects may move quickly — reviewers must balance pace with quality.'},
+  {cat:'playbook',text:'What is the TP agency's expected documents-per-hour pace?',ch:['25-35 documents/hour','35-50 documents/hour','40-50 documents/hour','60-80 documents/hour'],c:2,fb:'TP expected pace: 40–50 documents/hour. Accuracy and defensibility still come first.'},
   {cat:'playbook',text:'What unique rule does the TP agency have about uncertainty?',ch:['Always resolve uncertainty independently before escalating','Do not hide uncertainty — use short and direct escalation notes immediately','Only escalate after checking with a peer first','Never show uncertainty to the project manager'],c:1,fb:'TP unique rule: do not hide uncertainty. Use short and direct escalation notes. Watch deadlines and production checkpoints closely.'},
   {cat:'playbook',text:'What four things should supervisors track for performance?',ch:['Volume, speed, attendance, and communication style','Accuracy, consistency, pace, and escalation quality','Seniority, training completion, error rate, and response time','Batch completion, document volume, promotion readiness, and team feedback'],c:1,fb:'Track: accuracy, consistency, pace, and escalation quality. Watch for repeated errors on the same issue.'},
   {cat:'playbook',text:'What is the final reminder in the eDiscovery Playbook?',ch:['Speed above all else to meet client deadlines','Good review work is careful, consistent, and easy to explain — the best reviewers rely on process, not luck','Always escalate before coding to avoid mistakes','Never code a document without supervisor approval'],c:1,fb:'Final Playbook Reminder: "Good review work is careful, consistent, and easy to explain. The best reviewers do not rely on luck. They rely on process."'},
-  {cat:'playbook',text:'According to the playbook\'s mental strategies, what is the FIRST thing you should read when opening a new document?',ch:['The body of the document in full','The attachments','The subject line, sender, recipient, and date first','The last message in the email thread'],c:2,fb:'Mental strategy: read the subject line, sender, recipient, and date FIRST. Then look at the whole thread before coding the last message only.'},
-  {cat:'playbook',text:'What does the DISCO platform\'s "common mistake" tell us about family review?',ch:['Families should always be coded the same way regardless of individual content','The most common mistake is forgetting to review attachments and family members','Families are reviewed separately, never together','Parent emails always control the coding for the entire family'],c:1,fb:'DISCO common mistake: forgetting to review attachments and family members. Attachments can contain the privileged content, the responsive issue, or the key evidence.'},
+  {cat:'playbook',text:'According to the playbook's mental strategies, what is the FIRST thing you should read when opening a new document?',ch:['The body of the document in full','The attachments','The subject line, sender, recipient, and date first','The last message in the email thread'],c:2,fb:'Mental strategy: read the subject line, sender, recipient, and date FIRST. Then look at the whole thread before coding the last message only.'},
+  {cat:'playbook',text:'What does the DISCO platform's "common mistake" tell us about family review?',ch:['Families should always be coded the same way regardless of individual content','The most common mistake is forgetting to review attachments and family members','Families are reviewed separately, never together','Parent emails always control the coding for the entire family'],c:1,fb:'DISCO common mistake: forgetting to review attachments and family members. Attachments can contain the privileged content, the responsive issue, or the key evidence.'},
   {cat:'playbook',text:'What are the four things every escalation message should include?',ch:['Date, custodian name, document type, and your personal opinion','Document ID, issue in one sentence, your best current call, and why you are unsure','Document ID, full document summary, all possible interpretations, and recommended coding','Team lead name, doc ID, project code, and category'],c:1,fb:'Every escalation message: Document ID · Issue in one short sentence · Your best current call · Why you are unsure. Keep it short, factual, and easy to answer.'},
   {cat:'playbook',text:'What is the purpose of QC according to the playbook?',ch:['To find and punish mistakes','To ensure the team follows one standard every time — not just to find mistakes','To increase the speed of document review','To replace escalation as the primary quality control method'],c:1,fb:'QC is not just about finding mistakes. QC is about making sure the team follows one standard every time. The goal is consistency and defensibility.'},
   {cat:'playbook',text:'What does "Professionalism" mean in the Core Review Standard?',ch:['Working fast and meeting all targets','Writing clear notes, following instructions, and keeping client work confidential','Never asking questions and resolving all issues independently','Communicating only with supervisors, not with other reviewers'],c:1,fb:'Professionalism: write clear notes, follow instructions, and keep client work confidential. These are non-negotiable standards for document review.'},
-  {cat:'playbook',text:'What is one of the "Top 10 Don\'ts" that appears in every agency section of the playbook?',ch:['Do not use highlight tools','Do not code by habit only','Do not check attachments','Do not ask for feedback'],c:1,fb:'"Do not code by habit only." Appears in every agency\'s Top 10 Don\'ts. Coding on autopilot leads to missed privilege, incorrect responsiveness calls, and inconsistent results.'},
+  {cat:'playbook',text:'What is one of the "Top 10 Don'ts" that appears in every agency section of the playbook?',ch:['Do not use highlight tools','Do not code by habit only','Do not check attachments','Do not ask for feedback'],c:1,fb:'"Do not code by habit only." Appears in every agency's Top 10 Don'ts. Coding on autopilot leads to missed privilege, incorrect responsiveness calls, and inconsistent results.'},
   {cat:'playbook',text:'According to the Supervisor Playbook (Bonus Section C), what is the first step a supervisor should take?',ch:['Track pace immediately','Set the rule clearly at the start — then show examples of right and wrong coding','Check the last 50 documents for errors','Send written feedback after the first day'],c:1,fb:'Supervisor first step: set the rule clearly at the start. Then show examples of right and wrong coding. Check first documents closely. Correct issues early before bad habits spread.'},
   {cat:'playbook',text:'What is a common reason reviewers do NOT get promoted to QC?',ch:['They review too slowly','They rush and make repeat mistakes, or need the same correction over and over','They ask too many questions','They work long shifts'],c:1,fb:'Common reasons for not getting promoted: rushing and making repeat mistakes, needing the same correction repeatedly, not escalating when they should, being unreliable or hard to reach.'},
 ];
@@ -1769,7 +1769,7 @@ async function showRoundResults(){
     var cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
     return'<div class="rh-dot '+cls+'" title="Round '+r.round+': '+r.pct+'%">R'+r.round+'<br><span style="font-size:.6rem">'+r.pct+'%</span></div>';
   }).join('');
-  document.getElementById('rr-actions').innerHTML='<button class="btn btn-gold" onclick="startNextRound()">Round '+(roundNum+1)+': Fix My Misses →</button><button class="btn btn-outline btn-sm" onclick="resetQuiz()">End Session</button><div style="width:100%;text-align:center;font-size:.74rem;color:var(--muted);margin-top:6px">Keep going until you hit 100% — that\'s mastery.</div>';
+  document.getElementById('rr-actions').innerHTML='<button class="btn btn-gold" onclick="startNextRound()">Round '+(roundNum+1)+': Fix My Misses →</button><button class="btn btn-outline btn-sm" onclick="resetQuiz()">End Session</button><div style="width:100%;text-align:center;font-size:.74rem;color:var(--muted);margin-top:6px">Keep going until you hit 100% — that's mastery.</div>';
 
   // ENHANCED STUDY CARDS
   var sw=document.getElementById('study-card-wrap'),sb=document.getElementById('study-body');
@@ -1811,7 +1811,7 @@ function showMastery(saveMsg){
   document.getElementById('quiz-area').style.display='none';
   document.getElementById('mastery-screen').style.display='block';
   var totalRounds=roundHistory.length;
-  document.getElementById('mastery-sub').textContent='You achieved 100% on Round '+roundNum+' after '+totalRounds+' round'+(totalRounds!==1?'s':'')+'. That\'s what mastery looks like!';
+  document.getElementById('mastery-sub').textContent='You achieved 100% on Round '+roundNum+' after '+totalRounds+' round'+(totalRounds!==1?'s':'')+'. That's what mastery looks like!';
   document.getElementById('mastery-history').innerHTML=roundHistory.map(function(r){
     var cls=r.pct===100?'perfect':r.pct>=70?'pass':'fail';
     return'<div class="rh-dot '+cls+'">R'+r.round+'<br><span style="font-size:.6rem">'+r.pct+'%</span></div>';
@@ -1869,7 +1869,7 @@ async function loadAdmin(){
   var r=await SB.getAllScores();var data=r.data;var error=r.error;
   if(error||!data){document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Error loading data.</p>';return;}
   var users={};data.forEach(function(s){if(!users[s.user_id])users[s.user_id]={name:s.display_name,count:0,id:s.user_id};users[s.user_id].count++;});
-  document.getElementById('admin-users').innerHTML=Object.values(users).map(function(u){return'<div class="lb-row"><div class="lb-name">'+u.name+'</div><div style="color:var(--muted);font-size:.8rem;margin-right:8px">'+u.count+' attempts</div><button class="btn btn-red btn-sm" onclick="adminReset(\''+u.id+'\',\''+u.name+'\')">🗑️ Reset</button></div>';}).join('');
+  document.getElementById('admin-users').innerHTML=Object.values(users).map(function(u){return'<div class="lb-row"><div class="lb-name">'+u.name+'</div><div style="color:var(--muted);font-size:.8rem;margin-right:8px">'+u.count+' attempts</div><button class="btn btn-red btn-sm" onclick="adminReset(''+u.id+'',''+u.name+'')">🗑️ Reset</button></div>';}).join('');
   document.getElementById('admin-scores').innerHTML=data.slice(0,60).map(function(s){return'<div style="display:flex;gap:10px;padding:6px 9px;background:#111827;border-radius:6px;margin:3px 0;font-size:.78rem;flex-wrap:wrap;align-items:center"><span style="color:var(--accent);min-width:130px;font-weight:500">'+s.display_name+'</span><span style="color:var(--gold-light);font-weight:700">'+s.pct+'%</span><span style="color:var(--muted)">'+s.category+'</span><span style="color:var(--muted);margin-left:auto">'+new Date(s.created_at).toLocaleDateString()+'</span></div>';}).join('');
 }
 async function adminReset(uid,name){
@@ -1935,7 +1935,7 @@ async function lwDoLogin(){
   btn.innerHTML='<span class="spinner"></span>Logging in...';
   var r=await SB.signIn(email,pass);
   btn.disabled=false;
-  btn.innerHTML='Log In \u2192';
+  btn.innerHTML='Log In →';
   if(r.error){
     lwErr(r.error);
     return;
@@ -1958,7 +1958,7 @@ async function lwDoSignup(){
   var r=await SB.signUp(email,pass,name);
   btn.disabled=false;btn.innerHTML='Create Account';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Account created! Check your email to confirm, then log in.');
+  lwOk('✅ Account created! Check your email to confirm, then log in.');
   setTimeout(function(){lwShowView('login');},3000);
 }
 
@@ -1972,7 +1972,7 @@ async function lwDoForgot(){
   var r=await SB.sendPasswordReset(email);
   btn.disabled=false;btn.innerHTML='Send Reset Link';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Reset link sent! Check your inbox.');
+  lwOk('✅ Reset link sent! Check your inbox.');
 }
 
 // ── MAGIC LINK ──
@@ -1983,9 +1983,9 @@ async function lwDoMagic(){
   var btn=document.getElementById('lw-magic-btn');
   btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Sending...';
   var r=await SB.sendMagicLink(email);
-  btn.disabled=false;btn.innerHTML='\u2709\ufe0f Send Magic Link';
+  btn.disabled=false;btn.innerHTML='✉️ Send Magic Link';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Magic link sent! Check your email.');
+  lwOk('✅ Magic link sent! Check your email.');
 }
 
 // ── RESET PASSWORD ──
@@ -2000,7 +2000,7 @@ async function lwDoReset(){
   var r=await SB.updatePassword(p1);
   btn.disabled=false;btn.innerHTML='Update Password';
   if(r.error){lwErr(r.error);return;}
-  lwOk('\u2705 Password updated!');
+  lwOk('✅ Password updated!');
   setTimeout(function(){lwHide();onLogin();},1800);
 }
 
@@ -2054,11 +2054,11 @@ const REL_DOCS = [
     date:'March 14, 2024 · 4:47 PM', hasAttachment:true, attachmentName:'offboarding_checklist.pdf', attachmentSize:'118 KB',
     body:'Adaeze,
 
-Thanks for sending over the offboarding checklist. I\'ll have everything squared away before EOD Friday.
+Thanks for sending over the offboarding checklist. I'll have everything squared away before EOD Friday.
 
-I did want to flag — I\'ve been backing up some of my personal project files to my external drive over the past week. These are documents I personally authored during my time here that I believe I\'m entitled to retain. I\'ll make sure to delete any Joba-owned materials before I go.
+I did want to flag — I've been backing up some of my personal project files to my external drive over the past week. These are documents I personally authored during my time here that I believe I'm entitled to retain. I'll make sure to delete any Joba-owned materials before I go.
 
-Let me know if there\'s anything else you need from my side.
+Let me know if there's anything else you need from my side.
 
 Bukando',
     thread: [
@@ -2074,7 +2074,7 @@ Bukando',
     date:'March 18, 2024 · 10:22 AM', hasAttachment:false,
     body:'Kwame,
 
-I\'m writing pursuant to your request for legal advice on the Bukando matter. This communication is protected by attorney-client privilege and should not be forwarded or shared.
+I'm writing pursuant to your request for legal advice on the Bukando matter. This communication is protected by attorney-client privilege and should not be forwarded or shared.
 
 Based on my initial review:
 
@@ -2084,7 +2084,7 @@ Based on my initial review:
 
 3. I recommend we preserve all IT logs, access records, and USB transfer records immediately.
 
-I\'ll have a full memorandum ready by end of week.
+I'll have a full memorandum ready by end of week.
 
 Mariam
 Mariam & Associates LLP',
@@ -2120,9 +2120,9 @@ HR Director, Joba Company',
     date:'February 28, 2024 · 9:03 PM', hasAttachment:false,
     body:'Hi Farida,
 
-Thank you for reaching out. I\'ve given this a lot of thought and I\'m genuinely excited about the Senior Engineer role at Rival Analytics.
+Thank you for reaching out. I've given this a lot of thought and I'm genuinely excited about the Senior Engineer role at Rival Analytics.
 
-I should mention — I\'ve been working on some algorithms at Joba that I believe have real commercial potential beyond what they\'re using them for. I\'d love to discuss how my work experience might translate to what Rival is building.
+I should mention — I've been working on some algorithms at Joba that I believe have real commercial potential beyond what they're using them for. I'd love to discuss how my work experience might translate to what Rival is building.
 
 I can start in April. Looking forward to speaking more.
 
@@ -2138,7 +2138,7 @@ Bukando',
     date:'March 15, 2024 · 7:44 AM', hasAttachment:true, attachmentName:'USB_transfer_log_Mar14.xlsx', attachmentSize:'87 KB',
     body:'Dear Mr. Joba,
 
-Our security monitoring system flagged unusual activity on Bukando\'s workstation on March 14, 2024 between 6:02 PM and 8:47 PM.
+Our security monitoring system flagged unusual activity on Bukando's workstation on March 14, 2024 between 6:02 PM and 8:47 PM.
 
 Summary:
 - USB device connected: SanDisk 64GB (Serial: SD-8847-XX)
@@ -2222,11 +2222,11 @@ Following up on our call re: the Bukando matter. I want to document our strategi
 We have three viable paths:
 1. Preliminary injunction to prevent Rival Analytics from using the stolen code
 2. TRO if we can show imminent irreparable harm
-3. Letter to Rival\'s counsel demanding a forensic audit of Bukando\'s work
+3. Letter to Rival's counsel demanding a forensic audit of Bukando's work
 
 The USB logs are our strongest evidence right now. We need the forensic expert report before we can establish exactly what was taken.
 
-I\'ll draft the injunction motion for your review. Keep this strictly between us.
+I'll draft the injunction motion for your review. Keep this strictly between us.
 
 Mariam',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
@@ -2239,11 +2239,11 @@ Mariam',
     date:'February 20, 2024 · 10:14 PM', hasAttachment:false,
     body:'Emeka,
 
-Bro, things at Joba are getting bad. I\'ve been looking around. You know how it is — when they start sidelining you it\'s only a matter of time.
+Bro, things at Joba are getting bad. I've been looking around. You know how it is — when they start sidelining you it's only a matter of time.
 
-I got a call from Rival Analytics last week. Good money, interesting work. I\'m thinking about it.
+I got a call from Rival Analytics last week. Good money, interesting work. I'm thinking about it.
 
-How\'s your side going?
+How's your side going?
 
 Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
@@ -2256,7 +2256,7 @@ Bukando',
     date:'March 16, 2024 · 9:30 AM', hasAttachment:false,
     body:'IT Team,
 
-Following yesterday\'s USB alert, please pull complete access logs for the following for the past 90 days:
+Following yesterday's USB alert, please pull complete access logs for the following for the past 90 days:
 
 - DataPulse v3 source repository
 - Pricing Engine models directory
@@ -2277,9 +2277,9 @@ Kwame',
 
 Thank you for agreeing to serve as our forensic expert in the above matter. As discussed, you are being engaged at the direction of litigation counsel (Mariam & Associates LLP) to:
 
-1. Analyze the USB transfer logs from Bukando\'s workstation
+1. Analyze the USB transfer logs from Bukando's workstation
 2. Identify all files transferred on March 14, 2024
-3. Compare against Joba Company\'s proprietary code repository to determine overlap
+3. Compare against Joba Company's proprietary code repository to determine overlap
 
 All findings should be reported directly and exclusively to me. This engagement is covered by attorney-client privilege and work product protection.
 
@@ -2302,7 +2302,7 @@ This letter serves as formal notice that your employment with Joba Company is te
 The basis for termination is as follows:
 - Unauthorized transfer of company proprietary data
 - Violation of your Employment Agreement and NDA dated January 10, 2020
-- Breach of Joba Company\'s Data Security Policy
+- Breach of Joba Company's Data Security Policy
 
 You are required to return all company property immediately. You are reminded that your confidentiality obligations survive termination.
 
@@ -2340,7 +2340,7 @@ The new product, DataFlow Pro, features an AI-driven pricing algorithm and enter
     date:'January 14, 2020 · 11:05 AM', hasAttachment:false,
     body:'Hi Adaeze,
 
-Acknowledged. I\'ve read and understood the NDA. Signing now.
+Acknowledged. I've read and understood the NDA. Signing now.
 
 Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue1'], action:'produce', conf:'standard'},
@@ -2388,7 +2388,7 @@ Mariam',
     date:'November 15, 2023 · 6:30 PM', hasAttachment:false,
     body:'Tolu,
 
-On reflection, let\'s hold off on the Bukando promotion for now. He\'s good technically but the culture fit concerns are real. Keep this between us for now — I don\'t want it turning into a thing.
+On reflection, let's hold off on the Bukando promotion for now. He's good technically but the culture fit concerns are real. Keep this between us for now — I don't want it turning into a thing.
 
 Kwame',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'highly-conf'},
@@ -2401,7 +2401,7 @@ Kwame',
     date:'April 8, 2024 · 9:00 AM', hasAttachment:false,
     body:'Welcome Bukando!
 
-We\'re thrilled to have you join our engineering team. Your first week schedule is attached. You\'ll be working directly with the DataFlow Pro team starting Monday.
+We're thrilled to have you join our engineering team. Your first week schedule is attached. You'll be working directly with the DataFlow Pro team starting Monday.
 
 Please bring any personal work files or notes that might be helpful for your onboarding.
 
@@ -2422,7 +2422,7 @@ Please find attached the final forensic report as requested.
 
 Executive Summary:
 - 1,247 files identified as Joba proprietary source code were copied to the USB device
-- 89% overlap identified between Bukando\'s USB contents and Joba\'s DataPulse v3 repository
+- 89% overlap identified between Bukando's USB contents and Joba's DataPulse v3 repository
 - Pricing engine algorithm (PEA-v2.3) copied in full
 - Transfer timestamps: March 14, 2024, 6:02 PM – 8:47 PM
 
@@ -2440,7 +2440,7 @@ TechForensics LLC',
     date:'February 1, 2024 · 2:30 PM', hasAttachment:false,
     body:'Team,
 
-Here are my final notes on the DataPulse v3 pricing engine module. I\'ve documented the full algorithm logic including the adaptive weighting parameters — this is the secret sauce that makes our pricing 40% more accurate than the market.
+Here are my final notes on the DataPulse v3 pricing engine module. I've documented the full algorithm logic including the adaptive weighting parameters — this is the secret sauce that makes our pricing 40% more accurate than the market.
 
 Bukando',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2'], action:'produce', conf:'highly-conf'},
@@ -2453,7 +2453,7 @@ Bukando',
     date:'May 3, 2024 · 11:00 AM', hasAttachment:false,
     body:'Kwame,
 
-We\'ve reviewed both DataPulse and the new DataFlow Pro from Rival Analytics. We\'ve decided to go with Rival. Their pricing model is remarkably similar to yours but offered at a lower price point.
+We've reviewed both DataPulse and the new DataFlow Pro from Rival Analytics. We've decided to go with Rival. Their pricing model is remarkably similar to yours but offered at a lower price point.
 
 We appreciate the relationship but hope you understand.
 
@@ -2504,7 +2504,7 @@ Adaeze',
     date:'September 5, 2023 · 3:30 PM', hasAttachment:false,
     body:'Kwame,
 
-I\'m pleased to confirm that US Patent Application No. 18/441,872 for the DataPulse Adaptive Pricing Engine has been filed with the USPTO. The application covers the core algorithm including the adaptive weighting parameters.
+I'm pleased to confirm that US Patent Application No. 18/441,872 for the DataPulse Adaptive Pricing Engine has been filed with the USPTO. The application covers the core algorithm including the adaptive weighting parameters.
 
 This filing strengthens your trade secret protections and establishes priority date of September 5, 2023.
 
@@ -2520,7 +2520,7 @@ IP Counsel',
     date:'April 20, 2024 · 4:00 PM', hasAttachment:false,
     body:'Dele,
 
-I think we should subpoena Rival Analytics\' source code repository directly. If there\'s 89% overlap in Bukando\'s USB contents and our codebase, I want to see what they actually deployed in DataFlow Pro.
+I think we should subpoena Rival Analytics' source code repository directly. If there's 89% overlap in Bukando's USB contents and our codebase, I want to see what they actually deployed in DataFlow Pro.
 
 This is attorney work product — keep internal.
 
@@ -2535,7 +2535,7 @@ Mariam',
     date:'March 5, 2024 · 10:00 AM', hasAttachment:false,
     body:'Hi Tolu,
 
-I\'m reaching out regarding Bukando\'s application at Rival Analytics. Could you provide a reference and confirm his employment dates and role?
+I'm reaching out regarding Bukando's application at Rival Analytics. Could you provide a reference and confirm his employment dates and role?
 
 Thank you,
 Farida
@@ -2565,7 +2565,7 @@ IT Security Team',
     date:'March 19, 2024 · 3:00 PM', hasAttachment:false,
     body:'Kwame,
 
-Per your request, my analysis of the NDA\'s enforceability:
+Per your request, my analysis of the NDA's enforceability:
 
 1. DURATION: The 3-year post-employment restriction is within enforceable limits in this jurisdiction.
 2. SCOPE: The definition of "Confidential Information" in Section 2(a) is broad enough to cover source code and data models.
@@ -2584,9 +2584,9 @@ Mariam',
     date:'April 25, 2024 · 11:00 AM', hasAttachment:true, attachmentName:'Competitor_Analysis_Q1_2024.xlsx', attachmentSize:'780 KB',
     body:'Kwame,
 
-Attached is the Q1 competitive analysis. Key finding: Rival Analytics\' DataFlow Pro is pricing 22% below our DataPulse rates using what appears to be a similar algorithmic structure. Their time to market was unusually fast — 6 weeks from Bukando\'s hire date.
+Attached is the Q1 competitive analysis. Key finding: Rival Analytics' DataFlow Pro is pricing 22% below our DataPulse rates using what appears to be a similar algorithmic structure. Their time to market was unusually fast — 6 weeks from Bukando's hire date.
 
-This is concerning. Normal product cycles take 12-18 months. Something doesn\'t add up.
+This is concerning. Normal product cycles take 12-18 months. Something doesn't add up.
 
 Sana',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
@@ -2653,7 +2653,7 @@ Employee: Bukando | Period: Q4 2023 | Reviewer: Tolu Adeyemi
 OVERALL RATING: 3/5 — Meets Expectations
 
 TECHNICAL SKILLS: 5/5
-Comments: Exceptional. Bukando\'s work on DataPulse v3 pricing engine is outstanding and has been central to product success.
+Comments: Exceptional. Bukando's work on DataPulse v3 pricing engine is outstanding and has been central to product success.
 
 COLLABORATION: 2/5
 Comments: Interpersonal friction with analytics team. Some meetings skipped without notice.
@@ -2757,7 +2757,7 @@ CONFIDENTIAL — ATTORNEY WORK PRODUCT
 Matter: Joba Company v. Bukando
 
 EXECUTIVE SUMMARY:
-89% of files transferred via USB on March 14, 2024 match Joba Company\'s proprietary DataPulse v3 repository.
+89% of files transferred via USB on March 14, 2024 match Joba Company's proprietary DataPulse v3 repository.
 
 FINDINGS:
 1. Pricing Engine Algorithm (PEA-v2.3): FULL COPY confirmed
@@ -2820,7 +2820,7 @@ JOBA DataPulse v3:
 • Development Time: 18 months
 • Patents Filed: Sep 2023
 
-KEY ANOMALY: Rival Analytics\' 6-week product cycle is unprecedented for this type of system. Normal development baseline is 12-18 months minimum.
+KEY ANOMALY: Rival Analytics' 6-week product cycle is unprecedented for this type of system. Normal development baseline is 12-18 months minimum.
 
 Confidential — Internal Use Only',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue2','issue3'], action:'produce', conf:'highly-conf'},
@@ -2870,7 +2870,7 @@ Element 1 — Trade Secret Exists: The DataPulse pricing engine qualifies as a t
 
 Element 2 — Misappropriation: The USB transfer logs constitute strong evidence of misappropriation by improper means.
 
-Element 3 — Use in Commerce: Rival Analytics\' rapid product launch suggests the stolen materials were immediately deployed.
+Element 3 — Use in Commerce: Rival Analytics' rapid product launch suggests the stolen materials were immediately deployed.
 
 RECOMMENDATION: Proceed to file.',
     answer:{responsive:'responsive', privilege:'acp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
@@ -2911,7 +2911,7 @@ Adaeze Nwosu, HR Director',
 TO: All Joba Company Employees
 RE: Data Classification Policy — Annual Reminder
 
-This memo reminds all employees of Joba\'s Data Classification Policy:
+This memo reminds all employees of Joba's Data Classification Policy:
 
 • CONFIDENTIAL: Source code, algorithms, client data, pricing models
 • INTERNAL: Business plans, financial projections
@@ -2941,7 +2941,7 @@ STRENGTHS:
 WEAKNESSES:
 • No direct evidence Rival deployed the code (yet)
 • Bukando will argue he authored the code (joint authorship defense)
-• CEO\'s internal promotion block email creates exposure on counterclaim
+• CEO's internal promotion block email creates exposure on counterclaim
 
 STRATEGY:
 1. File for preliminary injunction immediately
@@ -2968,7 +2968,7 @@ Q4: International market launch
 
 Projected Revenue Impact: +$4.2M over prior year
 
-This roadmap incorporates the pricing engine improvements Bukando\'s team completed in Q4 2023.',
+This roadmap incorporates the pricing engine improvements Bukando's team completed in Q4 2023.',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue3'], action:'produce', conf:'highly-conf'},
     explanation:'Responsive to Issue 3. The roadmap shows the commercial value of the pricing engine (projected $4.2M impact) — directly relevant to damages calculation for competitive damage. Not privileged.'
   },
@@ -3003,8 +3003,8 @@ Dr. Wu,
 This memo outlines the specific questions I need your forensic analysis to address. These instructions reflect my litigation strategy and are attorney work product.
 
 1. Compare Bukando USB contents against Joba DataPulse v3 full repository
-2. Identify any code identical or substantially similar to Joba\'s pricing engine
-3. Review Rival Analytics\' public DataFlow Pro documentation for algorithmic similarity
+2. Identify any code identical or substantially similar to Joba's pricing engine
+3. Review Rival Analytics' public DataFlow Pro documentation for algorithmic similarity
 4. Provide a probability assessment of independent development vs. derived work
 
 Do not discuss your findings with anyone other than me. All communications go through my office.
@@ -3054,8 +3054,8 @@ SALARY: Confidential
 REPORTS TO: Engineering Manager
 
 KEY TERMS:
-1. DUTIES: Employee will develop and maintain Joba\'s data systems including DataPulse.
-2. CONFIDENTIALITY: All work product created during employment is Joba\'s sole property.
+1. DUTIES: Employee will develop and maintain Joba's data systems including DataPulse.
+2. CONFIDENTIALITY: All work product created during employment is Joba's sole property.
 3. IP ASSIGNMENT: Employee assigns all inventions created during employment to Joba Company.
 4. TERMINATION: Either party may terminate for cause with immediate effect.
 5. GOVERNING NDA: The separate NDA dated January 10, 2020 is incorporated by reference.
@@ -3080,7 +3080,7 @@ The parties agree to amend the original NDA to explicitly include:
 2. Customer behavioral data and profile information
 3. Third-party API integrations and related documentation
 
-This amendment was necessitated by Joba Company\'s expansion into data analytics products including DataPulse.
+This amendment was necessitated by Joba Company's expansion into data analytics products including DataPulse.
 
 [SIGNED]
 Bukando: /s/ Bukando — March 15, 2022
@@ -3137,7 +3137,7 @@ DO NOT DISTRIBUTE
 This Severance Agreement is offered by Joba Company to Bukando in connection with his separation on March 15, 2024.
 
 Joba Company offers:
-• 2 weeks\' severance pay
+• 2 weeks' severance pay
 • Continuation of health benefits for 30 days
 
 In exchange, Bukando agrees to:
@@ -3145,7 +3145,7 @@ In exchange, Bukando agrees to:
 • Affirm ongoing NDA obligations
 • Not disparage Joba Company publicly
 
-Bukando\'s deadline to accept: March 22, 2024
+Bukando's deadline to accept: March 22, 2024
 
 [NEVER SIGNED — Bukando rejected offer and retained Kiwingo LLP]',
     answer:{responsive:'responsive', privilege:'not-privileged', issues:['issue4'], action:'produce', conf:'standard'},
@@ -3185,13 +3185,13 @@ Participants: Mariam Osei ↔ Dele Okafor
 Matter: Joba v. Bukando
 
 [March 22, 2024 — 9:15 AM]
-Mariam: Dele the USB logs are airtight. I\'m thinking we go for an emergency TRO
+Mariam: Dele the USB logs are airtight. I'm thinking we go for an emergency TRO
 Dele: Agreed. Can we tie the chat message to intentional theft?
 Mariam: Yes — "rival is gonna love it" shows deliberate misappropriation
 Dele: Perfect. What about the deleted message recovery?
 Mariam: IT forensics confirmed recovery. We can use it.
 Dele: This case settles quickly once they see the evidence
-Mariam: Don\'t be so sure. Kiwingo will push on the wrongful termination counterclaim. That CEO promotion email is bad for us.
+Mariam: Don't be so sure. Kiwingo will push on the wrongful termination counterclaim. That CEO promotion email is bad for us.
 Dele: How bad?
 Mariam: Very. Keep it between us for now.',
     answer:{responsive:'responsive', privilege:'acp-wpp', issues:['issue1','issue2'], action:'withhold', conf:'aeo'},
