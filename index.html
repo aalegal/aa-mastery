@@ -468,6 +468,211 @@ tr:nth-child(even) td{background:#0d162080}
 .rel-result-num{font-size:1.4rem;font-weight:800;color:var(--gold-light)}
 .rel-result-lbl{font-size:.72rem;color:var(--muted);margin-top:3px}
 
+
+/* ══════════════════════════════════════════
+   REDACTION MODE
+   ══════════════════════════════════════════ */
+#redaction-modal{
+  display:none;position:fixed;inset:0;z-index:600;background:#000000cc;
+  align-items:center;justify-content:center;padding:16px;
+}
+#redaction-modal.open{display:flex;}
+.rdx-box{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  width:100%;max-width:860px;max-height:92vh;overflow:hidden;display:flex;flex-direction:column;
+  box-shadow:0 30px 80px #000;
+}
+.rdx-topbar{
+  display:flex;align-items:center;gap:10px;padding:13px 18px;
+  background:linear-gradient(135deg,#18080a,#200c0e);border-bottom:2px solid var(--red);
+  flex-shrink:0;
+}
+.rdx-topbar-title{font-weight:800;color:#ff8a65;font-size:.93rem;flex:1}
+.rdx-band{
+  background:repeating-linear-gradient(45deg,#b71c1c,#b71c1c 10px,#7f0000 10px,#7f0000 20px);
+  color:#fff;font-weight:700;font-size:.75rem;letter-spacing:.8px;text-transform:uppercase;
+  padding:7px 16px;text-align:center;flex-shrink:0;
+}
+.rdx-body{display:flex;flex:1;overflow:hidden;min-height:0;}
+.rdx-doc-side{
+  flex:1;overflow-y:auto;padding:16px;
+  border-right:1px solid var(--border);background:#080c12;
+}
+.rdx-doc-preview{
+  background:#0e1420;border-radius:8px;padding:14px;font-size:.82rem;
+  color:var(--text2);line-height:1.7;white-space:pre-wrap;word-break:break-word;
+}
+.rdx-mark-bar{
+  background:#1a0e0e;border:1px solid #3d1515;border-radius:8px;
+  padding:10px 13px;margin:8px 0;display:flex;align-items:center;gap:10px;
+  font-size:.79rem;color:#ff8a65;cursor:pointer;transition:all .2s;
+}
+.rdx-mark-bar:hover{border-color:#e53935;background:#220f0f;}
+.rdx-mark-bar .rdx-reason-chip{
+  padding:2px 9px;border-radius:10px;font-size:.68rem;font-weight:700;
+  background:#e5393522;color:#ff5252;border:1px solid var(--red);
+  flex-shrink:0;
+}
+.rdx-mark-bar .rdx-reason-chip.pii{background:#7c4dff22;color:#b39ddb;border-color:#7c4dff;}
+.rdx-mark-bar .rdx-reason-chip.privacy{background:#1565c022;color:#7eb8f7;border-color:#2954a3;}
+.rdx-mark-bar .rdx-reason-chip.relevance{background:#2e7d3222;color:#81c784;border-color:#388e3c;}
+.rdx-mark-bar .rdx-note-preview{
+  flex:1;color:var(--muted);font-style:italic;font-size:.75rem;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;
+}
+.rdx-mark-bar .rdx-remove-btn{
+  background:transparent;border:none;color:var(--muted);cursor:pointer;
+  font-size:.82rem;padding:2px 6px;border-radius:4px;flex-shrink:0;
+}
+.rdx-mark-bar .rdx-remove-btn:hover{color:#ff5252;background:#e5393520;}
+.rdx-panel{
+  width:310px;flex-shrink:0;display:flex;flex-direction:column;
+  padding:16px;overflow-y:auto;gap:12px;
+}
+.rdx-section-title{
+  font-size:.72rem;font-weight:700;color:var(--gold-light);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;
+  display:flex;align-items:center;gap:6px;
+}
+.rdx-section-title::before{content:'';width:3px;height:12px;border-radius:2px;background:var(--gold-deep);}
+.rdx-reason-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.rdx-reason-btn{
+  padding:8px 6px;border-radius:7px;border:1px solid var(--border);
+  background:#111827;color:var(--text2);font-size:.76rem;font-weight:600;
+  cursor:pointer;text-align:center;transition:all .2s;
+}
+.rdx-reason-btn:hover{border-color:var(--red);color:#ff8a65;}
+.rdx-reason-btn.active{background:#e5393520;border-color:var(--red);color:#ff5252;}
+.rdx-reason-btn.active.pii{background:#7c4dff20;border-color:#7c4dff;color:#b39ddb;}
+.rdx-reason-btn.active.privacy{background:#2954a320;border-color:#2954a3;color:#7eb8f7;}
+.rdx-reason-btn.active.relevance{background:#2e7d3220;border-color:#388e3c;color:#81c784;}
+.rdx-note-area{
+  width:100%;background:#111827;border:1px solid var(--border2);
+  color:var(--text);padding:8px 10px;border-radius:7px;font-size:.82rem;
+  resize:vertical;min-height:70px;font-family:inherit;
+}
+.rdx-note-area:focus{outline:none;border-color:var(--red);}
+.rdx-add-btn{
+  background:linear-gradient(135deg,#7f0000,#b71c1c);color:#fff;
+  border:none;border-radius:7px;padding:9px;font-weight:700;
+  font-size:.82rem;cursor:pointer;width:100%;transition:all .2s;
+}
+.rdx-add-btn:hover{filter:brightness(1.15);}
+.rdx-add-btn:disabled{opacity:.4;cursor:default;}
+.rdx-count-badge{
+  background:#e5393520;border:1px solid var(--red);border-radius:20px;
+  padding:3px 10px;font-size:.72rem;font-weight:700;color:#ff5252;
+}
+.rdx-footer{
+  padding:13px 18px;border-top:1px solid var(--border);
+  display:flex;gap:10px;flex-shrink:0;background:var(--card);
+}
+.rdx-save-btn{
+  flex:1;background:linear-gradient(135deg,#7f0000,#b71c1c);
+  color:#fff;border:none;border-radius:7px;padding:11px;
+  font-weight:800;font-size:.88rem;cursor:pointer;
+}
+.rdx-save-btn:hover{filter:brightness(1.12);}
+.rdx-cancel-btn{
+  padding:11px 16px;background:transparent;border:1px solid var(--border);
+  color:var(--muted);border-radius:7px;cursor:pointer;font-size:.84rem;
+}
+.rdx-applied-list{display:flex;flex-direction:column;gap:4px;}
+.rdx-empty-msg{color:var(--muted);font-size:.78rem;text-align:center;padding:10px;font-style:italic;}
+
+/* ══════════════════════════════════════════
+   PRIVILEGE LOG (PLOG)
+   ══════════════════════════════════════════ */
+#plog-modal{
+  display:none;position:fixed;inset:0;z-index:700;background:#000000cc;
+  align-items:center;justify-content:center;padding:16px;
+}
+#plog-modal.open{display:flex;}
+.plog-box{
+  background:var(--card);border:1px solid var(--border2);border-radius:12px;
+  width:100%;max-width:720px;max-height:92vh;overflow-y:auto;
+  box-shadow:0 30px 80px #000;
+}
+.plog-header{
+  padding:16px 20px;border-bottom:2px solid var(--gold-deep);
+  background:linear-gradient(135deg,#0a0c10,#0e1420);
+  display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:1;
+}
+.plog-header-title{font-weight:800;font-size:1rem;background:var(--gold-metallic);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.plog-body{padding:20px;}
+.plog-meta-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px;
+}
+.plog-field{display:flex;flex-direction:column;gap:4px;}
+.plog-field label{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.3px;}
+.plog-field input,.plog-field textarea{
+  background:#111827;border:1px solid var(--border2);color:var(--text);
+  padding:8px 10px;border-radius:7px;font-size:.83rem;font-family:inherit;
+}
+.plog-field input:focus,.plog-field textarea:focus{outline:none;border-color:var(--gold);}
+.plog-field textarea{resize:vertical;min-height:80px;}
+.plog-field.full{grid-column:1/-1;}
+.plog-priv-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:16px;}
+.plog-priv-btn{
+  padding:9px 6px;border-radius:7px;border:1px solid var(--border);
+  background:#111827;color:var(--text2);font-size:.75rem;font-weight:600;
+  cursor:pointer;text-align:center;transition:all .2s;
+}
+.plog-priv-btn:hover{border-color:var(--gold-deep);}
+.plog-priv-btn.active.acp{background:rgba(41,84,163,.25);border-color:#2954a3;color:#7eb8f7;}
+.plog-priv-btn.active.wpp{background:rgba(124,77,255,.25);border-color:#7c4dff;color:#b39ddb;}
+.plog-priv-btn.active.both{background:rgba(212,168,42,.15);border-color:var(--gold-deep);color:var(--gold-light);}
+.plog-priv-btn.active.cip{background:rgba(0,105,92,.25);border-color:#00695c;color:#4caf50;}
+.plog-quality-box{
+  border-radius:8px;padding:11px 14px;margin-bottom:14px;
+  font-size:.81rem;line-height:1.6;
+}
+.plog-quality-box.good{background:#00695c18;border:1px solid #00695c;color:#4caf50;}
+.plog-quality-box.warn{background:#f9a82518;border:1px solid #f9a825;color:#f9a825;}
+.plog-quality-box.bad{background:#e5393518;border:1px solid var(--red);color:#ff5252;}
+.plog-quality-box.empty{background:#111827;border:1px solid var(--border);color:var(--muted);font-style:italic;}
+.plog-quality-item{display:flex;align-items:flex-start;gap:7px;margin-top:5px;font-size:.79rem;}
+.plog-log-section{margin-top:18px;padding-top:16px;border-top:1px solid var(--border);}
+.plog-log-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.plog-log-title{font-size:.83rem;font-weight:700;color:var(--gold-light);}
+.plog-log-count{font-size:.73rem;color:var(--muted);}
+.plog-log-table{width:100%;border-collapse:collapse;font-size:.77rem;}
+.plog-log-table th{background:#0e1a2e;color:var(--gold-light);padding:7px 9px;text-align:left;border:1px solid var(--border2);}
+.plog-log-table td{padding:6px 9px;border:1px solid var(--border);vertical-align:top;color:var(--text2);}
+.plog-log-table tr:nth-child(even) td{background:#0d162040;}
+.plog-log-table .priv-chip{
+  display:inline-block;padding:1px 6px;border-radius:8px;font-size:.65rem;font-weight:700;
+  background:rgba(41,84,163,.2);color:#7eb8f7;border:1px solid #2954a3;
+}
+.plog-log-table .priv-chip.wpp{background:rgba(124,77,255,.2);color:#b39ddb;border-color:#7c4dff;}
+.plog-log-table .priv-chip.both{background:rgba(212,168,42,.15);color:var(--gold-light);border-color:var(--gold-deep);}
+.plog-log-table .priv-chip.cip{background:rgba(0,105,92,.2);color:#4caf50;border-color:#00695c;}
+.plog-log-table .plog-quality-flag{color:#f9a825;font-size:.7rem;margin-left:4px;}
+.plog-footer{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:10px;position:sticky;bottom:0;background:var(--card);z-index:1;
+}
+.plog-save-btn{
+  flex:1;background:var(--gold-metallic);color:#0a0c10;
+  border:none;border-radius:7px;padding:11px;font-weight:800;font-size:.88rem;cursor:pointer;
+}
+.plog-save-btn:disabled{opacity:.4;cursor:default;filter:grayscale(.8);}
+.plog-cancel-btn{
+  padding:11px 16px;background:transparent;border:1px solid var(--border);
+  color:var(--muted);border-radius:7px;cursor:pointer;font-size:.84rem;
+}
+/* Indicator badges on coded docs in the list */
+.rel-plog-badge{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--gold);margin-left:4px;vertical-align:middle;
+  box-shadow:0 0 4px rgba(212,168,42,.6);
+}
+.rel-rdx-badge{
+  display:inline-block;width:7px;height:7px;border-radius:50%;
+  background:var(--red-soft);margin-left:4px;vertical-align:middle;
+  box-shadow:0 0 4px rgba(255,82,82,.6);
+}
+
 </style>
 </head>
 <body>
@@ -1208,7 +1413,7 @@ tr:nth-child(even) td{background:#0d162080}
   <!-- TOP TOOLBAR -->
   <div id="rel-toolbar">
     <button id="rel-back-btn" onclick="closeRelativity()">← Back to Projects</button>
-    <span class="rel-toolbar-case">Joba v. Bukando</span>
+    <button onclick="openPlogViewer()" style="background:linear-gradient(135deg,var(--sapphire),var(--sapphire-mid));border:1px solid var(--gold-deep);color:var(--gold-light);padding:5px 12px;border-radius:6px;font-size:.76rem;font-weight:700;cursor:pointer;">📋 View PLOG</button><span class="rel-toolbar-case">Joba v. Bukando</span>
     <span class="rel-toolbar-title">📂 First Level Review — Batch 001</span>
     <input id="rel-search-bar" type="text" placeholder="🔍 Search documents..." oninput="relSearch(this.value)">
     <button class="rel-btn" onclick="relToggleFilter('all')" id="filt-all">All</button>
@@ -1352,6 +1557,131 @@ tr:nth-child(even) td{background:#0d162080}
           </div>
         </div>
       </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════ REDACTION MODAL ══════ -->
+<div id="redaction-modal">
+  <div class="rdx-box">
+    <div class="rdx-topbar">
+      <span style="font-size:1.1rem">✏️</span>
+      <span class="rdx-topbar-title">Redaction Workflow — <span id="rdx-doc-id"></span></span>
+      <span class="rdx-count-badge" id="rdx-count">0 marks</span>
+    </div>
+    <div class="rdx-band">⚠ REDACTED DOCUMENT — PORTIONS WITHHELD FROM PRODUCTION</div>
+    <div class="rdx-body">
+      <!-- Document preview -->
+      <div class="rdx-doc-side">
+        <div style="font-size:.71rem;color:var(--muted);margin-bottom:8px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;">Document Preview</div>
+        <div class="rdx-doc-preview" id="rdx-doc-preview"></div>
+        <div style="margin-top:14px;">
+          <div style="font-size:.71rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;">Applied Redaction Marks</div>
+          <div class="rdx-applied-list" id="rdx-applied-list">
+            <div class="rdx-empty-msg">No redaction marks yet. Use the panel to add marks.</div>
+          </div>
+        </div>
+      </div>
+      <!-- Redaction panel -->
+      <div class="rdx-panel">
+        <div>
+          <div class="rdx-section-title">Redaction Reason</div>
+          <div class="rdx-reason-grid">
+            <button class="rdx-reason-btn" id="rdx-btn-privilege" onclick="rdxSelectReason('privilege',this)">🔒 Privilege</button>
+            <button class="rdx-reason-btn pii" id="rdx-btn-pii" onclick="rdxSelectReason('pii',this)">👤 PII</button>
+            <button class="rdx-reason-btn privacy" id="rdx-btn-privacy" onclick="rdxSelectReason('privacy',this)">🛡️ Privacy</button>
+            <button class="rdx-reason-btn relevance" id="rdx-btn-relevance" onclick="rdxSelectReason('relevance',this)">📋 Relevance</button>
+          </div>
+        </div>
+        <div>
+          <div class="rdx-section-title">Redacted Text / Location</div>
+          <input type="text" id="rdx-location" placeholder="e.g. Paragraph 3, lines 2–4 / Page 1 header"
+            style="width:100%;background:#111827;border:1px solid var(--border2);color:var(--text);padding:8px 10px;border-radius:7px;font-size:.82rem;" />
+        </div>
+        <div>
+          <div class="rdx-section-title">Reviewer Note</div>
+          <textarea class="rdx-note-area" id="rdx-note" placeholder="Describe the redacted content and why it's being redacted (e.g. 'Sentence 3 contains attorney-client communication regarding settlement strategy')"></textarea>
+        </div>
+        <button class="rdx-add-btn" id="rdx-add-btn" onclick="rdxAddMark()" disabled>+ Add Redaction Mark</button>
+        <div style="background:#0e1420;border-radius:8px;padding:10px 12px;font-size:.77rem;color:var(--muted);border-left:2px solid var(--gold-deep);">
+          <strong style="color:var(--gold-light);display:block;margin-bottom:4px;">💡 Best Practice</strong>
+          Describe the location and reason precisely. Vague redactions can be challenged. The opposing side sees a black box — your note is for internal QC only.
+        </div>
+      </div>
+    </div>
+    <div class="rdx-footer">
+      <button class="rdx-cancel-btn" onclick="rdxClose()">Cancel</button>
+      <button class="rdx-save-btn" id="rdx-save-btn" onclick="rdxSave()">Save Redaction Marks →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ PRIVILEGE LOG MODAL ══════ -->
+<div id="plog-modal">
+  <div class="plog-box">
+    <div class="plog-header">
+      <span style="font-size:1.2rem">📋</span>
+      <div>
+        <div class="plog-header-title">Privilege Log Entry</div>
+        <div style="font-size:.75rem;color:var(--muted)" id="plog-header-sub">Complete all fields before saving to the log</div>
+      </div>
+      <button onclick="plogClose()" style="margin-left:auto;background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:1.1rem;">✕</button>
+    </div>
+    <div class="plog-body">
+      <!-- Metadata (auto-populated) -->
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span style="width:3px;height:12px;border-radius:2px;background:var(--gold-deep);display:inline-block"></span>Document Metadata</div>
+      <div class="plog-meta-grid">
+        <div class="plog-field"><label>Doc ID</label><input type="text" id="plog-doc-id" readonly style="color:var(--accent);"></div>
+        <div class="plog-field"><label>Doc Type</label><input type="text" id="plog-doc-type" readonly></div>
+        <div class="plog-field"><label>Date</label><input type="text" id="plog-date" readonly></div>
+        <div class="plog-field"><label>Custodian</label><input type="text" id="plog-custodian" readonly></div>
+        <div class="plog-field full"><label>From</label><input type="text" id="plog-from" readonly></div>
+        <div class="plog-field full"><label>To / Recipients</label><input type="text" id="plog-to" readonly></div>
+        <div class="plog-field full"><label>Subject</label><input type="text" id="plog-subject" readonly></div>
+      </div>
+      <!-- Privilege type -->
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span style="width:3px;height:12px;border-radius:2px;background:var(--gold-deep);display:inline-block"></span>Privilege Type</div>
+      <div class="plog-priv-grid" style="margin-bottom:16px;">
+        <button class="plog-priv-btn acp" id="plog-btn-acp" onclick="plogSelectPriv('acp',this)">⚖️ ACP</button>
+        <button class="plog-priv-btn wpp" id="plog-btn-wpp" onclick="plogSelectPriv('wpp',this)">📄 WPP</button>
+        <button class="plog-priv-btn both" id="plog-btn-both" onclick="plogSelectPriv('both',this)">⚖️+📄 ACP+WPP</button>
+        <button class="plog-priv-btn cip" id="plog-btn-cip" onclick="plogSelectPriv('cip',this)">🤝 CIP</button>
+      </div>
+      <!-- Description -->
+      <div style="font-size:.72rem;font-weight:700;color:var(--gold-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;display:flex;align-items:center;gap:6px;"><span style="width:3px;height:12px;border-radius:2px;background:var(--gold-deep);display:inline-block"></span>Privilege Description</div>
+      <div class="plog-field full" style="margin-bottom:10px;">
+        <textarea id="plog-description" class="plog-note-area" rows="4"
+          style="width:100%;background:#111827;border:1px solid var(--border2);color:var(--text);padding:9px 11px;border-radius:7px;font-size:.84rem;resize:vertical;font-family:inherit;"
+          placeholder="Write a description that proves privilege without revealing the secret. E.g. 'Email reflecting legal advice from outside counsel regarding contract enforceability. Sent from attorney to client, confidential, for purpose of obtaining legal advice.'"
+          oninput="plogCheckQuality()"></textarea>
+      </div>
+      <!-- Quality checker -->
+      <div id="plog-quality-box" class="plog-quality-box empty">
+        <strong>📊 Description Quality</strong> — Start typing to see feedback.
+      </div>
+      <!-- Existing PLOG -->
+      <div class="plog-log-section" id="plog-log-section" style="display:none">
+        <div class="plog-log-header">
+          <span class="plog-log-title">📋 Current Privilege Log</span>
+          <span class="plog-log-count" id="plog-log-count"></span>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="plog-log-table" id="plog-log-table">
+            <thead>
+              <tr>
+                <th>Doc ID</th><th>Date</th><th>From</th><th>To</th>
+                <th>Subject</th><th>Priv Type</th><th>Description</th>
+              </tr>
+            </thead>
+            <tbody id="plog-log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="plog-footer">
+      <button class="plog-cancel-btn" onclick="plogClose()">Cancel</button>
+      <button class="plog-save-btn" id="plog-save-btn" onclick="plogSave()" disabled>Save to Privilege Log →</button>
     </div>
   </div>
 </div>
@@ -1845,12 +2175,6 @@ function humanLabel(val){
   return labels[val]||val;
 }
 
-function closeFeedbackOverlay(btn){
-  var el=btn;
-  while(el&&!el.classList.contains('rel-feedback-overlay')){el=el.parentElement;}
-  if(el)el.remove();
-}
-
 function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
   var overlay=document.createElement("div");
   overlay.className="rel-feedback-overlay";
@@ -1876,8 +2200,8 @@ function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
     +"<div style=\"background:#0e1420;border-radius:8px;padding:12px;font-size:.82rem;color:var(--text2);line-height:1.65;border-left:3px solid var(--gold)\">💡 "+doc.explanation+"</div>"
     +errHtml
     +"<div style=\"display:flex;gap:8px;margin-top:16px\">"
-    +"<button onclick='closeFeedbackOverlay(this);relNav(1);' style='flex:1;padding:10px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer;font-size:.85rem'>Next Document →</button>"
-    +"<button onclick='closeFeedbackOverlay(this);' style='padding:10px 14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.82rem'>Review</button>"
+    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();relNav(1);\" style=\"flex:1;padding:10px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer;font-size:.85rem\">Next Document →</button>"
+    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();\" style=\"padding:10px 14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.82rem\">Review</button>"
     +"</div>"
     +"</div>";
   document.body.appendChild(overlay);
@@ -1925,7 +2249,7 @@ function showRelResults(){
     +"</div>"
     +(coded<REL_DOCS.length?"<p style=\"font-size:.8rem;color:var(--muted);text-align:center;margin-top:8px\">Keep going — "+(REL_DOCS.length-coded)+" documents left.</p>":"<p style=\"font-size:.8rem;color:#4caf50;text-align:center;margin-top:8px\">✅ All documents reviewed!</p>")
     +"<div style=\"display:flex;gap:8px;margin-top:14px;justify-content:center\">"
-    +"<button onclick='closeFeedbackOverlay(this);' style='padding:10px 20px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer'>Close</button>"
+    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();\" style=\"padding:10px 20px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer\">Close</button>"
     +"</div>"
     +"</div>";
   document.body.appendChild(overlay);
@@ -2055,6 +2379,358 @@ logout=async function(){
     }).catch(function(){});
   }
 })();
+
+
+// ══════════════════════════════════════════════════════════════════
+// REDACTION WORKFLOW
+// ══════════════════════════════════════════════════════════════════
+
+var rdxState = {
+  docId: null,
+  reason: null,
+  marks: {}   // docId -> [{reason, location, note}]
+};
+
+function rdxOpen(doc) {
+  rdxState.docId = doc.id;
+  rdxState.reason = null;
+  document.getElementById('rdx-doc-id').textContent = doc.id;
+  // Populate preview (first 600 chars of body)
+  var preview = (doc.body || '').slice(0, 700);
+  if ((doc.body || '').length > 700) preview += '\n[... document continues ...]';
+  document.getElementById('rdx-doc-preview').textContent = preview;
+  // Reset form
+  document.getElementById('rdx-location').value = '';
+  document.getElementById('rdx-note').value = '';
+  document.querySelectorAll('.rdx-reason-btn').forEach(function(b){ b.classList.remove('active'); });
+  rdxRenderMarks();
+  document.getElementById('rdx-add-btn').disabled = true;
+  document.getElementById('redaction-modal').classList.add('open');
+}
+
+function rdxClose() {
+  document.getElementById('redaction-modal').classList.remove('open');
+}
+
+function rdxSelectReason(reason, btn) {
+  rdxState.reason = reason;
+  document.querySelectorAll('.rdx-reason-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  rdxCheckAddReady();
+}
+
+function rdxCheckAddReady() {
+  var ready = rdxState.reason && document.getElementById('rdx-note').value.trim().length > 0;
+  document.getElementById('rdx-add-btn').disabled = !ready;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var noteEl = document.getElementById('rdx-note');
+  if (noteEl) noteEl.addEventListener('input', rdxCheckAddReady);
+});
+
+function rdxAddMark() {
+  var docId = rdxState.docId;
+  var reason = rdxState.reason;
+  var location = document.getElementById('rdx-location').value.trim();
+  var note = document.getElementById('rdx-note').value.trim();
+  if (!reason || !note) return;
+  if (!rdxState.marks[docId]) rdxState.marks[docId] = [];
+  rdxState.marks[docId].push({ reason: reason, location: location, note: note });
+  // Reset fields
+  document.getElementById('rdx-location').value = '';
+  document.getElementById('rdx-note').value = '';
+  document.querySelectorAll('.rdx-reason-btn').forEach(function(b){ b.classList.remove('active'); });
+  rdxState.reason = null;
+  document.getElementById('rdx-add-btn').disabled = true;
+  rdxRenderMarks();
+}
+
+function rdxRemoveMark(btn) {
+  var docId = btn.dataset.doc;
+  var idx = parseInt(btn.dataset.idx);
+  if (rdxState.marks[docId]) {
+    rdxState.marks[docId].splice(idx, 1);
+    rdxRenderMarks();
+  }
+}
+
+function rdxRenderMarks() {
+  var docId = rdxState.docId;
+  var marks = rdxState.marks[docId] || [];
+  var list = document.getElementById('rdx-applied-list');
+  var counter = document.getElementById('rdx-count');
+  counter.textContent = marks.length + ' mark' + (marks.length !== 1 ? 's' : '');
+  if (!marks.length) {
+    list.innerHTML = '<div class="rdx-empty-msg">No redaction marks yet. Use the panel to add marks.</div>';
+    return;
+  }
+  var reasonLabels = { privilege: 'Privilege', pii: 'PII', privacy: 'Privacy', relevance: 'Relevance' };
+  list.innerHTML = marks.map(function(m, i) {
+    return '<div class="rdx-mark-bar">'
+      + '<span class="rdx-reason-chip ' + m.reason + '">' + reasonLabels[m.reason] + '</span>'
+      + (m.location ? '<span style="font-size:.72rem;color:var(--muted);flex-shrink:0;">' + esc(m.location) + '</span>' : '')
+      + '<span class="rdx-note-preview">' + esc(m.note) + '</span>'
+      + '<button class="rdx-remove-btn" onclick="rdxRemoveMark(this)" data-doc="' + docId + '" data-idx="' + i + '" title="Remove">✕</button>'
+      + '</div>';
+  }).join('');
+}
+
+function rdxSave() {
+  var docId = rdxState.docId;
+  var marks = rdxState.marks[docId] || [];
+  // Store on the coding state
+  if (!relCoding[docId]) relCoding[docId] = {};
+  relCoding[docId].redactionMarks = marks;
+  relCoding[docId].hasRedactions = marks.length > 0;
+  rdxClose();
+  // Refresh list to show redaction badge
+  relRenderList();
+  // Show brief confirmation
+  var fb = document.createElement('div');
+  fb.style.cssText = 'position:fixed;bottom:20px;right:20px;background:#7f0000;color:#fff;padding:10px 16px;border-radius:8px;font-size:.83rem;font-weight:700;z-index:800;box-shadow:0 4px 20px #000';
+  fb.textContent = marks.length + ' redaction mark' + (marks.length !== 1 ? 's' : '') + ' saved for ' + docId;
+  document.body.appendChild(fb);
+  setTimeout(function(){ fb.remove(); }, 3000);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// PRIVILEGE LOG WORKFLOW
+// ══════════════════════════════════════════════════════════════════
+
+var plogState = {
+  docId: null,
+  privType: null,
+  entries: []   // [{docId, date, from, to, subject, type, description, docType, custodian}]
+};
+
+var PLOG_VAGUE_WORDS = ['email', 'document', 'memo', 'letter', 'communication', 'message', 'file', 'attachment'];
+var PLOG_GOOD_WORDS = ['legal advice', 'attorney', 'counsel', 'litigation', 'privileged', 'work product',
+  'anticipation', 'confidential', 'strategy', 'analysis', 'opinion', 'advice regarding', 'prepared by'];
+var PLOG_MIN_LENGTH = 60;
+
+function plogOpen(doc) {
+  plogState.docId = doc.id;
+  plogState.privType = null;
+  // Auto-populate fields
+  document.getElementById('plog-doc-id').value = doc.id;
+  document.getElementById('plog-doc-type').value = doc.type || '';
+  document.getElementById('plog-date').value = (doc.date || '').split('·')[0].trim();
+  document.getElementById('plog-custodian').value = (doc.custodian || '').replace('cust-', '').replace(/-/g, ' ');
+  document.getElementById('plog-from').value = doc.from || '';
+  document.getElementById('plog-to').value = doc.to || '';
+  document.getElementById('plog-subject').value = doc.subject || '';
+  document.getElementById('plog-description').value = '';
+  // Reset priv type buttons
+  document.querySelectorAll('.plog-priv-btn').forEach(function(b){ b.classList.remove('active'); });
+  plogState.privType = null;
+  // Quality box
+  document.getElementById('plog-quality-box').className = 'plog-quality-box empty';
+  document.getElementById('plog-quality-box').innerHTML = '<strong>📊 Description Quality</strong> — Start typing to see feedback.';
+  document.getElementById('plog-save-btn').disabled = true;
+  // Pre-select privilege type from coding if already set
+  var coding = relCoding[doc.id];
+  if (coding && coding.privilege) {
+    var map = { 'acp': 'acp', 'wpp': 'wpp', 'acp-wpp': 'both', 'cip': 'cip' };
+    var pt = map[coding.privilege];
+    if (pt) {
+      var btn = document.getElementById('plog-btn-' + pt);
+      if (btn) { plogSelectPriv(pt, btn); }
+    }
+  }
+  document.getElementById('plog-header-sub').textContent = 'Document ' + doc.id + ' — ' + (doc.type || '') + ' — Complete all fields';
+  plogRenderLog();
+  document.getElementById('plog-modal').classList.add('open');
+}
+
+function plogClose() {
+  document.getElementById('plog-modal').classList.remove('open');
+}
+
+function plogSelectPriv(type, btn) {
+  plogState.privType = type;
+  document.querySelectorAll('.plog-priv-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  plogCheckQuality();
+}
+
+function plogCheckQuality() {
+  var desc = (document.getElementById('plog-description').value || '').trim();
+  var box = document.getElementById('plog-quality-box');
+  var saveBtn = document.getElementById('plog-save-btn');
+  if (!desc) {
+    box.className = 'plog-quality-box empty';
+    box.innerHTML = '<strong>📊 Description Quality</strong> — Start typing to see feedback.';
+    saveBtn.disabled = true;
+    return;
+  }
+  var issues = [];
+  var tips = [];
+  var descLower = desc.toLowerCase();
+  // Length check
+  if (desc.length < PLOG_MIN_LENGTH) {
+    issues.push('Description is too short (' + desc.length + ' chars). Aim for at least ' + PLOG_MIN_LENGTH + ' characters.');
+  }
+  // Vague word check
+  var vagueFound = PLOG_VAGUE_WORDS.filter(function(w){
+    return descLower === w || descLower.startsWith(w + ' ') || descLower.endsWith(' ' + w);
+  });
+  if (desc.length < 30 && PLOG_VAGUE_WORDS.some(function(w){ return descLower.includes(w); })) {
+    if (!PLOG_GOOD_WORDS.some(function(w){ return descLower.includes(w); })) {
+      issues.push('Description appears vague. Add specifics: who sent it, for what legal purpose, and why it is privileged.');
+    }
+  }
+  // Good words check
+  var goodFound = PLOG_GOOD_WORDS.filter(function(w){ return descLower.includes(w); });
+  if (goodFound.length === 0) {
+    issues.push('Missing privilege indicators. Include terms like "attorney," "legal advice," "work product," or "anticipation of litigation."');
+  }
+  // Gives away the secret check
+  var secretPhrases = ['will lose', 'we are liable', 'illegal', 'we violated', 'we broke', 'we are guilty', 'we did'];
+  var secretFound = secretPhrases.filter(function(p){ return descLower.includes(p); });
+  if (secretFound.length > 0) {
+    issues.push('⚠️ CRITICAL: Description may reveal privileged content ("' + secretFound[0] + '"). A PLOG description must prove privilege without disclosing the secret.');
+  }
+  // Priv type check
+  if (!plogState.privType) {
+    tips.push('Select a privilege type above (ACP, WPP, ACP+WPP, or CIP).');
+  }
+  var hasIssues = issues.length > 0 || !plogState.privType;
+  var hasCritical = secretFound.length > 0;
+  if (hasCritical) {
+    box.className = 'plog-quality-box bad';
+    box.innerHTML = '<strong>❌ Description has critical issues:</strong>'
+      + issues.map(function(i){ return '<div class="plog-quality-item">• ' + i + '</div>'; }).join('');
+    saveBtn.disabled = true;
+  } else if (hasIssues) {
+    box.className = 'plog-quality-box warn';
+    var all = issues.concat(tips);
+    box.innerHTML = '<strong>⚠️ Needs improvement:</strong>'
+      + all.map(function(i){ return '<div class="plog-quality-item">• ' + i + '</div>'; }).join('');
+    saveBtn.disabled = true;
+  } else {
+    box.className = 'plog-quality-box good';
+    box.innerHTML = '<strong>✅ Description looks good!</strong><div class="plog-quality-item">Privilege indicators present, appropriate length, no secrets disclosed.</div>';
+    saveBtn.disabled = false;
+  }
+}
+
+function plogSave() {
+  var docId = plogState.docId;
+  var desc = document.getElementById('plog-description').value.trim();
+  var privType = plogState.privType;
+  if (!desc || !privType) return;
+  var doc = REL_DOCS.find(function(d){ return d.id === docId; });
+  if (!doc) return;
+  // Remove any existing entry for this doc
+  plogState.entries = plogState.entries.filter(function(e){ return e.docId !== docId; });
+  plogState.entries.unshift({
+    docId: docId,
+    docType: doc.type || '',
+    date: (doc.date || '').split('·')[0].trim(),
+    custodian: (doc.custodian || '').replace('cust-', '').replace(/-/g,' '),
+    from: doc.from || '',
+    to: doc.to || '',
+    subject: doc.subject || '',
+    privType: privType,
+    description: desc
+  });
+  // Mark on coding state
+  if (!relCoding[docId]) relCoding[docId] = {};
+  relCoding[docId].plogEntry = true;
+  relRenderList();
+  plogClose();
+  // Toast
+  var fb = document.createElement('div');
+  fb.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--sapphire-mid);color:var(--gold-light);padding:10px 16px;border-radius:8px;font-size:.83rem;font-weight:700;z-index:800;box-shadow:0 4px 20px #000;border:1px solid var(--gold-deep)';
+  fb.textContent = '✅ PLOG entry saved for ' + docId + ' (' + plogState.entries.length + ' total entries)';
+  document.body.appendChild(fb);
+  setTimeout(function(){ fb.remove(); }, 3000);
+}
+
+function plogRenderLog() {
+  var section = document.getElementById('plog-log-section');
+  var tbody = document.getElementById('plog-log-tbody');
+  var count = document.getElementById('plog-log-count');
+  if (!plogState.entries.length) { section.style.display = 'none'; return; }
+  section.style.display = 'block';
+  count.textContent = plogState.entries.length + ' entr' + (plogState.entries.length === 1 ? 'y' : 'ies');
+  var typeLabels = { acp: 'ACP', wpp: 'WPP', both: 'ACP+WPP', cip: 'CIP' };
+  var typeClass = { acp: '', wpp: 'wpp', both: 'both', cip: 'cip' };
+  tbody.innerHTML = plogState.entries.map(function(e) {
+    var qualityFlag = e.description.length < PLOG_MIN_LENGTH ? '<span class="plog-quality-flag" title="Short description">⚠️</span>' : '';
+    return '<tr>'
+      + '<td style="color:var(--accent);font-weight:600">' + e.docId + '</td>'
+      + '<td style="white-space:nowrap">' + (e.date || '—') + '</td>'
+      + '<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis">' + esc(e.from).split('<')[0] + '</td>'
+      + '<td style="max-width:100px;overflow:hidden;text-overflow:ellipsis">' + esc(e.to).split('<')[0] + '</td>'
+      + '<td>' + esc(e.subject) + '</td>'
+      + '<td><span class="priv-chip ' + typeClass[e.privType] + '">' + typeLabels[e.privType] + '</span></td>'
+      + '<td>' + esc(e.description).slice(0, 80) + (e.description.length > 80 ? '…' : '') + qualityFlag + '</td>'
+      + '</tr>';
+  }).join('');
+}
+
+// Hook into relSubmitCoding to trigger redaction/PLOG workflows
+var _origRelSubmitCoding = relSubmitCoding;
+relSubmitCoding = function() {
+  var coding = relCodingState;
+  var doc = relCurrentDoc;
+  if (!doc) return;
+  // If action is "redact", open redaction workflow first
+  if (coding.action === 'redact' && coding.responsive === 'responsive') {
+    openRedactionThenSubmit(doc);
+    return;
+  }
+  // If action is "withhold" or "redact" with privilege, trigger PLOG after scoring
+  var needsPlog = (coding.action === 'withhold' || coding.action === 'redact')
+    && coding.privilege && coding.privilege !== 'not-privileged';
+  _origRelSubmitCoding();
+  if (needsPlog) {
+    setTimeout(function(){ plogOpen(doc); }, 400);
+  }
+};
+
+function openRedactionThenSubmit(doc) {
+  rdxOpen(doc);
+  // Override rdxSave to also run submit after
+  var _origRdxSave = rdxSave;
+  rdxSave = function() {
+    _origRdxSave();
+    // Check if PLOG needed
+    var coding = relCodingState;
+    var needsPlog = coding.privilege && coding.privilege !== 'not-privileged';
+    _origRelSubmitCoding();
+    if (needsPlog) {
+      setTimeout(function(){ plogOpen(doc); }, 300);
+    }
+    rdxSave = _origRdxSave; // restore
+  };
+}
+
+// PLOG view button in toolbar
+function openPlogViewer() {
+  plogState.docId = relCurrentDoc ? relCurrentDoc.id : null;
+  if (relCurrentDoc) {
+    // Auto-populate from current doc without changing save behavior
+    var doc = relCurrentDoc;
+    document.getElementById('plog-doc-id').value = doc.id;
+    document.getElementById('plog-doc-type').value = doc.type || '';
+    document.getElementById('plog-date').value = (doc.date || '').split('·')[0].trim();
+    document.getElementById('plog-custodian').value = (doc.custodian || '').replace('cust-', '').replace(/-/g,' ');
+    document.getElementById('plog-from').value = doc.from || '';
+    document.getElementById('plog-to').value = doc.to || '';
+    document.getElementById('plog-subject').value = doc.subject || '';
+  }
+  document.getElementById('plog-description').value = '';
+  document.querySelectorAll('.plog-priv-btn').forEach(function(b){ b.classList.remove('active'); });
+  plogState.privType = null;
+  document.getElementById('plog-quality-box').className = 'plog-quality-box empty';
+  document.getElementById('plog-quality-box').innerHTML = '<strong>📊 Description Quality</strong> — Start typing to see feedback.';
+  document.getElementById('plog-save-btn').disabled = true;
+  plogRenderLog();
+  document.getElementById('plog-modal').classList.add('open');
+}
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 </script>
