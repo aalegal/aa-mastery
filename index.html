@@ -427,8 +427,8 @@ tr:nth-child(even) td{background:#0d162080}
 .rel-highlight-priv{background:rgba(229,57,53,.2);color:#ff8a65;padding:0 2px;border-radius:2px}
 
 /* ── CODING PANEL ── */
-#rel-coding-panel{width:280px;background:#0a0f18;border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
-#rel-coding-panel-header{padding:10px 14px;border-bottom:1px solid var(--border);flex-shrink:0}
+#rel-coding-panel{width:240px;background:#0a0f18;border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
+#rel-coding-panel-header{padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 #rel-coding-panel-header h3{font-size:.82rem;color:var(--gold-light);font-weight:700}
 .rel-field{padding:10px 14px;border-bottom:1px solid var(--border)}
 .rel-field-label{font-size:.7rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
@@ -526,8 +526,8 @@ tr:nth-child(even) td{background:#0d162080}
 }
 .rdx-mark-bar .rdx-remove-btn:hover{color:#ff5252;background:#e5393520;}
 .rdx-panel{
-  width:310px;flex-shrink:0;display:flex;flex-direction:column;
-  padding:16px;overflow-y:auto;gap:12px;
+  width:240px;flex-shrink:0;display:flex;flex-direction:column;
+  padding:12px;overflow-y:auto;gap:12px;
 }
 .rdx-section-title{
   font-size:.72rem;font-weight:700;color:var(--gold-light);
@@ -731,8 +731,8 @@ tr:nth-child(even) td{background:#0d162080}
 }
 .rdx-mark-bar .rdx-remove-btn:hover{color:#ff5252;background:#e5393520;}
 .rdx-panel{
-  width:310px;flex-shrink:0;display:flex;flex-direction:column;
-  padding:16px;overflow-y:auto;gap:12px;
+  width:240px;flex-shrink:0;display:flex;flex-direction:column;
+  padding:12px;overflow-y:auto;gap:12px;
 }
 .rdx-section-title{
   font-size:.72rem;font-weight:700;color:var(--gold-light);
@@ -890,19 +890,39 @@ tr:nth-child(even) td{background:#0d162080}
 .proj-case-badge.trade{background:rgba(212,168,42,.15);color:var(--gold-light);border:1px solid var(--gold-deep);}
 
 /* ══ CODING MODE SWITCHER ══ */
+/* ══ COMPACT MODE DROPDOWN ══ */
 .coding-mode-switcher{
-  display:flex;gap:4px;padding:8px 12px;background:#080c12;border-bottom:1px solid var(--border);
-  flex-shrink:0;
+  position:relative;flex-shrink:0;
 }
-.mode-btn{
-  flex:1;padding:7px 6px;border-radius:7px;border:1px solid var(--border);
-  background:#111827;color:var(--muted);font-size:.74rem;font-weight:600;
-  cursor:pointer;text-align:center;transition:all .2s;
+.mode-dropdown-trigger{
+  display:flex;align-items:center;gap:6px;padding:6px 10px;
+  background:#0e1420;border-bottom:1px solid var(--border);
+  cursor:pointer;user-select:none;font-size:.74rem;font-weight:600;
+  color:var(--text2);transition:background .15s;
 }
-.mode-btn:hover{border-color:var(--border2);color:var(--text2);}
-.mode-btn.active.standard{background:linear-gradient(135deg,var(--sapphire),var(--sapphire-mid));color:var(--gold-light);border-color:var(--sapphire-light);}
-.mode-btn.active.redact{background:linear-gradient(135deg,#7f0000,#b71c1c);color:#ffcdd2;border-color:var(--red);}
-.mode-btn.active.plog{background:linear-gradient(135deg,#0a1628,#1a2a4a);color:var(--gold-light);border-color:var(--gold-deep);}
+.mode-dropdown-trigger:hover{background:#111827;}
+.mode-dropdown-trigger .mode-active-label{flex:1;color:var(--gold-light);}
+.mode-dropdown-trigger .mode-chevron{
+  font-size:.6rem;color:var(--muted);transition:transform .2s;
+}
+.mode-dropdown-trigger.open .mode-chevron{transform:rotate(180deg);}
+.mode-dropdown-menu{
+  position:absolute;top:100%;left:0;right:0;z-index:50;
+  background:#0e1420;border:1px solid var(--border2);border-top:none;
+  box-shadow:0 8px 24px rgba(0,0,0,.6);display:none;flex-direction:column;
+}
+.mode-dropdown-menu.open{display:flex;}
+.mode-menu-item{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  font-size:.75rem;font-weight:600;cursor:pointer;color:var(--muted);
+  border-bottom:1px solid var(--border);transition:all .15s;
+}
+.mode-menu-item:last-child{border-bottom:none;}
+.mode-menu-item:hover{background:#111827;color:var(--text);}
+.mode-menu-item.active.standard{color:var(--gold-light);background:rgba(10,36,99,.3);}
+.mode-menu-item.active.redact{color:#ff8a65;background:rgba(127,0,0,.2);}
+.mode-menu-item.active.plog{color:var(--gold-light);background:rgba(10,22,40,.4);}
+.mode-menu-item .mode-menu-desc{font-size:.68rem;color:var(--muted);font-weight:400;margin-left:auto;}
 .coding-mode-panel{display:none;}
 .coding-mode-panel.active{display:flex;flex-direction:column;flex:1;overflow:hidden;}
 
@@ -958,13 +978,13 @@ tr:nth-child(even) td{background:#0d162080}
 
 /* Inline panel mode */
 #inline-rdx-panel{
-  flex-shrink:0;background:#0e0808;border-top:1px solid #3d1515;padding:12px;
+  flex-shrink:0;background:#0e0808;border-top:1px solid #3d1515;padding:8px;
   display:none;
 }
 #inline-rdx-panel.visible{display:block;}
 #inline-rdx-panel .panel-title{font-size:.71rem;font-weight:700;color:#ff5252;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;}
 #inline-plog-panel{
-  flex-shrink:0;background:#080c12;border-top:1px solid var(--gold-deep);padding:12px;
+  flex-shrink:0;background:#080c12;border-top:1px solid var(--gold-deep);padding:8px;
   display:none;
 }
 #inline-plog-panel.visible{display:block;}
@@ -1833,10 +1853,23 @@ tr:nth-child(even) td{background:#0d162080}
           </div>
         </div>
         <!-- Coding panel -->
-        <div class="coding-mode-switcher">
-          <button class="mode-btn standard active" id="mode-btn-standard" onclick="switchCodingMode('standard')">⚖️ Standard Coding</button>
-          <button class="mode-btn redact" id="mode-btn-redact" onclick="switchCodingMode('redact')">✏️ Redaction Mode</button>
-          <button class="mode-btn plog" id="mode-btn-plog" onclick="switchCodingMode('plog')">📋 PLOG Mode</button>
+        <div class="coding-mode-switcher" id="coding-mode-switcher">
+          <div class="mode-dropdown-trigger" id="mode-dropdown-trigger" onclick="toggleModeDropdown()">
+            <span id="mode-active-icon">⚖️</span>
+            <span class="mode-active-label" id="mode-active-label">Standard Coding</span>
+            <span class="mode-chevron">▼</span>
+          </div>
+          <div class="mode-dropdown-menu" id="mode-dropdown-menu">
+            <div class="mode-menu-item standard active" id="mode-btn-standard" onclick="switchCodingMode('standard')">
+              <span>⚖️</span><span>Standard Coding</span><span class="mode-menu-desc">Responsive · Privilege · Issues</span>
+            </div>
+            <div class="mode-menu-item redact" id="mode-btn-redact" onclick="switchCodingMode('redact')">
+              <span>✏️</span><span>Redaction Mode</span><span class="mode-menu-desc">Drag to mark redactions</span>
+            </div>
+            <div class="mode-menu-item plog" id="mode-btn-plog" onclick="switchCodingMode('plog')">
+              <span>📋</span><span>PLOG Mode</span><span class="mode-menu-desc">Quick privilege log entry</span>
+            </div>
+          </div>
         </div>
         <div id="drag-rdx-hint" style="display:none;padding:7px 12px;background:#1a0808;border-bottom:1px solid #3d1515;font-size:.74rem;color:#ff8a65;flex-shrink:0;">
           ✏️ <strong>Drag to redact:</strong> Select text in the document viewer to mark it for redaction.
@@ -3887,10 +3920,14 @@ function closeDragRdxPopup() {
 
 // ══ MODE SWITCHER ══
 function switchCodingMode(mode) {
-  // Update buttons
+  // Close dropdown
+  closeModeDropdown();
+  // Update menu items
   ['standard','redact','plog'].forEach(function(m) {
     var btn = document.getElementById('mode-btn-' + m);
-    if (btn) btn.classList.toggle('active', m === mode);
+    if (btn) {
+      btn.classList.toggle('active', m === mode);
+    }
   });
   // Show/hide panels
   ['standard','redact','plog'].forEach(function(m) {
@@ -3906,6 +3943,53 @@ function switchCodingMode(mode) {
   // Show drag hint in redact mode
   var hint = document.getElementById('drag-rdx-hint');
   if (hint) hint.style.display = mode === 'redact' ? 'block' : 'none';
+  // Update trigger label
+  var icons = {standard:'⚖️', redact:'✏️', plog:'📋'};
+  var labels = {standard:'Standard Coding', redact:'Redaction Mode', plog:'PLOG Mode'};
+  var iconEl = document.getElementById('mode-active-icon');
+  var labelEl = document.getElementById('mode-active-label');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (iconEl) iconEl.textContent = icons[mode];
+  if (labelEl) labelEl.textContent = labels[mode];
+  if (trigger) {
+    trigger.className = 'mode-dropdown-trigger';
+    if (mode === 'redact') trigger.style.borderLeft = '3px solid var(--red)';
+    else if (mode === 'plog') trigger.style.borderLeft = '3px solid var(--gold-deep)';
+    else trigger.style.borderLeft = '3px solid var(--sapphire-light)';
+  }
+}
+
+function toggleModeDropdown() {
+  var menu = document.getElementById('mode-dropdown-menu');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (!menu) return;
+  var isOpen = menu.classList.contains('open');
+  if (isOpen) {
+    menu.classList.remove('open');
+    if (trigger) trigger.classList.remove('open');
+  } else {
+    menu.classList.add('open');
+    if (trigger) trigger.classList.add('open');
+    // Close on outside click
+    setTimeout(function() {
+      document.addEventListener('click', closeModeDropdownOutside);
+    }, 50);
+  }
+}
+
+function closeModeDropdown() {
+  var menu = document.getElementById('mode-dropdown-menu');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (menu) menu.classList.remove('open');
+  if (trigger) trigger.classList.remove('open');
+  document.removeEventListener('click', closeModeDropdownOutside);
+}
+
+function closeModeDropdownOutside(e) {
+  var switcher = document.getElementById('coding-mode-switcher');
+  if (switcher && !switcher.contains(e.target)) {
+    closeModeDropdown();
+  }
 }
 
 function populateInlinePlog(doc) {
