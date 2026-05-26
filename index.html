@@ -2692,6 +2692,56 @@ function humanLabel(val){
   return labels[val]||val;
 }
 
+function closeFeedbackOverlay(btn){
+  var el=btn;
+  while(el&&!el.classList.contains('rel-feedback-overlay')){el=el.parentElement;}
+  if(el)el.remove();
+}
+function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
+  var overlay=document.createElement("div");
+  overlay.className="rel-feedback-overlay";
+  var boxClass=isCorrect?"rel-feedback-correct":isPartial?"rel-feedback-partial":"rel-feedback-wrong";
+  var icon=isCorrect?"✅":isPartial?"⚠️":"❌";
+  var title=isCorrect?"Perfect Coding!":isPartial?"Partially Correct":"Incorrect Coding";
+  var pct=Math.round(score/total*100);
+  var errHtml="";
+  if(errors.length){
+    errHtml="<div style=\"margin-top:12px;display:flex;flex-direction:column;gap:5px\">";
+    errors.forEach(function(e){
+      errHtml+="<div style=\"background:#0d1117;border-radius:6px;padding:8px 10px;font-size:.78rem\">"
+        +"<span style=\"color:var(--muted);font-weight:600\">"+e.field+":</span> "
+        +"<span style=\"color:#ff5252\">You: "+humanLabel(e.yours)+"</span> → "
+        +"<span style=\"color:#4caf50\">Correct: "+humanLabel(e.correct)+"</span></div>";
+    });
+    errHtml+="</div>";
+  }
+  overlay.innerHTML="<div class=\"rel-feedback-box "+boxClass+"\">"+
+    "<div style=\"font-size:2rem;text-align:center;margin-bottom:6px\">"+icon+"</div>"+
+    "<div style=\"font-size:1.05rem;font-weight:800;text-align:center;color:var(--gold-light);margin-bottom:4px\">"+title+"</div>"+
+    "<div style=\"text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:12px\">"+score+"/"+total+" fields correct ("+pct+"%)</div>"+
+    "<div style=\"background:#0e1420;border-radius:8px;padding:12px;font-size:.82rem;color:var(--text2);line-height:1.65;border-left:3px solid var(--gold)\">💡 "+doc.explanation+"</div>"+
+    errHtml+
+    "<div style=\"display:flex;gap:8px;margin-top:16px\">"+
+    "<button onclick='closeFeedbackOverlay(this);relNav(1);' style='flex:1;padding:10px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer;font-size:.85rem'>Next Document →</button>"+
+    "<button onclick='closeFeedbackOverlay(this);' style='padding:10px 14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.82rem'>Review</button>"+
+    "</div>"+
+    "</div>";
+  document.body.appendChild(overlay);
+}
+
+
+function humanLabel(val){
+  if(!val&&val!==0)return"—";
+  if(Array.isArray(val))return val.length?val.join(", "):"none";
+  var labels={"responsive":"Responsive","non-responsive":"Non-Responsive","needs-review":"Needs Review","not-privileged":"Not Privileged","acp":"ACP","wpp":"Work Product","acp-wpp":"ACP + WPP","escalate":"Escalate","produce":"Produce","withhold":"Withhold","redact":"Redact","review-later":"Review Later","standard":"Standard","highly-conf":"Highly Confidential","aeo":"Attorneys Eyes Only","issue1":"Issue 1","issue2":"Issue 2","issue3":"Issue 3","issue4":"Issue 4"};
+  return labels[val]||val;
+}
+
+function closeFeedbackOverlay(btn){
+  var el=btn;
+  while(el&&!el.classList.contains('rel-feedback-overlay')){el=el.parentElement;}
+  if(el)el.remove();
+}
 function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
   var overlay=document.createElement("div");
   overlay.className="rel-feedback-overlay";
