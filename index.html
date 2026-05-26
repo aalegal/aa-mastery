@@ -427,7 +427,7 @@ tr:nth-child(even) td{background:#0d162080}
 .rel-highlight-priv{background:rgba(229,57,53,.2);color:#ff8a65;padding:0 2px;border-radius:2px}
 
 /* ── CODING PANEL ── */
-#rel-coding-panel{width:240px;background:#0a0f18;border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column}
+#rel-coding-panel{width:240px;background:#0a0f18;border-left:1px solid var(--border);overflow-y:auto;flex-shrink:0;display:flex;flex-direction:column;flex:1;min-height:0;}
 #rel-coding-panel-header{padding:7px 10px;border-bottom:1px solid var(--border);flex-shrink:0}
 #rel-coding-panel-header h3{font-size:.82rem;color:var(--gold-light);font-weight:700}
 .rel-field{padding:10px 14px;border-bottom:1px solid var(--border)}
@@ -450,7 +450,7 @@ tr:nth-child(even) td{background:#0d162080}
 .rel-skip-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* Feedback popup */
-.rel-feedback-overlay{position:fixed;inset:0;background:#000000aa;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.rel-feedback-overlay{position:fixed;inset:0;z-index:850;background:#000000aa;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
 .rel-feedback-box{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px #000}
 .rel-feedback-correct{border-color:var(--green);box-shadow:0 0 30px rgba(38,166,154,.15)}
 .rel-feedback-wrong{border-color:var(--red);box-shadow:0 0 30px rgba(229,57,53,.15)}
@@ -1853,30 +1853,6 @@ tr:nth-child(even) td{background:#0d162080}
           </div>
         </div>
         <!-- Coding panel -->
-        <div class="coding-mode-switcher" id="coding-mode-switcher">
-          <div class="mode-dropdown-trigger" id="mode-dropdown-trigger" onclick="toggleModeDropdown()">
-            <span id="mode-active-icon">⚖️</span>
-            <span class="mode-active-label" id="mode-active-label">Standard Coding</span>
-            <span class="mode-chevron">▼</span>
-          </div>
-          <div class="mode-dropdown-menu" id="mode-dropdown-menu">
-            <div class="mode-menu-item standard active" id="mode-btn-standard" onclick="switchCodingMode('standard')">
-              <span>⚖️</span><span>Standard Coding</span><span class="mode-menu-desc">Responsive · Privilege · Issues</span>
-            </div>
-            <div class="mode-menu-item redact" id="mode-btn-redact" onclick="switchCodingMode('redact')">
-              <span>✏️</span><span>Redaction Mode</span><span class="mode-menu-desc">Drag to mark redactions</span>
-            </div>
-            <div class="mode-menu-item plog" id="mode-btn-plog" onclick="switchCodingMode('plog')">
-              <span>📋</span><span>PLOG Mode</span><span class="mode-menu-desc">Quick privilege log entry</span>
-            </div>
-          </div>
-        </div>
-        <div id="drag-rdx-hint" style="display:none;padding:7px 12px;background:#1a0808;border-bottom:1px solid #3d1515;font-size:.74rem;color:#ff8a65;flex-shrink:0;">
-          ✏️ <strong>Drag to redact:</strong> Select text in the document viewer to mark it for redaction.
-        </div>
-        <div id="inline-rdx-panel"></div>
-        <div id="inline-plog-panel"></div>
-        <div id="mode-panel-standard" class="coding-mode-panel active" style="overflow-y:auto;flex:1;">
         <div id="rel-coding-panel">
           <div id="rel-coding-panel-header">
             <h3>⚖️ Coding Panel</h3>
@@ -1935,6 +1911,31 @@ tr:nth-child(even) td{background:#0d162080}
           <div class="rel-submit-section">
             <button class="rel-submit-btn" id="rel-submit-btn" onclick="relSubmitCoding()" disabled>Save Coding →</button>
             <button class="rel-skip-btn" onclick="relNav(1)">Skip →</button>
+          </div>
+        </div>
+        <!-- INLINE PANELS + MODE SWITCHER AT BOTTOM -->
+        <div id="drag-rdx-hint" style="display:none;padding:6px 10px;background:#1a0808;border-top:1px solid #3d1515;font-size:.72rem;color:#ff8a65;flex-shrink:0;">
+          ✏️ <strong>Drag to redact:</strong> Select text in the document to mark it.
+        </div>
+        <div id="inline-rdx-panel"></div>
+        <div id="inline-plog-panel"></div>
+        <!-- MODE SWITCHER DROPDOWN — at bottom of panel -->
+        <div class="coding-mode-switcher" id="coding-mode-switcher" style="border-top:1px solid var(--border);border-bottom:none;margin-top:auto;">
+          <div class="mode-dropdown-trigger" id="mode-dropdown-trigger" onclick="toggleModeDropdown()">
+            <span id="mode-active-icon">⚖️</span>
+            <span class="mode-active-label" id="mode-active-label">Standard Coding</span>
+            <span class="mode-chevron">▲</span>
+          </div>
+          <div class="mode-dropdown-menu" id="mode-dropdown-menu" style="bottom:100%;top:auto;border-top:1px solid var(--border2);border-bottom:none;box-shadow:0 -8px 24px rgba(0,0,0,.6);">
+            <div class="mode-menu-item standard active" id="mode-btn-standard" onclick="switchCodingMode('standard')">
+              <span>⚖️</span><span>Standard Coding</span><span class="mode-menu-desc">Responsive · Privilege · Issues</span>
+            </div>
+            <div class="mode-menu-item redact" id="mode-btn-redact" onclick="switchCodingMode('redact')">
+              <span>✏️</span><span>Redaction Mode</span><span class="mode-menu-desc">Drag to mark redactions</span>
+            </div>
+            <div class="mode-menu-item plog" id="mode-btn-plog" onclick="switchCodingMode('plog')">
+              <span>📋</span><span>PLOG Mode</span><span class="mode-menu-desc">Quick privilege log entry</span>
+            </div>
           </div>
         </div>
       </div>
@@ -2647,8 +2648,14 @@ function relToggleIssue(issue,el){
 }
 
 function checkSubmitReady(){
-  var ready=relCodingState.responsive&&relCodingState.privilege&&relCodingState.action&&relCodingState.conf;
-  document.getElementById("rel-submit-btn").disabled=!ready;
+  // Auto-default optional fields so button enables with just responsive + action
+  if(relCodingState.responsive&&relCodingState.action){
+    if(!relCodingState.privilege)relCodingState.privilege='not-privileged';
+    if(!relCodingState.conf)relCodingState.conf='standard';
+  }
+  var ready=!!(relCodingState.responsive&&relCodingState.action);
+  var btn=document.getElementById("rel-submit-btn");
+  if(btn)btn.disabled=!ready;
 }
 
 function relSubmitCoding(){
@@ -3608,11 +3615,11 @@ function openCase(caseNum) {
       : 'Joba v. Bukando';
   }
   // Update batch label
-  var batchLabel = document.getElementById('rel-toolbar-batch-label');
+  var batchLabel = document.getElementById('rel-toolbar-batch-label') || {textContent:''};
   if (batchLabel) {
     batchLabel.textContent = caseNum === 2
       ? 'First Level Review — Batch 002'
-      : '<span id="rel-toolbar-batch-label">First Level Review — Batch 001</span>';
+      : 'First Level Review — Batch 001';
   }
   // Update sidebar issue filters
   updateSidebarForCase(caseNum);
@@ -3952,7 +3959,7 @@ function switchCodingMode(mode) {
   if (iconEl) iconEl.textContent = icons[mode];
   if (labelEl) labelEl.textContent = labels[mode];
   if (trigger) {
-    trigger.className = 'mode-dropdown-trigger';
+    // trigger updated by toggleModeDropdown
     if (mode === 'redact') trigger.style.borderLeft = '3px solid var(--red)';
     else if (mode === 'plog') trigger.style.borderLeft = '3px solid var(--gold-deep)';
     else trigger.style.borderLeft = '3px solid var(--sapphire-light)';
@@ -3965,12 +3972,10 @@ function toggleModeDropdown() {
   if (!menu) return;
   var isOpen = menu.classList.contains('open');
   if (isOpen) {
-    menu.classList.remove('open');
-    if (trigger) trigger.classList.remove('open');
+    closeModeDropdown();
   } else {
     menu.classList.add('open');
     if (trigger) trigger.classList.add('open');
-    // Close on outside click
     setTimeout(function() {
       document.addEventListener('click', closeModeDropdownOutside);
     }, 50);
