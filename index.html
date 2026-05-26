@@ -2763,8 +2763,8 @@ function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
     +"<div style=\"background:#0e1420;border-radius:8px;padding:12px;font-size:.82rem;color:var(--text2);line-height:1.65;border-left:3px solid var(--gold)\">💡 "+doc.explanation+"</div>"
     +errHtml
     +"<div style=\"display:flex;gap:8px;margin-top:16px\">"
-    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();relNav(1);\" style=\"flex:1;padding:10px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer;font-size:.85rem\">Next Document →</button>"
-    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();\" style=\"padding:10px 14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.82rem\">Review</button>"
+    +"<button onclick=\"closeFeedbackOverlay(this);relNav(1);\" style=\"flex:1;padding:10px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer;font-size:.85rem\">Next Document →</button>"
+    +"<button onclick=\"closeFeedbackOverlay(this);\" style=\"padding:10px 14px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.82rem\">Review</button>"
     +"</div>"
     +"</div>";
   document.body.appendChild(overlay);
@@ -2812,7 +2812,7 @@ function showRelResults(){
     +"</div>"
     +(coded<REL_DOCS.length?"<p style=\"font-size:.8rem;color:var(--muted);text-align:center;margin-top:8px\">Keep going — "+(REL_DOCS.length-coded)+" documents left.</p>":"<p style=\"font-size:.8rem;color:#4caf50;text-align:center;margin-top:8px\">✅ All documents reviewed!</p>")
     +"<div style=\"display:flex;gap:8px;margin-top:14px;justify-content:center\">"
-    +"<button onclick=\"this.closest(\".rel-feedback-overlay\").remove();\" style=\"padding:10px 20px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer\">Close</button>"
+    +"<button onclick=\"closeFeedbackOverlay(this);\" style=\"padding:10px 20px;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:7px;font-weight:800;cursor:pointer\">Close</button>"
     +"</div>"
     +"</div>";
   document.body.appendChild(overlay);
