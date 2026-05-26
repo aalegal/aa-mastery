@@ -4391,7 +4391,6 @@ var evFilter_mode = 'all';
 var evPiiVisible = false;
 
 function openEverlawCase() {
-  document.getElementById('proj-landing') && (document.getElementById('proj-landing').style.display = 'none');
   document.getElementById('everlaw-shell').classList.add('open');
   evRenderList();
   evUpdateProgress();
@@ -4657,16 +4656,17 @@ function evUpdateLanding() {
 function openAICase() {
   ACTIVE_CASE = 4;
   ACTIVE_DOCS = P4_DOCS;
+  relCoding = {}; relAnswered = {}; relCodingState = {};
+  relCurrentDoc = null; relCurrentIdx = -1; relFilter = 'all'; relSearchQ = '';
+  if (rdxState) rdxState.marks = {};
+  // Open the shell first so DOM elements inside it exist
+  document.getElementById('rel-shell').classList.add('open');
+  // Now update labels and sidebar (elements are now in DOM)
   var caseLabel = document.getElementById('rel-toolbar-case-label');
   if (caseLabel) caseLabel.textContent = 'SEC v. QuantumEdge AI';
   var batchLabel = document.getElementById('rel-toolbar-batch-label');
   if (batchLabel) batchLabel.textContent = 'First Level Review — Flash Crash Matter';
   updateSidebarForCase(4);
-  relCoding = {}; relAnswered = {}; relCodingState = {};
-  relCurrentDoc = null; relCurrentIdx = -1; relFilter = 'all'; relSearchQ = '';
-  if (rdxState) rdxState.marks = {};
-  document.getElementById('proj-landing') && (document.getElementById('proj-landing').style.display = 'none');
-  document.getElementById('rel-shell').classList.add('open');
   relRenderList();
   updateRelProgress();
 }
@@ -4674,18 +4674,30 @@ function openAICase() {
 // Extend updateSidebarForCase for case 4
 var _origUpdateSidebarForCase = updateSidebarForCase;
 updateSidebarForCase = function(caseNum) {
+  var issueFilters = document.getElementById('rel-sidebar-issues');
+  if (!issueFilters) return;
   if (caseNum === 4) {
-    var issueFilters = document.getElementById('rel-sidebar-issues');
-    if (!issueFilters) return;
-    issueFilters.innerHTML =
-      '<div class=\"rel-sidebar-item\" onclick=\"relSidebarFilter(\'issue1\',this)\"><span>Issue 1</span><span>Securities Fraud</span></div>' +
-      '<div class=\"rel-sidebar-item\" onclick=\"relSidebarFilter(\'issue2\',this)\"><span>Issue 2</span><span>Market Manipulation</span></div>' +
-      '<div class=\"rel-sidebar-item\" onclick=\"relSidebarFilter(\'issue3\',this)\"><span>Issue 3</span><span>Insider Trading</span></div>' +
-      '<div class=\"rel-sidebar-item\" onclick=\"relSidebarFilter(\'issue4\',this)\"><span>Issue 4</span><span>Failure to Supervise</span></div>';
+    buildIssueSidebar(issueFilters, [
+      {id:'issue1', label:'Securities Fraud'},
+      {id:'issue2', label:'Market Manipulation'},
+      {id:'issue3', label:'Insider Trading'},
+      {id:'issue4', label:'Failure to Supervise'}
+    ]);
   } else {
     _origUpdateSidebarForCase(caseNum);
   }
 };
+
+function buildIssueSidebar(container, issues) {
+  container.innerHTML = '';
+  issues.forEach(function(iss, idx) {
+    var div = document.createElement('div');
+    div.className = 'rel-sidebar-item';
+    div.innerHTML = '<span>Issue ' + (idx+1) + '</span><span>' + iss.label + '</span>';
+    div.onclick = (function(id){ return function(){ relSidebarFilter(id, div); }; })(iss.id);
+    container.appendChild(div);
+  });
+}
 
 // Protocol tab switcher
 function showProto(id, btn) {
