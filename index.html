@@ -2737,11 +2737,7 @@ function humanLabel(val){
   return labels[val]||val;
 }
 
-function closeFeedbackOverlay(btn){
-  var el=btn;
-  while(el&&!el.classList.contains('rel-feedback-overlay')){el=el.parentElement;}
-  if(el)el.remove();
-}
+
 function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
   var overlay=document.createElement("div");
   overlay.className="rel-feedback-overlay";
@@ -3589,41 +3585,8 @@ function plogRenderLog() {
 }
 
 // Hook into relSubmitCoding to trigger redaction/PLOG workflows
-var _origRelSubmitCoding = relSubmitCoding;
-relSubmitCoding = function() {
-  var coding = relCodingState;
-  var doc = relCurrentDoc;
-  if (!doc) return;
-  // If action is "redact", open redaction workflow first
-  if (coding.action === 'redact' && coding.responsive === 'responsive') {
-    openRedactionThenSubmit(doc);
-    return;
-  }
-  // If action is "withhold" or "redact" with privilege, trigger PLOG after scoring
-  var needsPlog = (coding.action === 'withhold' || coding.action === 'redact')
-    && coding.privilege && coding.privilege !== 'not-privileged';
-  _origRelSubmitCoding();
-  if (needsPlog) {
-    setTimeout(function(){ plogOpen(doc); }, 400);
-  }
-};
 
-function openRedactionThenSubmit(doc) {
-  rdxOpen(doc);
-  // Override rdxSave to also run submit after
-  var _origRdxSave = rdxSave;
-  rdxSave = function() {
-    _origRdxSave();
-    // Check if PLOG needed
-    var coding = relCodingState;
-    var needsPlog = coding.privilege && coding.privilege !== 'not-privileged';
-    _origRelSubmitCoding();
-    if (needsPlog) {
-      setTimeout(function(){ plogOpen(doc); }, 300);
-    }
-    rdxSave = _origRdxSave; // restore
-  };
-}
+
 
 // PLOG view button in toolbar
 function openPlogViewer() {
