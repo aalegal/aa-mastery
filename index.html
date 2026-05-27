@@ -1837,7 +1837,7 @@ tr:nth-child(even) td{background:#0d162080}
           <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="proj2-acc">— accuracy</div>
         </div>
       </div>
-      <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;cursor:pointer;text-align:center;" onclick="(function(){alert('Case2 clicked');openCase(2);})()">Open in Relativity →</div>
+      <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;cursor:pointer;text-align:center;" onclick="openCase(2)">Open in Relativity →</div>
     </div>
     </div>
     <div class="card">
@@ -3329,33 +3329,28 @@ var ACTIVE_DOCS = REL_DOCS;
 var ACTIVE_CASE = 1;
 
 function openCase(caseNum) {
-  try {
-    ACTIVE_CASE = caseNum;
-    if (caseNum === 2) { ACTIVE_DOCS = CASE2_DOCS; }
-    else if (caseNum === 4) { ACTIVE_DOCS = P4_DOCS; }
-    else { ACTIVE_DOCS = REL_DOCS; }
-    // Safe DOM updates
-    var el;
-    el = document.getElementById('rel-toolbar-case-label');
-    if (el) el.textContent = caseNum === 2 ? 'Harmon v. NovaCure' : caseNum === 4 ? 'SEC v. QuantumEdge AI' : 'Joba v. Bukando';
-    el = document.getElementById('rel-toolbar-batch-label');
-    if (el) el.textContent = caseNum === 2 ? 'First Level Review — Batch 002' : caseNum === 4 ? 'Flash Crash Matter' : 'First Level Review — Batch 001';
-    // Open shell FIRST so sidebar DOM exists
-    el = document.getElementById('proj-landing');
-    if (el) el.style.display = 'none';
-    document.getElementById('rel-shell').classList.add('open');
-    // Reset state
-    relCoding = {}; relAnswered = {}; relCodingState = {};
-    relCurrentDoc = null; relCurrentIdx = -1;
-    relFilter = 'all'; relSearchQ = '';
-    if (typeof rdxState !== 'undefined') rdxState.marks = {};
-    // Update sidebar after shell is open
-    updateSidebarForCase(caseNum);
-    relRenderList();
-    updateRelProgress();
-  } catch(e) {
-    alert('openCase error: ' + e.message + ' (line ' + e.lineNumber + ')');
-  }
+  ACTIVE_CASE = caseNum;
+  if (caseNum === 2) { ACTIVE_DOCS = CASE2_DOCS; }
+  else if (caseNum === 4) { ACTIVE_DOCS = P4_DOCS; }
+  else { ACTIVE_DOCS = REL_DOCS; }
+  var el = document.getElementById('rel-toolbar-case-label');
+  if (el) el.textContent = caseNum === 2 ? 'Harmon v. NovaCure' : caseNum === 4 ? 'SEC v. QuantumEdge AI' : 'Joba v. Bukando';
+  el = document.getElementById('rel-toolbar-batch-label');
+  if (el) el.textContent = caseNum === 2 ? 'First Level Review — Batch 002' : caseNum === 4 ? 'Flash Crash Matter' : 'First Level Review — Batch 001';
+  el = document.getElementById('proj-landing');
+  if (el) el.style.display = 'none';
+  var shell = document.getElementById('rel-shell');
+  shell.style.display = 'flex';
+  shell.style.position = 'fixed';
+  shell.style.inset = '0';
+  shell.style.zIndex = '9999';
+  relCoding = {}; relAnswered = {}; relCodingState = {};
+  relCurrentDoc = null; relCurrentIdx = -1;
+  relFilter = 'all'; relSearchQ = '';
+  if (typeof rdxState !== 'undefined') rdxState.marks = {};
+  updateSidebarForCase(caseNum);
+  relRenderList();
+  updateRelProgress();
 }
 
 function updateSidebarForCase(caseNum) {
