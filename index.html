@@ -1836,7 +1836,7 @@ tr:nth-child(even) td{background:#0d162080}
           <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="proj2-acc">— accuracy</div>
         </div>
       </div>
-      <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;cursor:pointer;text-align:center;">Open in Relativity →</div>
+      <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;cursor:pointer;text-align:center;" onclick="openCase(2)">Open in Relativity →</div>
     </div>
     </div>
     <div class="card">
@@ -2337,7 +2337,7 @@ tr:nth-child(even) td{background:#0d162080}
         <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="ai-proj-acc">— accuracy</div>
       </div>
     </div>
-    <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Relativity →</div>
+    <div style="margin-top:12px;background:linear-gradient(135deg,#004d40,#00695c);color:#e0f2f1;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;" onclick="openAICase()">Open in Relativity →</div>
   </div>
   <!-- PROTOCOLS -->
   <div class="card">
@@ -2837,13 +2837,16 @@ function relShowAttachment(parentId){
 
 function relNav(dir){
   var visible=relGetVisible();
-  // Recalculate current index by doc ID to handle any list reorder after coding
-  if(relCurrentDoc){
-    var freshIdx=visible.findIndex(function(d){return d.id===relCurrentDoc.id;});
-    if(freshIdx>-1) relCurrentIdx=freshIdx;
+  // Always recalculate position from doc ID - never trust cached index
+  var currentId = relCurrentDoc ? relCurrentDoc.id : null;
+  var freshIdx = currentId ? visible.findIndex(function(d){return d.id===currentId;}) : -1;
+  if(freshIdx === -1){
+    // Fallback: use cached index clamped to list length
+    freshIdx = Math.min(Math.max(relCurrentIdx, 0), visible.length - 1);
   }
-  var newIdx=relCurrentIdx+dir;
-  if(newIdx<0||newIdx>=visible.length)return;
+  var newIdx = freshIdx + dir;
+  if(newIdx < 0 || newIdx >= visible.length) return;
+  relCurrentIdx = newIdx;
   relOpenDoc(visible[newIdx].id);
 }
 
