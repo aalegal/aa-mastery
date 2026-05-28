@@ -450,7 +450,7 @@ tr:nth-child(even) td{background:#0d162080}
 .rel-skip-btn:hover{border-color:var(--accent);color:var(--accent)}
 
 /* Feedback popup */
-.rel-feedback-overlay{position:fixed;inset:0;z-index:850;background:#000000aa;z-index:500;display:flex;align-items:center;justify-content:center;padding:20px}
+.rel-feedback-overlay{position:fixed;inset:0;z-index:10000;background:#000000aa;display:flex;align-items:center;justify-content:center;padding:20px}
 .rel-feedback-box{background:var(--card);border:1px solid var(--border2);border-radius:12px;padding:24px;max-width:480px;width:100%;box-shadow:0 20px 60px #000}
 .rel-feedback-correct{border-color:var(--green);box-shadow:0 0 30px rgba(38,166,154,.15)}
 .rel-feedback-wrong{border-color:var(--red);box-shadow:0 0 30px rgba(229,57,53,.15)}
@@ -3351,7 +3351,7 @@ function openCase(caseNum) {
   shell.style.display = 'flex';
   shell.style.position = 'fixed';
   shell.style.inset = '0';
-  shell.style.zIndex = '9999';
+  shell.style.zIndex = '500';
   relCoding = {}; relAnswered = {}; relCodingState = {};
   relCurrentDoc = null; relCurrentIdx = -1;
   relFilter = 'all'; relSearchQ = '';
