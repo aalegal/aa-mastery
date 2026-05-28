@@ -1082,6 +1082,52 @@ tr:nth-child(even) td{background:#0d162080}
 #ev-progress-fill{height:100%;background:linear-gradient(90deg,#2954a3,#7eb8f7);
   transition:width .3s;}
 
+
+/* ══ BATCH SYSTEM ══ */
+.batch-selector{
+  background:#080c12;border-bottom:1px solid var(--border);
+  padding:8px 12px;flex-shrink:0;
+}
+.batch-selector-title{
+  font-size:.67rem;font-weight:700;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;
+}
+.batch-list{display:flex;flex-direction:column;gap:4px;}
+.batch-item{
+  display:flex;align-items:center;gap:8px;padding:6px 10px;
+  border-radius:6px;border:1px solid var(--border);
+  background:#0e1420;font-size:.75rem;cursor:pointer;
+  transition:all .2s;
+}
+.batch-item:hover:not(.locked){border-color:var(--border2);background:#111827;}
+.batch-item.active{border-color:var(--gold-deep);background:rgba(212,168,42,.1);}
+.batch-item.completed{border-color:#2e7d32;background:rgba(46,125,50,.1);}
+.batch-item.locked{opacity:.45;cursor:not-allowed;}
+.batch-item .batch-icon{font-size:.85rem;flex-shrink:0;}
+.batch-item .batch-label{flex:1;font-weight:600;color:var(--text2);}
+.batch-item .batch-progress{font-size:.68rem;color:var(--muted);white-space:nowrap;}
+.batch-item.active .batch-label{color:var(--gold-light);}
+.batch-item.completed .batch-label{color:#4caf50;}
+.batch-complete-banner{
+  display:none;position:absolute;bottom:60px;left:0;right:0;
+  background:linear-gradient(135deg,#1b5e20,#2e7d32);
+  border-top:1px solid #4caf50;padding:12px 16px;z-index:100;
+}
+.batch-complete-banner.visible{display:flex;align-items:center;gap:12px;}
+.batch-complete-btn{
+  background:var(--gold-metallic);color:#0a0c10;border:none;
+  border-radius:7px;padding:7px 16px;font-weight:800;font-size:.8rem;
+  cursor:pointer;white-space:nowrap;flex-shrink:0;
+}
+/* ══ SAVE PROGRESS INDICATOR ══ */
+#save-progress-toast{
+  position:fixed;bottom:20px;left:50%;transform:translateX(-50%);
+  background:#1a2a4a;border:1px solid var(--gold-deep);color:var(--gold-light);
+  padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:600;
+  z-index:10001;display:none;white-space:nowrap;
+  box-shadow:0 4px 16px rgba(0,0,0,.5);
+}
+
 </style>
 </head>
 <body>
@@ -2440,6 +2486,7 @@ function openRelativity(){
   document.getElementById("rel-shell").classList.add("open");
   relRenderList();
   updateRelProgress();
+  renderBatchSelector('rel');
 }
 
 function closeRelativity(){
@@ -3415,6 +3462,7 @@ function openEverlawCase() {
   document.getElementById('everlaw-shell').classList.add('open');
   evRenderList();
   evUpdateProgress();
+  renderBatchSelector('ev');
 }
 
 function closeEverlaw() {
@@ -3673,6 +3721,280 @@ function showProto(id, btn) {
 
 function openAICase() { openCase(4); }
 
+
+// ══════════════════════════════════════════════════════════════════
+// FEATURE 1: BATCH SYSTEM
+// ══════════════════════════════════════════════════════════════════
+var BATCH_SIZE = 50;
+var batchState = {
+  rel: { currentBatch: 0, unlockedBatches: [0] },
+  ev:  { currentBatch: 0, unlockedBatches: [0] }
+};
+
+function getBatchDocs(docs, batchIdx) {
+  return docs.slice(batchIdx * BATCH_SIZE, (batchIdx + 1) * BATCH_SIZE);
+}
+
+function getTotalBatches(docs) {
+  return Math.ceil(docs.length / BATCH_SIZE);
+}
+
+function isBatchComplete(docs, batchIdx, coding) {
+  var batchDocs = getBatchDocs(docs, batchIdx);
+  return batchDocs.length > 0 && batchDocs.every(function(d) { return !!coding[d.id]; });
+}
+
+function getBatchProgress(docs, batchIdx, coding) {
+  var batchDocs = getBatchDocs(docs, batchIdx);
+  var coded = batchDocs.filter(function(d) { return !!coding[d.id]; }).length;
+  return { coded: coded, total: batchDocs.length };
+}
+
+function renderBatchSelector(platform) {
+  // platform: 'rel' or 'ev'
+  var isRel = platform === 'rel';
+  var containerId = isRel ? 'rel-batch-selector' : 'ev-batch-selector';
+  var container = document.getElementById(containerId);
+  if (!container) return;
+  var docs = isRel ? ACTIVE_DOCS : P3_DOCS;
+  var coding = isRel ? relCoding : evCoding;
+  var state = batchState[platform];
+  var totalBatches = getTotalBatches(docs);
+  
+  var html = '<div class="batch-selector-title">📦 Batches</div><div class="batch-list">';
+  for (var i = 0; i < totalBatches; i++) {
+    var prog = getBatchProgress(docs, i, coding);
+    var isUnlocked = state.unlockedBatches.indexOf(i) > -1;
+    var isActive = state.currentBatch === i;
+    var isComplete = isBatchComplete(docs, i, coding);
+    var cls = 'batch-item' + (isActive ? ' active' : '') + (isComplete ? ' completed' : '') + (!isUnlocked ? ' locked' : '');
+    var icon = isComplete ? '✅' : (!isUnlocked ? '🔒' : (isActive ? '📂' : '📁'));
+    var batchNum = i + 1;
+    var startDoc = i * BATCH_SIZE + 1;
+    var endDoc = Math.min((i + 1) * BATCH_SIZE, docs.length);
+    var batchLabel = 'Batch ' + batchNum + ' (Docs ' + startDoc + '–' + endDoc + ')';
+    var progressLabel = prog.coded + '/' + prog.total;
+    var onclick = isUnlocked ? 'onclick="switchBatch(\'' + platform + '\',' + i + ')"' : '';
+    html += '<div class="' + cls + '" ' + onclick + '>'
+      + '<span class="batch-icon">' + icon + '</span>'
+      + '<span class="batch-label">' + batchLabel + '</span>'
+      + '<span class="batch-progress">' + progressLabel + '</span>'
+      + '</div>';
+  }
+  html += '</div>';
+  container.innerHTML = html;
+}
+
+function switchBatch(platform, batchIdx) {
+  var state = batchState[platform];
+  if (state.unlockedBatches.indexOf(batchIdx) === -1) return;
+  state.currentBatch = batchIdx;
+  if (platform === 'rel') {
+    relFilter = 'all'; relSearchQ = '';
+    relCurrentDoc = null; relCurrentIdx = -1;
+    relRenderList();
+    renderBatchSelector('rel');
+    checkBatchCompletion('rel');
+  } else {
+    evFilterMode = 'all';
+    evCurrentDoc = null; evCurrentIdx = -1;
+    evRenderList();
+    renderBatchSelector('ev');
+    checkBatchCompletion('ev');
+  }
+}
+
+function getBatchVisibleDocs(platform) {
+  var state = batchState[platform];
+  var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
+  var batchDocs = getBatchDocs(docs, state.currentBatch);
+  // Apply existing filters on top of batch slice
+  if (platform === 'rel') {
+    return batchDocs.filter(function(d) {
+      if (relSearchQ) {
+        var q = relSearchQ.toLowerCase();
+        return (d.subject + d.body + d.from + d.id).toLowerCase().includes(q);
+      }
+      if (relFilter === 'uncoded') return !relCoding[d.id];
+      if (relFilter === 'coded') return !!relCoding[d.id];
+      return true;
+    });
+  } else {
+    return batchDocs.filter(function(d) {
+      if (evFilterMode === 'uncoded') return !evCoding[d.id];
+      if (evFilterMode === 'coded') return !!evCoding[d.id];
+      return true;
+    });
+  }
+}
+
+function checkBatchCompletion(platform) {
+  var state = batchState[platform];
+  var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
+  var coding = platform === 'rel' ? relCoding : evCoding;
+  var isComplete = isBatchComplete(docs, state.currentBatch, coding);
+  var bannerId = platform === 'rel' ? 'rel-batch-banner' : 'ev-batch-banner';
+  var banner = document.getElementById(bannerId);
+  if (!banner) return;
+  var totalBatches = getTotalBatches(docs);
+  var hasNext = state.currentBatch < totalBatches - 1;
+  if (isComplete && hasNext) {
+    banner.classList.add('visible');
+    banner.querySelector('.batch-next-num').textContent = state.currentBatch + 2;
+  } else {
+    banner.classList.remove('visible');
+  }
+}
+
+function completeBatchAndNext(platform) {
+  var state = batchState[platform];
+  var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
+  var nextBatch = state.currentBatch + 1;
+  if (nextBatch >= getTotalBatches(docs)) return;
+  // Unlock next batch
+  if (state.unlockedBatches.indexOf(nextBatch) === -1) {
+    state.unlockedBatches.push(nextBatch);
+  }
+  // Switch to it
+  switchBatch(platform, nextBatch);
+  // Save progress
+  saveProgress();
+}
+
+// Override relGetVisible to respect batch
+var _origRelGetVisible = relGetVisible;
+relGetVisible = function() {
+  return getBatchVisibleDocs('rel');
+};
+
+// Override evGetVisible to respect batch
+var _origEvGetVisible = evGetVisible;
+evGetVisible = function() {
+  return getBatchVisibleDocs('ev');
+};
+
+// After each coding save, check batch completion and save progress
+var _origRelRenderList = relRenderList;
+relRenderList = function() {
+  _origRelRenderList();
+  renderBatchSelector('rel');
+  checkBatchCompletion('rel');
+};
+
+var _origEvRenderList = evRenderList;
+evRenderList = function() {
+  _origEvRenderList();
+  renderBatchSelector('ev');
+  checkBatchCompletion('ev');
+};
+
+// ══════════════════════════════════════════════════════════════════
+// FEATURE 2: PROGRESS PERSISTENCE (SUPABASE)
+// ══════════════════════════════════════════════════════════════════
+
+var _progressSaveTimer = null;
+
+async function saveProgress() {
+  if (!SB.user) return;
+  var userId = SB.user.id;
+  var data = {
+    user_id: userId,
+    rel_coding: JSON.stringify(relCoding),
+    rel_answered: JSON.stringify(relAnswered),
+    ev_coding: JSON.stringify(evCoding),
+    ev_answered: JSON.stringify(evAnswered),
+    active_case: ACTIVE_CASE,
+    active_batch_rel: batchState.rel,
+    active_batch_ev: batchState.ev,
+    current_doc_rel: relCurrentDoc ? relCurrentDoc.id : null,
+    current_doc_ev: evCurrentDoc ? evCurrentDoc.id : null,
+    updated_at: new Date().toISOString()
+  };
+  try {
+    await SB.req('POST',
+      '/rest/v1/reviewer_progress?on_conflict=user_id',
+      data
+    );
+    showProgressToast('💾 Progress saved');
+  } catch(e) {
+    // Silent fail — don't interrupt review
+  }
+}
+
+async function loadProgress() {
+  if (!SB.user) return;
+  var userId = SB.user.id;
+  try {
+    var r = await SB.req('GET',
+      '/rest/v1/reviewer_progress?user_id=eq.' + userId + '&limit=1'
+    );
+    if (!r.data || !r.data[0]) return;
+    var d = r.data[0];
+    // Restore coding state
+    if (d.rel_coding) relCoding = JSON.parse(d.rel_coding);
+    if (d.rel_answered) relAnswered = JSON.parse(d.rel_answered);
+    if (d.ev_coding) evCoding = JSON.parse(d.ev_coding);
+    if (d.ev_answered) evAnswered = JSON.parse(d.ev_answered);
+    // Restore batch state
+    if (d.active_batch_rel) batchState.rel = d.active_batch_rel;
+    if (d.active_batch_ev) batchState.ev = d.active_batch_ev;
+    // Restore active case
+    if (d.active_case) ACTIVE_CASE = d.active_case;
+    showProgressToast('✅ Progress restored — welcome back!');
+    return d; // Return for caller to use current_doc info
+  } catch(e) {
+    return null;
+  }
+}
+
+function showProgressToast(msg) {
+  var toast = document.getElementById('save-progress-toast');
+  if (!toast) return;
+  toast.textContent = msg;
+  toast.style.display = 'block';
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(function() { toast.style.display = 'none'; }, 2500);
+}
+
+// Auto-save after every coding submission (debounced 1s)
+function triggerAutoSave() {
+  clearTimeout(_progressSaveTimer);
+  _progressSaveTimer = setTimeout(saveProgress, 1000);
+}
+
+// Hook into relSubmitCoding and evSubmitCoding to trigger save
+var _origRelSubmitForSave = relSubmitCoding;
+relSubmitCoding = function() {
+  _origRelSubmitForSave.apply(this, arguments);
+  triggerAutoSave();
+};
+
+var _origEvSubmitForSave = evSubmitCoding;
+evSubmitCoding = function() {
+  _origEvSubmitForSave.apply(this, arguments);
+  triggerAutoSave();
+};
+
+// Extend onLogin to load progress and restore position
+var _origOnLogin = onLogin;
+onLogin = function() {
+  _origOnLogin();
+  loadProgress().then(function(d) {
+    if (d && d.current_doc_rel) {
+      // Reviewer was in the middle of Relativity review
+      // Restore their position silently (don't auto-open the shell)
+      // Just update progress indicators
+      updateRelProgress();
+      updateLandingStats();
+    }
+    if (d && d.current_doc_ev) {
+      evUpdateProgress();
+      evUpdateLanding();
+    }
+  });
+};
+
+
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 </script>
 
@@ -3696,6 +4018,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 
     <!-- SIDEBAR -->
     <div id="rel-sidebar">
+      <div id="rel-batch-selector" class="batch-selector"></div>
       <div class="rel-sidebar-section">
         <div class="rel-sidebar-header">Saved Searches</div>
         <div class="rel-sidebar-item active" onclick="relSidebarFilter('all',this)">📂 All Documents<span class="rel-count" id="sc-all">55</span></div>
@@ -3819,7 +4142,15 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
             </div>
           </div>
 
-          <div class="rel-submit-section">
+          <div id="rel-batch-banner" class="batch-complete-banner" style="position:relative;bottom:auto;">
+          <span style="font-size:1.2rem">🎉</span>
+          <div style="flex:1">
+            <div style="font-weight:700;color:#4caf50;font-size:.85rem">Batch Complete!</div>
+            <div style="font-size:.75rem;color:#a5d6a7">All documents coded. Ready for Batch <span class="batch-next-num">2</span>.</div>
+          </div>
+          <button class="batch-complete-btn" onclick="completeBatchAndNext('rel')">Unlock Batch <span class="batch-next-num">2</span> →</button>
+        </div>
+        <div class="rel-submit-section">
             <button class="rel-submit-btn" id="rel-submit-btn" onclick="relSubmitCoding()" disabled>Save Coding →</button>
             <button class="rel-skip-btn" onclick="relNav(1)">Skip →</button>
           </div>
@@ -3877,6 +4208,15 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
         <button class="ev-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="evFilter('coded',this)">Coded</button>
       </div>
       <div id="ev-doc-list"></div>
+      <div id="ev-batch-selector" class="batch-selector" style="border-top:1px solid var(--border);"></div>
+      <div id="ev-batch-banner" class="batch-complete-banner" style="position:relative;bottom:auto;margin-top:8px;">
+        <span style="font-size:1.2rem">🎉</span>
+        <div style="flex:1">
+          <div style="font-weight:700;color:#4caf50;font-size:.85rem">Batch Complete!</div>
+          <div style="font-size:.75rem;color:#a5d6a7">All docs coded. Ready for Batch <span class="batch-next-num">2</span>.</div>
+        </div>
+        <button class="batch-complete-btn" onclick="completeBatchAndNext('ev')">Unlock Batch <span class="batch-next-num">2</span> →</button>
+      </div>
     </div>
     <!-- Center viewer -->
     <div id="ev-viewer">
@@ -3945,6 +4285,8 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 </div>
 
 
+
+<div id="save-progress-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2a4a;border:1px solid var(--gold-deep);color:var(--gold-light);padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:600;z-index:10001;display:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.5);"></div>
 </body>
 </html>TYPE html>
 <html lang="en">
