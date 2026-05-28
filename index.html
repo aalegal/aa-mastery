@@ -2484,9 +2484,12 @@ let relCodingState = {};
 function openRelativity(){
   document.getElementById("proj-landing").style.display="none";
   document.getElementById("rel-shell").classList.add("open");
-  relRenderList();
-  updateRelProgress();
-  renderBatchSelector('rel');
+  // Defer render so shell is visible before populating lists
+  setTimeout(function() {
+    relRenderList();
+    updateRelProgress();
+    renderBatchSelector('rel');
+  }, 50);
 }
 
 function closeRelativity(){
@@ -3459,14 +3462,22 @@ var evCurrentIdx = -1;
 var evFilterMode = 'all';
 
 function openEverlawCase() {
-  document.getElementById('everlaw-shell').classList.add('open');
-  evRenderList();
-  evUpdateProgress();
-  renderBatchSelector('ev');
+  var shell = document.getElementById('everlaw-shell');
+  shell.style.display = 'flex';
+  shell.style.position = 'fixed';
+  shell.style.inset = '0';
+  shell.style.zIndex = '500';
+  // Render after shell is visible
+  setTimeout(function() {
+    evRenderList();
+    evUpdateProgress();
+    renderBatchSelector('ev');
+  }, 50);
 }
 
 function closeEverlaw() {
-  document.getElementById('everlaw-shell').classList.remove('open');
+  var shell = document.getElementById('everlaw-shell');
+  shell.style.display = 'none';
   nav('other-projects');
   evUpdateLanding();
 }
@@ -4018,7 +4029,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 
     <!-- SIDEBAR -->
     <div id="rel-sidebar">
-      <div id="rel-batch-selector" class="batch-selector"></div>
+      <div id="rel-batch-selector" class="batch-selector" style="max-height:200px;overflow-y:auto;flex-shrink:0;border-bottom:1px solid var(--border);"></div>
       <div class="rel-sidebar-section">
         <div class="rel-sidebar-header">Saved Searches</div>
         <div class="rel-sidebar-item active" onclick="relSidebarFilter('all',this)">📂 All Documents<span class="rel-count" id="sc-all">55</span></div>
@@ -4207,8 +4218,8 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
         <button class="ev-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="evFilter('uncoded',this)">Uncoded</button>
         <button class="ev-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="evFilter('coded',this)">Coded</button>
       </div>
-      <div id="ev-doc-list"></div>
-      <div id="ev-batch-selector" class="batch-selector" style="border-top:1px solid var(--border);"></div>
+      <div id="ev-batch-selector" class="batch-selector" style="border-bottom:1px solid var(--border);max-height:160px;overflow-y:auto;flex-shrink:0;"></div>
+      <div id="ev-doc-list" style="flex:1;overflow-y:auto;"></div>
       <div id="ev-batch-banner" class="batch-complete-banner" style="position:relative;bottom:auto;margin-top:8px;">
         <span style="font-size:1.2rem">🎉</span>
         <div style="flex:1">
