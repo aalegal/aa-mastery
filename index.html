@@ -3905,57 +3905,149 @@ evRenderList = function() {
 
 var _progressSaveTimer = null;
 
-async function saveProgress() {
-  if (!SB.user) return;
-  var userId = SB.user.id;
-  var data = {
-    user_id: userId,
-    rel_coding: JSON.stringify(relCoding),
-    rel_answered: JSON.stringify(relAnswered),
-    ev_coding: JSON.stringify(evCoding),
-    ev_answered: JSON.stringify(evAnswered),
+// ══════════════════════════════════════════════════════════════════
+// PROGRESS PERSISTENCE — localStorage PRIMARY + Supabase SECONDARY
+// ══════════════════════════════════════════════════════════════════
+
+function getProgressKey() {
+  return 'aa_progress_' + (SB.user ? SB.user.id : 'guest');
+}
+
+function buildProgressData() {
+  return {
+    rel_coding: relCoding,
+    rel_answered: relAnswered,
+    ev_coding: evCoding,
+    ev_answered: evAnswered,
     active_case: ACTIVE_CASE,
     active_batch_rel: batchState.rel,
     active_batch_ev: batchState.ev,
     current_doc_rel: relCurrentDoc ? relCurrentDoc.id : null,
     current_doc_ev: evCurrentDoc ? evCurrentDoc.id : null,
-    updated_at: new Date().toISOString()
+    saved_at: new Date().toISOString()
   };
+}
+
+function applyProgressData(d) {
+  if (!d) return;
+  if (d.rel_coding) relCoding = d.rel_coding;
+  if (d.rel_answered) relAnswered = d.rel_answered;
+  if (d.ev_coding) evCoding = d.ev_coding;
+  if (d.ev_answered) evAnswered = d.ev_answered;
+  if (d.active_case) ACTIVE_CASE = d.active_case;
+  if (d.active_batch_rel) batchState.rel = d.active_batch_rel;
+  if (d.active_batch_ev) batchState.ev = d.active_batch_ev;
+}
+
+// Save to localStorage immediately (always works, no network needed)
+function saveProgressLocal() {
   try {
-    await SB.req('POST',
-      '/rest/v1/reviewer_progress?on_conflict=user_id',
-      data
-    );
-    showProgressToast('💾 Progress saved');
+    var key = getProgressKey();
+    var data = buildProgressData();
+    localStorage.setItem(key, JSON.stringify(data));
+    return true;
   } catch(e) {
-    // Silent fail — don't interrupt review
+    return false;
   }
 }
 
-async function loadProgress() {
-  if (!SB.user) return;
-  var userId = SB.user.id;
+// Load from localStorage
+function loadProgressLocal() {
   try {
-    var r = await SB.req('GET',
-      '/rest/v1/reviewer_progress?user_id=eq.' + userId + '&limit=1'
-    );
-    if (!r.data || !r.data[0]) return;
-    var d = r.data[0];
-    // Restore coding state
-    if (d.rel_coding) relCoding = JSON.parse(d.rel_coding);
-    if (d.rel_answered) relAnswered = JSON.parse(d.rel_answered);
-    if (d.ev_coding) evCoding = JSON.parse(d.ev_coding);
-    if (d.ev_answered) evAnswered = JSON.parse(d.ev_answered);
-    // Restore batch state
-    if (d.active_batch_rel) batchState.rel = d.active_batch_rel;
-    if (d.active_batch_ev) batchState.ev = d.active_batch_ev;
-    // Restore active case
-    if (d.active_case) ACTIVE_CASE = d.active_case;
-    showProgressToast('✅ Progress restored — welcome back!');
-    return d; // Return for caller to use current_doc info
+    var key = getProgressKey();
+    var raw = localStorage.getItem(key);
+    if (!raw) return null;
+    return JSON.parse(raw);
   } catch(e) {
     return null;
   }
+}
+
+// Save to Supabase (background, non-blocking)
+async function saveProgressRemote() {
+  if (!SB.user) return;
+  try {
+    var data = buildProgressData();
+    data.user_id = SB.user.id;
+    data.rel_coding = JSON.stringify(data.rel_coding);
+    data.rel_answered = JSON.stringify(data.rel_answered);
+    data.ev_coding = JSON.stringify(data.ev_coding);
+    data.ev_answered = JSON.stringify(data.ev_answered);
+    data.updated_at = new Date().toISOString();
+    await axios({
+      method: 'POST',
+      url: SB.url + '/rest/v1/reviewer_progress',
+      headers: {
+        'Content-Type': 'application/json',
+        'apikey': SB.key,
+        'Authorization': 'Bearer ' + (SB.token || SB.key),
+        'Prefer': 'resolution=merge-duplicates'
+      },
+      data: data
+    });
+  } catch(e) {
+    // Table may not exist yet — local storage is the backup
+  }
+}
+
+// Load from Supabase
+async function loadProgressRemote() {
+  if (!SB.user) return null;
+  try {
+    var r = await axios({
+      method: 'GET',
+      url: SB.url + '/rest/v1/reviewer_progress?user_id=eq.' + SB.user.id + '&limit=1',
+      headers: {
+        'apikey': SB.key,
+        'Authorization': 'Bearer ' + (SB.token || SB.key)
+      }
+    });
+    if (!r.data || !r.data[0]) return null;
+    var d = r.data[0];
+    return {
+      rel_coding:   typeof d.rel_coding   === 'string' ? JSON.parse(d.rel_coding)   : (d.rel_coding   || {}),
+      rel_answered: typeof d.rel_answered === 'string' ? JSON.parse(d.rel_answered) : (d.rel_answered || {}),
+      ev_coding:    typeof d.ev_coding    === 'string' ? JSON.parse(d.ev_coding)    : (d.ev_coding    || {}),
+      ev_answered:  typeof d.ev_answered  === 'string' ? JSON.parse(d.ev_answered)  : (d.ev_answered  || {}),
+      active_case:      d.active_case,
+      active_batch_rel: d.active_batch_rel,
+      active_batch_ev:  d.active_batch_ev,
+      current_doc_rel:  d.current_doc_rel,
+      current_doc_ev:   d.current_doc_ev
+    };
+  } catch(e) {
+    return null;
+  }
+}
+
+// MAIN: Save to both localStorage AND Supabase
+async function saveProgress() {
+  saveProgressLocal();           // instant, synchronous
+  saveProgressRemote();          // background, fire-and-forget
+  showProgressToast('💾 Progress saved');
+}
+
+// MAIN: Load — prefer Supabase (most up-to-date), fallback to localStorage
+async function loadProgress() {
+  var remoteData = await loadProgressRemote();
+  var localData  = loadProgressLocal();
+  // Use whichever is more recent
+  var data = null;
+  if (remoteData && localData) {
+    var remoteTime = remoteData.saved_at ? new Date(remoteData.saved_at) : new Date(0);
+    var localTime  = localData.saved_at  ? new Date(localData.saved_at)  : new Date(0);
+    data = remoteTime >= localTime ? remoteData : localData;
+  } else {
+    data = remoteData || localData;
+  }
+  if (!data) return null;
+  applyProgressData(data);
+  updateRelProgress();
+  updateLandingStats();
+  evUpdateProgress();
+  evUpdateLanding();
+  showProgressToast('✅ Progress restored — welcome back!');
+  return data;
 }
 
 function showProgressToast(msg) {
@@ -3964,13 +4056,13 @@ function showProgressToast(msg) {
   toast.textContent = msg;
   toast.style.display = 'block';
   clearTimeout(window._toastTimer);
-  window._toastTimer = setTimeout(function() { toast.style.display = 'none'; }, 2500);
+  window._toastTimer = setTimeout(function() { toast.style.display = 'none'; }, 3000);
 }
 
-// Auto-save after every coding submission (debounced 1s)
+// Auto-save on every coding submission
 function triggerAutoSave() {
   clearTimeout(_progressSaveTimer);
-  _progressSaveTimer = setTimeout(saveProgress, 1000);
+  _progressSaveTimer = setTimeout(function() { saveProgress(); }, 800);
 }
 
 // Hook into relSubmitCoding and evSubmitCoding to trigger save
