@@ -2493,6 +2493,7 @@ function openRelativity(){
 }
 
 function closeRelativity(){
+  saveProgress(); // Save before closing
   var shell = document.getElementById('rel-shell');
   shell.style.display = 'none';
   shell.style.zIndex = '';
@@ -3402,7 +3403,9 @@ function openCase(caseNum) {
   shell.style.position = 'fixed';
   shell.style.inset = '0';
   shell.style.zIndex = '500';
-  relCoding = {}; relAnswered = {}; relCodingState = {};
+  // NEVER reset relCoding/relAnswered — those are persistent progress
+  // Only reset the current session navigation state and form state
+  relCodingState = {};
   relCurrentDoc = null; relCurrentIdx = -1;
   relFilter = 'all'; relSearchQ = '';
   if (typeof rdxState !== 'undefined') rdxState.marks = {};
@@ -3476,6 +3479,7 @@ function openEverlawCase() {
 }
 
 function closeEverlaw() {
+  saveProgress(); // Save before closing
   var shell = document.getElementById('everlaw-shell');
   shell.style.display = 'none';
   nav('other-projects');
@@ -4082,11 +4086,19 @@ evSubmitCoding = function() {
 var _origOnLogin = onLogin;
 onLogin = function() {
   _origOnLogin();
+  // First: restore from localStorage immediately (synchronous)
+  var localData = loadProgressLocal();
+  if (localData) {
+    applyProgressData(localData);
+    updateRelProgress();
+    updateLandingStats();
+    evUpdateProgress();
+    evUpdateLanding();
+    showProgressToast('✅ Progress restored — welcome back!');
+  }
+  // Then: check Supabase for more recent data (async)
   loadProgress().then(function(d) {
     if (d && d.current_doc_rel) {
-      // Reviewer was in the middle of Relativity review
-      // Restore their position silently (don't auto-open the shell)
-      // Just update progress indicators
       updateRelProgress();
       updateLandingStats();
     }
@@ -4097,6 +4109,12 @@ onLogin = function() {
   });
 };
 
+
+// Save progress when user leaves the page or switches tabs
+window.addEventListener('beforeunload', function() { saveProgressLocal(); });
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'hidden') { saveProgressLocal(); }
+});
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
 </script>
