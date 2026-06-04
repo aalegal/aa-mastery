@@ -95,6 +95,15 @@ ul,ol{padding-left:20px;margin-top:6px}li{margin-bottom:4px}
 .lpane{display:none}.lpane.active{display:block}
 .tpane{display:none}.tpane.active{display:block}
 .muted{color:var(--muted)}
+.lead-status{font-size:.8rem;margin-top:8px;min-height:1.1em;color:var(--muted)}
+.lead-status.err{color:#e57373}
+.lead-status.ok{color:#7ec88a}
+.lead-cell-input{width:100%;background:#0d1620;border:1px solid var(--border);color:var(--text,#e8eef6);padding:5px 7px;border-radius:5px;font-size:.8rem;font-family:inherit}
+.lead-cell-input:focus{outline:none;border-color:var(--sapphire-light,#7eb8f7)}
+.lead-del-btn{background:none;border:1px solid var(--border);color:#e57373;border-radius:5px;cursor:pointer;padding:3px 8px;font-size:.85rem}
+.lead-del-btn:hover{background:#e5737322}
+.tactical-person{margin-top:16px}
+.tactical-person h4{margin:0 0 6px;color:var(--gold-light)}
 .rule{background:#0e1a2e;border-left:4px solid var(--accent);padding:10px 13px;border-radius:0 8px 8px 0;margin:8px 0;font-size:.87rem}
 .rule.gold{border-color:var(--gold)}.rule.green{border-color:var(--green)}.rule.red{border-color:var(--red)}.rule.sapphire{border-color:var(--sapphire-light)}
 
@@ -2426,58 +2435,54 @@ tr:nth-child(even) td{background:#0d162080}
     <!-- TIMESHEETS -->
     <div id="lpane-timesheets" class="lpane active">
       <h3>Timesheets</h3>
-      <p class="muted">Track team hours by category. <strong>BH</strong> = Billable Hours, <strong>NBH</strong> = Non-Billable Hours.</p>
+      <p class="muted">Track team hours by category. <strong>BH</strong> = Billable Hours, <strong>NBH</strong> = Non-Billable Hours. Edits save for all supervisors.</p>
       <div class="rtabs" style="margin-top:10px">
         <button class="rtab active" onclick="showTime('bh',this)">Billable Hours (BH)</button>
         <button class="rtab" onclick="showTime('nbh',this)">Non-Billable Hours (NBH)</button>
       </div>
       <div id="tpane-bh" class="tpane active">
-        <table class="data-table" style="width:100%;margin-top:10px">
-          <thead><tr><th>Date</th><th>Team Member</th><th>Project / Matter</th><th>Task</th><th>BH</th></tr></thead>
-          <tbody>
-            <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-          </tbody>
-          <tfoot><tr><th colspan="4" style="text-align:right">Total Billable</th><th>0.0</th></tr></tfoot>
+        <div id="ts-bh-status" class="lead-status"></div>
+        <table style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Project / Matter</th><th>Task</th><th>BH</th><th style="width:40px"></th></tr></thead>
+          <tbody id="ts-bh-body"></tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Billable</th><th id="ts-bh-total">0.0</th><th></th></tr></tfoot>
         </table>
-        <p class="muted" style="margin-top:8px;font-size:.8rem">Add rows as needed. To wire this to live data, connect a Supabase <code>timesheets</code> table and load it on this tab.</p>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('bh')">+ Add BH Row</button>
       </div>
       <div id="tpane-nbh" class="tpane">
-        <table class="data-table" style="width:100%;margin-top:10px">
-          <thead><tr><th>Date</th><th>Team Member</th><th>Activity</th><th>Reason / Notes</th><th>NBH</th></tr></thead>
-          <tbody>
-            <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-          </tbody>
-          <tfoot><tr><th colspan="4" style="text-align:right">Total Non-Billable</th><th>0.0</th></tr></tfoot>
+        <div id="ts-nbh-status" class="lead-status"></div>
+        <table style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Activity</th><th>Reason / Notes</th><th>NBH</th><th style="width:40px"></th></tr></thead>
+          <tbody id="ts-nbh-body"></tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Non-Billable</th><th id="ts-nbh-total">0.0</th><th></th></tr></tfoot>
         </table>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('nbh')">+ Add NBH Row</button>
         <p class="muted" style="margin-top:8px;font-size:.8rem">Examples of NBH: training, internal meetings, admin, downtime, QC calibration.</p>
       </div>
     </div>
 
     <!-- TACTICAL MEETING REPORTS -->
     <div id="lpane-meetings" class="lpane">
-      <h3>Tactical Meeting Reports</h3>
-      <p class="muted">Log and review notes from tactical / supervisor meetings.</p>
-      <table class="data-table" style="width:100%;margin-top:10px">
-        <thead><tr><th>Date</th><th>Attendees</th><th>Topics Covered</th><th>Action Items</th><th>Owner</th></tr></thead>
-        <tbody>
-          <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-        </tbody>
-      </table>
-      <p class="muted" style="margin-top:8px;font-size:.8rem">Keep entries short and decision-focused: what was decided, who owns it, by when.</p>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
+        <h3 style="margin:0">Tactical Meeting Reports</h3>
+        <button class="btn btn-outline btn-sm" onclick="fetchTactical()">🔄 Refresh from Monday.com</button>
+      </div>
+      <p class="muted" style="margin-top:6px">One report table per supervisor, grouped by the <strong>Person</strong> column on the Monday.com board.</p>
+      <div id="tactical-status" class="lead-status"></div>
+      <div id="tactical-container"></div>
     </div>
 
     <!-- PAYMENTS -->
     <div id="lpane-payments" class="lpane">
       <h3>Payments</h3>
-      <p class="muted">Track payment records and status. Sensitive — supervisors only.</p>
-      <table class="data-table" style="width:100%;margin-top:10px">
-        <thead><tr><th>Date</th><th>Payee</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
-        <tbody>
-          <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
-        </tbody>
-        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>0.00</th><th></th></tr></tfoot>
+      <p class="muted">Track payment records and status. Sensitive — supervisors only. Do not enter full bank details here.</p>
+      <div id="pay-status" class="lead-status"></div>
+      <table style="width:100%;margin-top:10px">
+        <thead><tr><th>Date</th><th>Payee</th><th>Description</th><th>Amount</th><th>Status</th><th style="width:40px"></th></tr></thead>
+        <tbody id="pay-body"></tbody>
+        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th id="pay-total">0.00</th><th></th><th></th></tr></tfoot>
       </table>
-      <p class="muted" style="margin-top:8px;font-size:.8rem">Do not enter full bank details here. Use this as a status tracker; keep account numbers in your secure system.</p>
+      <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addPaymentRow()">+ Add Payment Row</button>
     </div>
 
     <!-- OTHER STUFF -->
@@ -2573,7 +2578,16 @@ const SB={
   async getLeaderboard(){return this.req('GET','/rest/v1/quiz_scores?select=display_name,score,total,pct,category,created_at&order=pct.desc,score.desc&limit=200')},
   async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
   async getAllScores(){return this.req('GET','/rest/v1/quiz_scores?select=*&order=created_at.desc&limit=300')},
-  async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)}
+  async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)},
+  // Timesheets (BH/NBH) and Payments — shared leadership tables
+  async getTimesheets(kind){return this.req('GET','/rest/v1/timesheets?select=*&kind=eq.'+kind+'&order=row_date.desc,id.desc')},
+  async addTimesheet(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/timesheets',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
+  async updateTimesheet(id,patch){return this.req('PATCH','/rest/v1/timesheets?id=eq.'+id,patch)},
+  async deleteTimesheet(id){return this.req('DELETE','/rest/v1/timesheets?id=eq.'+id)},
+  async getPayments(){return this.req('GET','/rest/v1/payments?select=*&order=row_date.desc,id.desc')},
+  async addPayment(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/payments',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
+  async updatePayment(id,patch){return this.req('PATCH','/rest/v1/payments?id=eq.'+id,patch)},
+  async deletePayment(id){return this.req('DELETE','/rest/v1/payments?id=eq.'+id)}
 };
 
 // Token handling moved to checkWallToken() below — runs after DOM is ready
@@ -2590,6 +2604,7 @@ function nav(p){
   if(p==='quiz')initQuizPage();
   if(p==='leaderboard')loadLeaderboard();
   if(p==='admin')loadAdmin();
+  if(p==='leadership'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -2615,6 +2630,9 @@ function showLead(id,btn){
   document.querySelectorAll('#lead-tabs .rtab').forEach(function(t){t.classList.remove('active');});
   var pane=document.getElementById('lpane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
+  if(id==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
+  if(id==='payments')loadPayments();
+  if(id==='meetings')fetchTactical();
 }
 function showTime(id,btn){
   document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
@@ -2622,6 +2640,155 @@ function showTime(id,btn){
   var pane=document.getElementById('tpane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
 }
+
+/* ===================== LEADERSHIP DATA MODULE ===================== */
+var LEAD_TACTICAL_PEOPLE=['Glory','Junior','Simon','Achumboro','Jeff'];
+// Set this to your deployed serverless proxy (e.g. '/api/monday') to enable live Monday.com sync.
+var MONDAY_PROXY_URL='';
+
+function leadStatus(elId,msg,cls){var el=document.getElementById(elId);if(!el)return;el.textContent=msg||'';el.className='lead-status'+(cls?' '+cls:'');}
+function escAttr(v){return String(v==null?'':v).replace(/"/g,'&quot;');}
+
+/* ---- TIMESHEETS (BH / NBH) ---- */
+async function loadTimesheets(kind){
+  var bodyId='ts-'+kind+'-body',statusId='ts-'+kind+'-status';
+  if(!SB.token){leadStatus(statusId,'Log in to view and edit timesheets.','err');document.getElementById(bodyId).innerHTML='';return;}
+  leadStatus(statusId,'Loading…');
+  var r=await SB.getTimesheets(kind);
+  if(r.error){leadStatus(statusId,'Could not load: '+r.error,'err');return;}
+  renderTimesheet(kind,r.data||[]);
+  leadStatus(statusId,'');
+}
+function renderTimesheet(kind,rows){
+  var body=document.getElementById('ts-'+kind+'-body');if(!body)return;
+  body.innerHTML='';
+  var total=0;
+  var col3=kind==='bh'?'project':'activity', col4=kind==='bh'?'task':'notes';
+  rows.forEach(function(row){
+    total+=parseFloat(row.hours)||0;
+    var tr=document.createElement('tr');tr.setAttribute('data-id',row.id);
+    tr.innerHTML=
+      '<td><input class="lead-cell-input" type="date" value="'+escAttr(row.row_date)+'" onchange="saveTimesheetField('+row.id+',\''+kind+'\',\'row_date\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.member)+'" onchange="saveTimesheetField('+row.id+',\''+kind+'\',\'member\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.col3)+'" onchange="saveTimesheetField('+row.id+',\''+kind+'\',\'col3\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.col4)+'" onchange="saveTimesheetField('+row.id+',\''+kind+'\',\'col4\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" type="number" step="0.1" value="'+escAttr(row.hours)+'" onchange="saveTimesheetField('+row.id+',\''+kind+'\',\'hours\',this.value)"></td>'+
+      '<td><button class="lead-del-btn" title="Delete row" onclick="deleteTimesheetRow('+row.id+',\''+kind+'\')">✕</button></td>';
+    body.appendChild(tr);
+  });
+  document.getElementById('ts-'+kind+'-total').textContent=total.toFixed(1);
+}
+async function addTimesheetRow(kind){
+  if(!SB.token){leadStatus('ts-'+kind+'-status','Log in first.','err');return;}
+  var today=new Date().toISOString().slice(0,10);
+  var r=await SB.addTimesheet({kind:kind,row_date:today,member:'',col3:'',col4:'',hours:0});
+  if(r.error){leadStatus('ts-'+kind+'-status','Could not add row: '+r.error,'err');return;}
+  loadTimesheets(kind);
+}
+async function saveTimesheetField(id,kind,field,value){
+  var patch={};patch[field]=(field==='hours')?(parseFloat(value)||0):value;
+  var r=await SB.updateTimesheet(id,patch);
+  if(r.error){leadStatus('ts-'+kind+'-status','Save failed: '+r.error,'err');return;}
+  leadStatus('ts-'+kind+'-status','Saved.','ok');
+  if(field==='hours')loadTimesheets(kind);
+  setTimeout(function(){leadStatus('ts-'+kind+'-status','');},1500);
+}
+async function deleteTimesheetRow(id,kind){
+  if(!confirm('Delete this row for everyone?'))return;
+  var r=await SB.deleteTimesheet(id);
+  if(r.error){leadStatus('ts-'+kind+'-status','Delete failed: '+r.error,'err');return;}
+  loadTimesheets(kind);
+}
+
+/* ---- PAYMENTS ---- */
+async function loadPayments(){
+  if(!SB.token){leadStatus('pay-status','Log in to view and edit payments.','err');document.getElementById('pay-body').innerHTML='';return;}
+  leadStatus('pay-status','Loading…');
+  var r=await SB.getPayments();
+  if(r.error){leadStatus('pay-status','Could not load: '+r.error,'err');return;}
+  renderPayments(r.data||[]);
+  leadStatus('pay-status','');
+}
+function renderPayments(rows){
+  var body=document.getElementById('pay-body');if(!body)return;
+  body.innerHTML='';var total=0;
+  rows.forEach(function(row){
+    total+=parseFloat(row.amount)||0;
+    var tr=document.createElement('tr');tr.setAttribute('data-id',row.id);
+    tr.innerHTML=
+      '<td><input class="lead-cell-input" type="date" value="'+escAttr(row.row_date)+'" onchange="savePaymentField('+row.id+',\'row_date\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.payee)+'" onchange="savePaymentField('+row.id+',\'payee\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.description)+'" onchange="savePaymentField('+row.id+',\'description\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" type="number" step="0.01" value="'+escAttr(row.amount)+'" onchange="savePaymentField('+row.id+',\'amount\',this.value)"></td>'+
+      '<td><input class="lead-cell-input" value="'+escAttr(row.status)+'" onchange="savePaymentField('+row.id+',\'status\',this.value)"></td>'+
+      '<td><button class="lead-del-btn" title="Delete row" onclick="deletePaymentRow('+row.id+')">✕</button></td>';
+    body.appendChild(tr);
+  });
+  document.getElementById('pay-total').textContent=total.toFixed(2);
+}
+async function addPaymentRow(){
+  if(!SB.token){leadStatus('pay-status','Log in first.','err');return;}
+  var today=new Date().toISOString().slice(0,10);
+  var r=await SB.addPayment({row_date:today,payee:'',description:'',amount:0,status:'Pending'});
+  if(r.error){leadStatus('pay-status','Could not add row: '+r.error,'err');return;}
+  loadPayments();
+}
+async function savePaymentField(id,field,value){
+  var patch={};patch[field]=(field==='amount')?(parseFloat(value)||0):value;
+  var r=await SB.updatePayment(id,patch);
+  if(r.error){leadStatus('pay-status','Save failed: '+r.error,'err');return;}
+  leadStatus('pay-status','Saved.','ok');
+  if(field==='amount')loadPayments();
+  setTimeout(function(){leadStatus('pay-status','');},1500);
+}
+async function deletePaymentRow(id){
+  if(!confirm('Delete this payment for everyone?'))return;
+  var r=await SB.deletePayment(id);
+  if(r.error){leadStatus('pay-status','Delete failed: '+r.error,'err');return;}
+  loadPayments();
+}
+
+/* ---- TACTICAL MEETING REPORTS (Monday.com) ---- */
+function renderTacticalTables(byPerson){
+  var c=document.getElementById('tactical-container');if(!c)return;
+  c.innerHTML='';
+  LEAD_TACTICAL_PEOPLE.forEach(function(person){
+    var rows=(byPerson&&byPerson[person])||[];
+    var wrap=document.createElement('div');wrap.className='tactical-person';
+    var html='<h4>'+person+'</h4>'+
+      '<table style="width:100%"><thead><tr><th>Date</th><th>Item</th><th>Status</th><th>Notes / Action</th></tr></thead><tbody>';
+    if(rows.length===0){
+      html+='<tr><td colspan="4" class="muted" style="text-align:center">No items yet — connect Monday.com to populate.</td></tr>';
+    }else{
+      rows.forEach(function(r){
+        html+='<tr><td>'+escAttr(r.date)+'</td><td>'+escAttr(r.item)+'</td><td>'+escAttr(r.status)+'</td><td>'+escAttr(r.notes)+'</td></tr>';
+      });
+    }
+    html+='</tbody></table>';
+    wrap.innerHTML=html;
+    c.appendChild(wrap);
+  });
+}
+async function fetchTactical(){
+  // Render empty per-person tables first so structure always shows.
+  if(!MONDAY_PROXY_URL){
+    renderTacticalTables({});
+    leadStatus('tactical-status','Showing 5 report tables. Live Monday.com sync is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it.','');
+    return;
+  }
+  leadStatus('tactical-status','Fetching from Monday.com…');
+  try{
+    var res=await fetch(MONDAY_PROXY_URL);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var data=await res.json(); // expected: { "Glory":[{date,item,status,notes}], ... }
+    renderTacticalTables(data||{});
+    leadStatus('tactical-status','Updated from Monday.com.','ok');
+  }catch(e){
+    renderTacticalTables({});
+    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). Showing empty tables.','err');
+  }
+}
+/* =================== END LEADERSHIP DATA MODULE =================== */
 function showPlatform(agency,plat,btn){
   var prefix=agency+'-';
   ['rel','elv','dis'].forEach(function(p){var el=document.getElementById(prefix+p);if(el)el.classList.remove('active');});
