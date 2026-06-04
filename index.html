@@ -92,6 +92,9 @@ ul,ol{padding-left:20px;margin-top:6px}li{margin-bottom:4px}
 .rtab{background:#111827;border:1px solid var(--border);color:var(--muted);padding:5px 11px;border-radius:6px;cursor:pointer;font-size:.78rem;transition:all .2s}
 .rtab.active,.rtab:hover{background:linear-gradient(135deg,var(--sapphire),var(--sapphire-mid));color:var(--gold-light);font-weight:700;border-color:var(--sapphire-light)}
 .rpane{display:none}.rpane.active{display:block}
+.lpane{display:none}.lpane.active{display:block}
+.tpane{display:none}.tpane.active{display:block}
+.muted{color:var(--muted)}
 .rule{background:#0e1a2e;border-left:4px solid var(--accent);padding:10px 13px;border-radius:0 8px 8px 0;margin:8px 0;font-size:.87rem}
 .rule.gold{border-color:var(--gold)}.rule.green{border-color:var(--green)}.rule.red{border-color:var(--red)}.rule.sapphire{border-color:var(--sapphire-light)}
 
@@ -1261,6 +1264,7 @@ tr:nth-child(even) td{background:#0d162080}
     <span id="user-pill" class="user-pill" style="display:none"></span>
     <button id="btn-login" class="btn btn-gold btn-sm" onclick="openModal('login')">Log In</button>
     <button id="btn-logout" class="btn btn-outline btn-sm" style="display:none" onclick="logout()">Log Out</button>
+    <button id="btn-leadership" class="btn btn-sm btn-gold" style="display:none" onclick="nav('leadership')">🔒 Leadership</button>
     <button id="btn-admin" class="btn btn-sm btn-red" style="display:none" onclick="nav('admin')">⚙️ Admin</button>
   </div>
 </div>
@@ -2407,6 +2411,91 @@ tr:nth-child(even) td{background:#0d162080}
   </div>
 </div>
 
+<!-- ══════ LEADERSHIP SECTION (supervisors only) ══════ -->
+<div id="page-leadership" class="page">
+  <div class="card" style="border-color:var(--gold);">
+    <h2 style="display:flex;align-items:center;gap:8px">🔒 Leadership Section</h2>
+    <p class="muted" style="margin-top:4px">Restricted area for supervisors only — Jeff, Glory, Junior, Simon &amp; Achumboro (Aaron). Use the sub-tabs below.</p>
+    <div class="rtabs" id="lead-tabs" style="margin-top:14px">
+      <button class="rtab active" onclick="showLead('timesheets',this)">🕒 Timesheets</button>
+      <button class="rtab" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
+      <button class="rtab" onclick="showLead('payments',this)">💵 Payments</button>
+      <button class="rtab" onclick="showLead('other',this)">📦 Other Stuff</button>
+    </div>
+
+    <!-- TIMESHEETS -->
+    <div id="lpane-timesheets" class="lpane active">
+      <h3>Timesheets</h3>
+      <p class="muted">Track team hours by category. <strong>BH</strong> = Billable Hours, <strong>NBH</strong> = Non-Billable Hours.</p>
+      <div class="rtabs" style="margin-top:10px">
+        <button class="rtab active" onclick="showTime('bh',this)">Billable Hours (BH)</button>
+        <button class="rtab" onclick="showTime('nbh',this)">Non-Billable Hours (NBH)</button>
+      </div>
+      <div id="tpane-bh" class="tpane active">
+        <table class="data-table" style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Project / Matter</th><th>Task</th><th>BH</th></tr></thead>
+          <tbody>
+            <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Billable</th><th>0.0</th></tr></tfoot>
+        </table>
+        <p class="muted" style="margin-top:8px;font-size:.8rem">Add rows as needed. To wire this to live data, connect a Supabase <code>timesheets</code> table and load it on this tab.</p>
+      </div>
+      <div id="tpane-nbh" class="tpane">
+        <table class="data-table" style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Activity</th><th>Reason / Notes</th><th>NBH</th></tr></thead>
+          <tbody>
+            <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+          </tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Non-Billable</th><th>0.0</th></tr></tfoot>
+        </table>
+        <p class="muted" style="margin-top:8px;font-size:.8rem">Examples of NBH: training, internal meetings, admin, downtime, QC calibration.</p>
+      </div>
+    </div>
+
+    <!-- TACTICAL MEETING REPORTS -->
+    <div id="lpane-meetings" class="lpane">
+      <h3>Tactical Meeting Reports</h3>
+      <p class="muted">Log and review notes from tactical / supervisor meetings.</p>
+      <table class="data-table" style="width:100%;margin-top:10px">
+        <thead><tr><th>Date</th><th>Attendees</th><th>Topics Covered</th><th>Action Items</th><th>Owner</th></tr></thead>
+        <tbody>
+          <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+      </table>
+      <p class="muted" style="margin-top:8px;font-size:.8rem">Keep entries short and decision-focused: what was decided, who owns it, by when.</p>
+    </div>
+
+    <!-- PAYMENTS -->
+    <div id="lpane-payments" class="lpane">
+      <h3>Payments</h3>
+      <p class="muted">Track payment records and status. Sensitive — supervisors only.</p>
+      <table class="data-table" style="width:100%;margin-top:10px">
+        <thead><tr><th>Date</th><th>Payee</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>—</td><td>—</td><td>—</td><td>—</td><td>—</td></tr>
+        </tbody>
+        <tfoot><tr><th colspan="3" style="text-align:right">Total</th><th>0.00</th><th></th></tr></tfoot>
+      </table>
+      <p class="muted" style="margin-top:8px;font-size:.8rem">Do not enter full bank details here. Use this as a status tracker; keep account numbers in your secure system.</p>
+    </div>
+
+    <!-- OTHER STUFF -->
+    <div id="lpane-other" class="lpane">
+      <h3>Other Stuff</h3>
+      <p class="muted">A flexible space for anything else leadership needs to track.</p>
+      <div class="card" style="margin-top:10px">
+        <h4 style="margin:0 0 6px">📌 Notes &amp; Announcements</h4>
+        <p class="muted" style="font-size:.85rem">Add internal notes, links, policies, or reminders here.</p>
+      </div>
+      <div class="card" style="margin-top:10px">
+        <h4 style="margin:0 0 6px">✅ Open Action Items</h4>
+        <p class="muted" style="font-size:.85rem">Carry forward unfinished tasks from meetings.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ══════ AUTH MODAL ══════ -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
@@ -2458,6 +2547,17 @@ const SUPABASE_URL='https://mrxhydaoxlxuampmgaoi.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
 const ADMIN_EMAIL='jeff@ataandeadvisors.com';
 const SITE_URL='https://aa-mastery.vercel.app';
+// Supervisors authorized for the Leadership Section. Add/edit emails here.
+const LEADERSHIP_EMAILS=['jeff@ataandeadvisors.com'];
+// Fallback gate by display name (case-insensitive) for accounts whose email isn't listed yet.
+const LEADERSHIP_NAMES=['jeff','glory','junior','simon','achumboro','aaron'];
+function isLeadership(u){
+  if(!u)return false;
+  var em=(u.email||'').toLowerCase();
+  if(LEADERSHIP_EMAILS.map(function(e){return e.toLowerCase();}).indexOf(em)!==-1)return true;
+  var nm=((u.user_metadata&&u.user_metadata.display_name)||'').toLowerCase();
+  return LEADERSHIP_NAMES.indexOf(nm)!==-1;
+}
 
 const SB={
   url:SUPABASE_URL,key:SUPABASE_ANON_KEY,token:null,user:null,
@@ -2481,6 +2581,7 @@ const SB={
 let currentPage='home';
 function nav(p){
   var target=document.getElementById('page-'+p);if(!target)return;
+  if(p==='leadership'&&!isLeadership(SB.user)){alert('🔒 The Leadership Section is restricted to authorized supervisors. Please log in with an approved account.');return;}
   document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
   document.querySelectorAll('#topnav button').forEach(function(b){b.classList.remove('active');});
   target.classList.add('active');
@@ -2507,6 +2608,18 @@ function showAgency(id,btn){
   document.querySelectorAll('.pb-pane').forEach(function(p){p.style.display='none';});
   document.querySelectorAll('.pb-atab').forEach(function(t){t.classList.remove('active');});
   var pane=document.getElementById('pb-pane-'+id);if(pane)pane.style.display='block';
+  if(btn)btn.classList.add('active');
+}
+function showLead(id,btn){
+  document.querySelectorAll('#page-leadership .lpane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('#lead-tabs .rtab').forEach(function(t){t.classList.remove('active');});
+  var pane=document.getElementById('lpane-'+id);if(pane)pane.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
+function showTime(id,btn){
+  document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
+  if(btn){var grp=btn.closest('.rtabs');if(grp)grp.querySelectorAll('.rtab').forEach(function(t){t.classList.remove('active');});}
+  var pane=document.getElementById('tpane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
 }
 function showPlatform(agency,plat,btn){
@@ -2575,12 +2688,15 @@ function onLogin(){
   document.getElementById('user-pill').textContent='👤 '+name;document.getElementById('user-pill').style.display='inline-block';
   document.getElementById('btn-login').style.display='none';document.getElementById('btn-logout').style.display='inline-block';
   if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
+  if(isLeadership(u))document.getElementById('btn-leadership').style.display='inline-block';
   if(currentPage==='quiz')initQuizPage();
 }
 async function logout(){
   await SB.signOut();
   document.getElementById('user-pill').style.display='none';document.getElementById('btn-login').style.display='inline-block';
   document.getElementById('btn-logout').style.display='none';document.getElementById('btn-admin').style.display='none';
+  document.getElementById('btn-leadership').style.display='none';
+  if(currentPage==='leadership')nav('home');
   if(currentPage==='quiz')initQuizPage();
 }
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
