@@ -104,6 +104,13 @@ ul,ol{padding-left:20px;margin-top:6px}li{margin-bottom:4px}
 .lead-del-btn:hover{background:#e5737322}
 .tactical-person{margin-top:16px}
 .tactical-person h4{margin:0 0 6px;color:var(--gold-light)}
+.tactical-report{margin-top:18px;padding:16px;border:1px solid var(--border2);border-radius:10px;background:#0b131d}
+.tactical-report-head{display:flex;align-items:center;justify-content:space-between;gap:8px;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:10px}
+.tactical-report-head h4{margin:0;color:var(--gold-light);font-size:1.05rem}
+.lead-field-label{display:block;margin:12px 0 4px;font-size:.8rem;font-weight:600;color:var(--gold-light);letter-spacing:.02em}
+.lead-textarea{width:100%;background:#0d1620;border:1px solid var(--border);color:var(--text,#e8eef6);padding:9px 11px;border-radius:6px;font-size:.86rem;line-height:1.5;font-family:inherit;resize:vertical;white-space:pre-wrap}
+.lead-textarea:focus{outline:none;border-color:var(--sapphire-light,#7eb8f7)}
+.lead-textarea::placeholder{color:var(--muted);opacity:.6}
 .rule{background:#0e1a2e;border-left:4px solid var(--accent);padding:10px 13px;border-radius:0 8px 8px 0;margin:8px 0;font-size:.87rem}
 .rule.gold{border-color:var(--gold)}.rule.green{border-color:var(--green)}.rule.red{border-color:var(--red)}.rule.sapphire{border-color:var(--sapphire-light)}
 
@@ -2754,89 +2761,101 @@ async function deletePaymentRow(id){
 }
 
 /* ---- TACTICAL MEETING REPORTS (Monday.com) ---- */
-var TACTICAL_ROWS=[]; // cache of all tactical rows loaded from Supabase
+// Each person gets ONE structured report with these named sections (matching the Monday.com form).
+var TACTICAL_SECTIONS=[
+  {key:'headlines', label:'Customer / Contractors Headlines', rows:4, hint:'e.g. Richard — on TP project, 35 docs/hour, energy 100%'},
+  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:8, hint:'Describe the issue, then Solution 1, 2, 3…'},
+  {key:'rocks',     label:'ROCK Updates', rows:7, hint:'1. Goal — % complete, with sub-bullets'},
+  {key:'actions',   label:'Action Items / Priorities', rows:5, hint:'Numbered priorities and owners'}
+];
+var TACTICAL_BY_PERSON={}; // person -> report record (or null)
 async function loadTactical(){
-  if(!SB.token){leadStatus('tactical-status','Log in to view and edit tactical reports.','err');renderTacticalTables();return;}
+  if(!SB.token){leadStatus('tactical-status','Log in to view and edit tactical reports.','err');TACTICAL_BY_PERSON={};renderTacticalReports();return;}
   leadStatus('tactical-status','Loading…');
   var r=await SB.getTactical();
-  if(r.error){leadStatus('tactical-status','Could not load: '+r.error,'err');renderTacticalTables();return;}
-  TACTICAL_ROWS=r.data||[];
-  renderTacticalTables();
+  if(r.error){leadStatus('tactical-status','Could not load: '+r.error,'err');renderTacticalReports();return;}
+  TACTICAL_BY_PERSON={};
+  (r.data||[]).forEach(function(rec){TACTICAL_BY_PERSON[rec.person]=rec;}); // last write per person wins
+  renderTacticalReports();
   leadStatus('tactical-status','');
 }
-function renderTacticalTables(){
+function renderTacticalReports(){
   var c=document.getElementById('tactical-container');if(!c)return;
   c.innerHTML='';
   LEAD_TACTICAL_PEOPLE.forEach(function(person){
-    var rows=TACTICAL_ROWS.filter(function(r){return r.person===person;});
-    var wrap=document.createElement('div');wrap.className='tactical-person';
-    var html='<h4>'+person+'</h4>'+
-      '<table style="width:100%"><thead><tr><th>Date</th><th>Item</th><th>Status</th><th>Notes / Action</th><th style="width:40px"></th></tr></thead><tbody>';
-    if(rows.length===0){
-      html+='<tr><td colspan="5" class="muted" style="text-align:center">No items yet — click "+ Add Row" or import from Monday.com.</td></tr>';
-    }else{
-      rows.forEach(function(r){
-        html+='<tr data-id="'+r.id+'">'+
-          '<td><input class="lead-cell-input" type="date" value="'+escAttr(r.row_date)+'" onchange="saveTacticalField('+r.id+',\'row_date\',this.value)"></td>'+
-          '<td><input class="lead-cell-input" value="'+escAttr(r.item)+'" onchange="saveTacticalField('+r.id+',\'item\',this.value)"></td>'+
-          '<td><input class="lead-cell-input" value="'+escAttr(r.status)+'" onchange="saveTacticalField('+r.id+',\'status\',this.value)"></td>'+
-          '<td><input class="lead-cell-input" value="'+escAttr(r.notes)+'" onchange="saveTacticalField('+r.id+',\'notes\',this.value)"></td>'+
-          '<td><button class="lead-del-btn" title="Delete row" onclick="deleteTacticalRow('+r.id+')">✕</button></td>';
-        html+='</tr>';
-      });
-    }
-    html+='</tbody></table>'+
-      '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addTacticalRow(\''+person+'\')">+ Add Row for '+person+'</button>';
+    var rec=TACTICAL_BY_PERSON[person]||null;
+    var rid=rec?rec.id:'';
+    var dateVal=rec?(rec.row_date||''):'';
+    var wrap=document.createElement('div');wrap.className='tactical-report';
+    var html='<div class="tactical-report-head">'+
+        '<h4>'+person+'</h4>'+
+        (rec?'<button class="lead-del-btn" title="Clear this report" onclick="deleteTactical(\''+person+'\')">Clear report</button>':'')+
+      '</div>'+
+      '<label class="lead-field-label">Date</label>'+
+      '<input class="lead-cell-input" type="date" value="'+escAttr(dateVal)+'" onchange="saveTacticalSection(\''+person+'\',\'row_date\',this.value)">';
+    TACTICAL_SECTIONS.forEach(function(sec){
+      var val=rec?(rec[sec.key]||''):'';
+      html+='<label class="lead-field-label">'+sec.label+'</label>'+
+        '<textarea class="lead-textarea" rows="'+sec.rows+'" placeholder="'+escAttr(sec.hint)+'" '+
+        'onchange="saveTacticalSection(\''+person+'\',\''+sec.key+'\',this.value)">'+
+        (val?String(val).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'')+'</textarea>';
+    });
     wrap.innerHTML=html;
     c.appendChild(wrap);
   });
 }
-async function addTacticalRow(person){
+async function saveTacticalSection(person,field,value){
   if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
-  var today=new Date().toISOString().slice(0,10);
-  var r=await SB.addTactical({person:person,row_date:today,item:'',status:'',notes:''});
-  if(r.error){leadStatus('tactical-status','Could not add row: '+r.error,'err');return;}
-  loadTactical();
-}
-async function saveTacticalField(id,field,value){
-  var patch={};patch[field]=value;
-  var r=await SB.updateTactical(id,patch);
-  if(r.error){leadStatus('tactical-status','Save failed: '+r.error,'err');return;}
+  var rec=TACTICAL_BY_PERSON[person];
+  leadStatus('tactical-status','Saving…');
+  if(rec&&rec.id){
+    var patch={};patch[field]=value;
+    var r=await SB.updateTactical(rec.id,patch);
+    if(r.error){leadStatus('tactical-status','Save failed: '+r.error,'err');return;}
+    rec[field]=value;
+  }else{
+    var base={person:person,row_date:null,headlines:'',issues:'',rocks:'',actions:''};
+    base[field]=value;
+    var ar=await SB.addTactical(base);
+    if(ar.error){leadStatus('tactical-status','Save failed: '+ar.error,'err');return;}
+    var created=(ar.data&&ar.data[0])?ar.data[0]:base;
+    TACTICAL_BY_PERSON[person]=created;
+  }
   leadStatus('tactical-status','Saved.','ok');
   setTimeout(function(){leadStatus('tactical-status','');},1500);
 }
-async function deleteTacticalRow(id){
-  if(!confirm('Delete this row for everyone?'))return;
-  var r=await SB.deleteTactical(id);
+async function deleteTactical(person){
+  var rec=TACTICAL_BY_PERSON[person];if(!rec||!rec.id)return;
+  if(!confirm('Clear '+person+"'s entire report for everyone?"))return;
+  var r=await SB.deleteTactical(rec.id);
   if(r.error){leadStatus('tactical-status','Delete failed: '+r.error,'err');return;}
   loadTactical();
 }
-// Optional one-click import: pulls rows from Monday.com and inserts them into Supabase.
+// Optional one-click import: pulls each person's report from Monday.com into Supabase.
 async function fetchTactical(){
   if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
   if(!MONDAY_PROXY_URL){
-    leadStatus('tactical-status','Monday.com import is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it. You can still add rows manually below.','');
+    leadStatus('tactical-status','Monday.com import is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it. You can still type reports directly below.','');
     return;
   }
   leadStatus('tactical-status','Importing from Monday.com…');
   try{
     var res=await fetch(MONDAY_PROXY_URL);
     if(!res.ok)throw new Error('HTTP '+res.status);
-    var data=await res.json(); // { "Glory":[{date,item,status,notes}], ... }
-    var added=0;
+    var data=await res.json(); // { "Glory":{date,headlines,issues,rocks,actions}, ... }
+    var n=0;
     for(var pi=0;pi<LEAD_TACTICAL_PEOPLE.length;pi++){
       var person=LEAD_TACTICAL_PEOPLE[pi];
-      var rows=(data&&data[person])||[];
-      for(var ri=0;ri<rows.length;ri++){
-        var row=rows[ri];
-        await SB.addTactical({person:person,row_date:row.date||null,item:row.item||'',status:row.status||'',notes:row.notes||''});
-        added++;
-      }
+      var rep=data&&data[person];if(!rep)continue;
+      var rec={person:person,row_date:rep.date||null,headlines:rep.headlines||'',issues:rep.issues||'',rocks:rep.rocks||'',actions:rep.actions||''};
+      var existing=TACTICAL_BY_PERSON[person];
+      if(existing&&existing.id){await SB.updateTactical(existing.id,rec);}else{await SB.addTactical(rec);}
+      n++;
     }
-    leadStatus('tactical-status','Imported '+added+' row(s) from Monday.com.','ok');
+    leadStatus('tactical-status','Imported '+n+' report(s) from Monday.com.','ok');
     loadTactical();
   }catch(e){
-    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). You can still add rows manually.','err');
+    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). You can still type reports directly below.','err');
   }
 }
 /* =================== END LEADERSHIP DATA MODULE =================== */
