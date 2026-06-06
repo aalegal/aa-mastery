@@ -2465,7 +2465,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div id="lpane-meetings" class="lpane">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Tactical Meeting Reports</h3>
-        <button class="btn btn-outline btn-sm" onclick="fetchTactical()">🔄 Refresh from Monday.com</button>
+        <button class="btn btn-outline btn-sm" onclick="fetchTactical()">⬇️ Import from Monday.com</button>
       </div>
       <p class="muted" style="margin-top:6px">One report table per supervisor, grouped by the <strong>Person</strong> column on the Monday.com board.</p>
       <div id="tactical-status" class="lead-status"></div>
@@ -2587,7 +2587,12 @@ const SB={
   async getPayments(){return this.req('GET','/rest/v1/payments?select=*&order=row_date.desc,id.desc')},
   async addPayment(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/payments',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
   async updatePayment(id,patch){return this.req('PATCH','/rest/v1/payments?id=eq.'+id,patch)},
-  async deletePayment(id){return this.req('DELETE','/rest/v1/payments?id=eq.'+id)}
+  async deletePayment(id){return this.req('DELETE','/rest/v1/payments?id=eq.'+id)},
+  // Tactical Meeting Reports — one shared table, one set of rows per person
+  async getTactical(){return this.req('GET','/rest/v1/tactical?select=*&order=person.asc,row_date.desc,id.desc')},
+  async addTactical(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/tactical',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
+  async updateTactical(id,patch){return this.req('PATCH','/rest/v1/tactical?id=eq.'+id,patch)},
+  async deleteTactical(id){return this.req('DELETE','/rest/v1/tactical?id=eq.'+id)}
 };
 
 // Token handling moved to checkWallToken() below — runs after DOM is ready
@@ -2632,7 +2637,7 @@ function showLead(id,btn){
   if(btn)btn.classList.add('active');
   if(id==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(id==='payments')loadPayments();
-  if(id==='meetings')fetchTactical();
+  if(id==='meetings')loadTactical();
 }
 function showTime(id,btn){
   document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
@@ -2749,43 +2754,89 @@ async function deletePaymentRow(id){
 }
 
 /* ---- TACTICAL MEETING REPORTS (Monday.com) ---- */
-function renderTacticalTables(byPerson){
+var TACTICAL_ROWS=[]; // cache of all tactical rows loaded from Supabase
+async function loadTactical(){
+  if(!SB.token){leadStatus('tactical-status','Log in to view and edit tactical reports.','err');renderTacticalTables();return;}
+  leadStatus('tactical-status','Loading…');
+  var r=await SB.getTactical();
+  if(r.error){leadStatus('tactical-status','Could not load: '+r.error,'err');renderTacticalTables();return;}
+  TACTICAL_ROWS=r.data||[];
+  renderTacticalTables();
+  leadStatus('tactical-status','');
+}
+function renderTacticalTables(){
   var c=document.getElementById('tactical-container');if(!c)return;
   c.innerHTML='';
   LEAD_TACTICAL_PEOPLE.forEach(function(person){
-    var rows=(byPerson&&byPerson[person])||[];
+    var rows=TACTICAL_ROWS.filter(function(r){return r.person===person;});
     var wrap=document.createElement('div');wrap.className='tactical-person';
     var html='<h4>'+person+'</h4>'+
-      '<table style="width:100%"><thead><tr><th>Date</th><th>Item</th><th>Status</th><th>Notes / Action</th></tr></thead><tbody>';
+      '<table style="width:100%"><thead><tr><th>Date</th><th>Item</th><th>Status</th><th>Notes / Action</th><th style="width:40px"></th></tr></thead><tbody>';
     if(rows.length===0){
-      html+='<tr><td colspan="4" class="muted" style="text-align:center">No items yet — connect Monday.com to populate.</td></tr>';
+      html+='<tr><td colspan="5" class="muted" style="text-align:center">No items yet — click "+ Add Row" or import from Monday.com.</td></tr>';
     }else{
       rows.forEach(function(r){
-        html+='<tr><td>'+escAttr(r.date)+'</td><td>'+escAttr(r.item)+'</td><td>'+escAttr(r.status)+'</td><td>'+escAttr(r.notes)+'</td></tr>';
+        html+='<tr data-id="'+r.id+'">'+
+          '<td><input class="lead-cell-input" type="date" value="'+escAttr(r.row_date)+'" onchange="saveTacticalField('+r.id+',\'row_date\',this.value)"></td>'+
+          '<td><input class="lead-cell-input" value="'+escAttr(r.item)+'" onchange="saveTacticalField('+r.id+',\'item\',this.value)"></td>'+
+          '<td><input class="lead-cell-input" value="'+escAttr(r.status)+'" onchange="saveTacticalField('+r.id+',\'status\',this.value)"></td>'+
+          '<td><input class="lead-cell-input" value="'+escAttr(r.notes)+'" onchange="saveTacticalField('+r.id+',\'notes\',this.value)"></td>'+
+          '<td><button class="lead-del-btn" title="Delete row" onclick="deleteTacticalRow('+r.id+')">✕</button></td>';
+        html+='</tr>';
       });
     }
-    html+='</tbody></table>';
+    html+='</tbody></table>'+
+      '<button class="btn btn-outline btn-sm" style="margin-top:8px" onclick="addTacticalRow(\''+person+'\')">+ Add Row for '+person+'</button>';
     wrap.innerHTML=html;
     c.appendChild(wrap);
   });
 }
+async function addTacticalRow(person){
+  if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
+  var today=new Date().toISOString().slice(0,10);
+  var r=await SB.addTactical({person:person,row_date:today,item:'',status:'',notes:''});
+  if(r.error){leadStatus('tactical-status','Could not add row: '+r.error,'err');return;}
+  loadTactical();
+}
+async function saveTacticalField(id,field,value){
+  var patch={};patch[field]=value;
+  var r=await SB.updateTactical(id,patch);
+  if(r.error){leadStatus('tactical-status','Save failed: '+r.error,'err');return;}
+  leadStatus('tactical-status','Saved.','ok');
+  setTimeout(function(){leadStatus('tactical-status','');},1500);
+}
+async function deleteTacticalRow(id){
+  if(!confirm('Delete this row for everyone?'))return;
+  var r=await SB.deleteTactical(id);
+  if(r.error){leadStatus('tactical-status','Delete failed: '+r.error,'err');return;}
+  loadTactical();
+}
+// Optional one-click import: pulls rows from Monday.com and inserts them into Supabase.
 async function fetchTactical(){
-  // Render empty per-person tables first so structure always shows.
+  if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
   if(!MONDAY_PROXY_URL){
-    renderTacticalTables({});
-    leadStatus('tactical-status','Showing 5 report tables. Live Monday.com sync is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it.','');
+    leadStatus('tactical-status','Monday.com import is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it. You can still add rows manually below.','');
     return;
   }
-  leadStatus('tactical-status','Fetching from Monday.com…');
+  leadStatus('tactical-status','Importing from Monday.com…');
   try{
     var res=await fetch(MONDAY_PROXY_URL);
     if(!res.ok)throw new Error('HTTP '+res.status);
-    var data=await res.json(); // expected: { "Glory":[{date,item,status,notes}], ... }
-    renderTacticalTables(data||{});
-    leadStatus('tactical-status','Updated from Monday.com.','ok');
+    var data=await res.json(); // { "Glory":[{date,item,status,notes}], ... }
+    var added=0;
+    for(var pi=0;pi<LEAD_TACTICAL_PEOPLE.length;pi++){
+      var person=LEAD_TACTICAL_PEOPLE[pi];
+      var rows=(data&&data[person])||[];
+      for(var ri=0;ri<rows.length;ri++){
+        var row=rows[ri];
+        await SB.addTactical({person:person,row_date:row.date||null,item:row.item||'',status:row.status||'',notes:row.notes||''});
+        added++;
+      }
+    }
+    leadStatus('tactical-status','Imported '+added+' row(s) from Monday.com.','ok');
+    loadTactical();
   }catch(e){
-    renderTacticalTables({});
-    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). Showing empty tables.','err');
+    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). You can still add rows manually.','err');
   }
 }
 /* =================== END LEADERSHIP DATA MODULE =================== */
