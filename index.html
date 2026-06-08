@@ -2915,9 +2915,35 @@ async function doLogin(){
   var email=document.getElementById('inp-email').value.trim(),pass=document.getElementById('inp-pass').value;
   clearAuthMessages();if(!email||!pass){showErr('Please enter your email and password.');return;}
   var btn=document.getElementById('btn-login-submit');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Logging in...';
-  var r=await SB.signIn(email,pass);btn.disabled=false;btn.innerHTML='Log In';
-  if(r.error){showErr(r.error);return;}
-  // Password OK — now handle MFA.
+  var r = await SB.signIn(email, pass);
+btn.disabled = false;
+btn.innerHTML = 'Log In';
+
+if (r.error) { showErr(r.error); return; }
+
+// ← GEO CHECK
+try {
+  var geoRes = await fetch(
+    "https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ip: null, userId: r.data?.user?.id })
+    }
+  );
+  var geoData = await geoRes.json();
+  if (!geoData.allowed) {
+    await SB.signOut();
+    showErr(geoData.reason || "Access Denied: Logins are only permitted from within the United States.");
+    return;
+  }
+} catch (e) {
+  await SB.signOut();
+  showErr("Unable to verify your location. Please try again.");
+  return;
+}
+
+// Password OK – now handle MFA.
   var fl=await SB.mfaListFactors();
   var verified=(fl.data&&fl.data.totp)||[];
   if(verified.length>0){
