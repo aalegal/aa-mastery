@@ -2613,7 +2613,7 @@ const SUPABASE_URL='https://mrxhydaoxlxuampmgaoi.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
 const ADMIN_EMAIL='jeff@ataandeadvisors.com';
 const SITE_URL='https://aa-mastery.vercel.app';
-const SLACK_WEBHOOK='https://hooks.slack.com/services/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';
+// Slack webhook URL is stored as Supabase secret SLACK_WEBHOOK_URL — not in frontend code
 // Supervisors authorized for the Leadership Section. Add/edit emails here.
 const LEADERSHIP_EMAILS=['jeff@ataandeadvisors.com'];
 // Fallback gate by display name (case-insensitive) for accounts whose email isn't listed yet.
@@ -3066,7 +3066,7 @@ function fireLoginAlert(alertData, slackMsg){
   fetch(LOGIN_ALERT_FN,{
     method:'POST',
     headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
-    body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg,slack_webhook:SLACK_WEBHOOK})
+    body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg})
   }).catch(function(){});
 }
 
@@ -3076,7 +3076,7 @@ async function adminTestSlack(){
   try{
     var g=await fetchGeoInfo();
     var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+ADMIN_EMAIL+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
-    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({slack_msg:msg,slack_webhook:SLACK_WEBHOOK})});
+    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({slack_msg:msg})});
     var result=await r.json();
     btn.textContent=result.slack?'✅ Slack delivered!':'❌ Slack failed ('+result.slackStatus+')';
   }catch(e){
