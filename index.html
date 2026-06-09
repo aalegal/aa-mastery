@@ -2567,6 +2567,13 @@ tr:nth-child(even) td{background:#0d162080}
       <div class="form-group"><label>Enter code to confirm</label><input type="text" id="inp-mfa-enroll-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:.3em;text-align:center;font-size:1.2rem"></div>
       <button class="btn btn-gold" id="btn-mfa-enroll-submit" style="width:100%;padding:11px" onclick="doConfirmEnroll()">Confirm Enrollment</button>
     </div>
+    <div id="view-mfa-email" style="display:none">
+      <p style="font-size:.81rem;color:var(--muted);margin-bottom:6px">We sent a 6-digit code to</p>
+      <p id="mfa-email-addr" style="font-size:.85rem;color:var(--accent);font-weight:700;margin-bottom:14px;word-break:break-all"></p>
+      <div class="form-group"><label>Verification Code</label><input type="text" id="inp-mfa-email-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:.3em;text-align:center;font-size:1.2rem" onkeydown="if(event.key==='Enter')doVerifyEmailOtp()"></div>
+      <button class="btn btn-gold" id="btn-mfa-email-submit" style="width:100%;padding:11px" onclick="doVerifyEmailOtp()">Verify &amp; Continue</button>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:10px;text-align:center">Didn't get it? <a class="btn-ghost" onclick="doResendEmailOtp()">Resend code</a></p>
+    </div>
   </div>
 </div>
 
@@ -2604,6 +2611,9 @@ const SB={
   async mfaChallenge(factorId){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/factors/'+factorId+'/challenge',headers:this.hdr()});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.msg||e.response?.data?.message||e.message}}},
   // Verify a code against a challenge. On success the session is upgraded to aal2.
   async mfaVerify(factorId,challengeId,code){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/factors/'+factorId+'/verify',headers:this.hdr(),data:{challenge_id:challengeId,code:code}});if(r.data&&r.data.access_token){this.token=r.data.access_token;this.user=r.data.user||this.user;}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.msg||e.response?.data?.message||'Invalid code'}}},
+  // Email OTP: send a 6-digit code to the user's email, then verify it.
+  async sendEmailOtp(email){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/otp',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{shouldCreateUser:false}}});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.response?.data?.error_description||e.message}}},
+  async verifyEmailOtp(email,token){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/verify',headers:{'Content-Type':'application/json','apikey':this.key},data:{type:'email',email,token}});if(r.data&&r.data.access_token){this.token=r.data.access_token;this.user=r.data.user;}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.error_description||e.response?.data?.message||'Invalid or expired code.'}}},
   async sendMagicLink(email){const r=await axios({method:'POST',url:this.url+'/auth/v1/magiclink',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};return{data:r.data}},
   async sendPasswordReset(email){const r=await axios({method:'POST',url:this.url+'/auth/v1/recover',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{redirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};return{data:r.data}},
   async updatePassword(p){return this.req('PUT','/auth/v1/user',{password:p})},
@@ -2907,9 +2917,9 @@ function openModal(mode){
 function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
 function setModalHeader(icon,title,sub){document.getElementById('modal-icon').textContent=icon;document.getElementById('modal-title').textContent=title;document.getElementById('modal-sub').textContent=sub;}
 function showView(v){
-  ['login','signup','forgot','magic','reset','mfa','mfa-enroll'].forEach(function(n){var el=document.getElementById('view-'+n);if(el)el.style.display=n===v?'block':'none';});
+  [‘login’,’signup’,’forgot’,’magic’,’reset’,’mfa’,’mfa-enroll’,’mfa-email’].forEach(function(n){var el=document.getElementById(‘view-’+n);if(el)el.style.display=n===v?’block’:’none’;});
   clearAuthMessages();
-  const headers={login:['👋','Welcome Back','Log in to track your progress'],signup:['🚀','Create Account','Join the AA Team Mastery Hub'],forgot:['🔑','Reset Password',"We’ll send you a reset link"],magic:['✉️','Magic Link','One-click login — no password needed'],reset:['🔐','Set New Password','Enter your new password below'],'mfa':['🔒','Two-Factor Authentication','Enter your verification code'],'mfa-enroll':['🛡️','Set Up Two-Factor','Secure your account with an authenticator app']};
+  const headers={login:[‘👋’,’Welcome Back’,’Log in to track your progress’],signup:[‘🚀’,’Create Account’,’Join the AA Team Mastery Hub’],forgot:[‘🔑’,’Reset Password’,"We’ll send you a reset link"],magic:[‘✉️’,’Magic Link’,’One-click login — no password needed’],reset:[‘🔐’,’Set New Password’,’Enter your new password below’],’mfa’:[‘🔒’,’Two-Factor Authentication’,’Enter the code from your authenticator app’],’mfa-enroll’:[‘🛡️’,’Set Up Two-Factor’,’Secure your account with an authenticator app’],’mfa-email’:[‘📧’,’Check Your Email’,’Enter the code we just sent you’]};
   if(headers[v])setModalHeader(headers[v][0],headers[v][1],headers[v][2]);
 }
 function clearAuthMessages(){var e=document.getElementById('auth-err'),o=document.getElementById('auth-ok');e.style.display='none';e.textContent='';o.style.display='none';o.textContent='';}
@@ -2961,17 +2971,21 @@ try {
     setTimeout(function(){var i=document.getElementById('inp-mfa-code');if(i)i.focus();},50);
     return;
   }
-  // No verified factor yet -> require enrollment now (MFA mandatory for everyone).
-  await startMfaEnrollment();
+  // No TOTP factor enrolled -> send email OTP as the second factor.
+  await SB.signOut(); // Drop the password session; a new one is created after OTP verify.
+  var otpR = await SB.sendEmailOtp(email);
+  if(otpR.error){showErr('Could not send verification code: '+otpR.error);return;}
+  MFA_STATE={factorId:null,challengeId:null,enroll:false,emailOtp:true,email:email};
+  document.getElementById('mfa-email-addr').textContent=email;
+  showView('mfa-email');
+  setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 async function startMfaEnrollment(){
   clearAuthMessages();
   var en=await SB.mfaEnroll();
   if(en.error){
-    // If a factor is already pending/exists, surface a helpful message.
-    showErr('Could not start MFA setup: '+en.error);
-    // Fall back: let them in but warn. (Remove this fallback to hard-require.)
-    onLogin();closeModal();return;
+    showErr('Could not start authenticator setup: '+en.error);
+    return;
   }
   MFA_STATE={factorId:en.data.id,challengeId:null,enroll:true};
   var qrWrap=document.getElementById('mfa-qr-wrap');
@@ -3006,6 +3020,29 @@ async function doConfirmEnroll(){
   if(r.error){showErr(r.error);return;}
   showOk('Two-factor authentication enabled.');
   setTimeout(function(){onLogin();closeModal();},800);
+}
+async function doVerifyEmailOtp(){
+  var code=(document.getElementById('inp-mfa-email-code').value||'').replace(/\s/g,'');
+  clearAuthMessages();if(code.length<6){showErr('Enter the 6-digit code from your email.');return;}
+  var btn=document.getElementById('btn-mfa-email-submit');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Verifying...';
+  var r=await SB.verifyEmailOtp(MFA_STATE.email,code);
+  btn.disabled=false;btn.innerHTML='Verify &amp; Continue';
+  if(r.error){showErr(r.error);return;}
+  // Re-run geo check on the new session before granting access.
+  try{
+    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:SB.user?.id})});
+    var geoData=await geoRes.json();
+    if(!geoData.allowed){await SB.signOut();showErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
+  }catch(e){await SB.signOut();showErr('Unable to verify your location. Please try again.');return;}
+  onLogin();closeModal();
+}
+async function doResendEmailOtp(){
+  clearAuthMessages();
+  var r=await SB.sendEmailOtp(MFA_STATE.email);
+  if(r.error){showErr('Could not resend: '+r.error);return;}
+  showOk('Code resent — check your email.');
+  document.getElementById('inp-mfa-email-code').value='';
+  setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 // Set this to your deployed login-guard function URL to enable WebRTC-leak reporting.
 var LOGIN_GUARD_URL='';
