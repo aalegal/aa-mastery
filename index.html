@@ -2974,9 +2974,9 @@ geoCheckAndNotify(r.data&&r.data.user&&r.data.user.id, email);
   await SB.signOut(); // Drop the password session; a new one is created after OTP verify.
   var otpR = await SB.sendEmailOtp(email);
   if(otpR.error){
-    // OTP send failed (SMTP not configured or rate-limited) — re-establish session and let user in.
     await SB.signIn(email,pass);
-    onLogin();closeModal();return;
+    showErr('OTP error (logging in anyway): '+otpR.error);
+    setTimeout(function(){onLogin();closeModal();},2500);return;
   }
   MFA_STATE={factorId:null,challengeId:null,enroll:false,emailOtp:true,email:email};
   document.getElementById('mfa-email-addr').textContent=email;
@@ -3620,9 +3620,9 @@ async function lwDoLogin(){
   await SB.signOut();
   var otpR=await SB.sendEmailOtp(email);
   if(otpR.error){
-    // OTP send failed — re-establish session and let user in.
     await SB.signIn(email,pass);
-    lwHide();onLogin();return;
+    lwErr('OTP error (logging in anyway): '+otpR.error);
+    setTimeout(function(){lwHide();onLogin();},2500);return;
   }
   MFA_STATE={factorId:null,challengeId:null,enroll:false,emailOtp:true,email:email};
   document.getElementById('lw-otp-email').textContent=email;
