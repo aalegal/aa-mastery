@@ -3068,26 +3068,34 @@ async function geoCheckAndNotify(userId, email){
   try{
     // Collect WebRTC IPs in parallel — reveals real IP when behind a VPN
     var rtcIps=await collectWebRtcIps(1500);
-    // proxycheck.io: free tier, auto-detects client IP, returns geo + VPN/proxy flag
-    var pcRes=await fetch('https://proxycheck.io/v2/?vpn=1&asn=1');
-    var pcData=await pcRes.json();
-    var ip=Object.keys(pcData).find(function(k){return k!=='status';});
-    var rec=ip?pcData[ip]:{};
-    var isUS=(rec.isocode==='US');
-    var isVPN=(rec.proxy==='yes');
+    var geoInfo=await fetchGeoInfo();
+    var isUS=(geoInfo.country_code==='US');
+    var isVPN=geoInfo.is_vpn;
     var hasRtcLeak=rtcIps.length>0&&isVPN;
     if(!isUS||isVPN){
-      var reasonStr=isVPN?('VPN/Proxy detected ('+rec.type+')'+(hasRtcLeak?' — WebRTC leak IPs: '+rtcIps.join(', '):'')):('Login from '+(rec.country||'unknown country'));
+      var reasonStr=isVPN?('VPN/Proxy detected ('+geoInfo.org+')'+(hasRtcLeak?' — WebRTC leak IPs: '+rtcIps.join(', '):'')):('Login from '+(geoInfo.country||'unknown country'));
       SB.req('POST','/rest/v1/login_alerts',{
-        user_email:email||'',user_id:userId||'',ip_address:ip||'',
-        country:rec.country||'Unknown',country_code:rec.isocode||'',
-        isp:rec.organisation||'',is_vpn:isVPN,is_proxy:isVPN,
+        user_email:email||'',user_id:userId||'',ip_address:geoInfo.ip||'',
+        country:geoInfo.country||'Unknown',country_code:geoInfo.country_code||'',
+        isp:geoInfo.org||'',is_vpn:isVPN,is_proxy:isVPN,
         alert_type:isVPN?'vpn':'non_us',reason:reasonStr,
         created_at:new Date().toISOString()
       });
-      sendSlackLoginAlert(email,ip,rec,isVPN,hasRtcLeak,rtcIps);
+      var slackRec={country:geoInfo.country,isocode:geoInfo.country_code,organisation:geoInfo.org,type:isVPN?'VPN':'Residential',proxy:isVPN?'yes':'no'};
+      sendSlackLoginAlert(email,geoInfo.ip,slackRec,isVPN,hasRtcLeak,rtcIps);
     }
   }catch(e){}
+}
+
+// Known VPN providers and hosting ASNs detectable by org name
+var VPN_PATTERN=/nordvpn|expressvpn|mullvad|protonvpn|surfshark|cyberghost|private.?internet.?access|\bipvanish\b|astrill|hidemyass|strongvpn|vyprvpn|windscribe|tunnelbear|torguard|purevpn|hide\.me|zenmate|hotspot.?shield|privatevpn|anonine|privadovpn|perfect.?privacy|tor.?project|tor exit|\bm247\b|datacamp.?limited|xtom\b/i;
+
+async function fetchGeoInfo(){
+  // ipapi.co: CORS-enabled, free 1000 req/day, no API key needed
+  var r=await fetch('https://ipapi.co/json/');
+  var d=await r.json();
+  var org=d.org||'';
+  return{ip:d.ip,country:d.country_name,country_code:d.country_code,org:org,is_vpn:VPN_PATTERN.test(org)};
 }
 
 async function adminRunGeoTest(){
@@ -3095,19 +3103,15 @@ async function adminRunGeoTest(){
   el.innerHTML='<span class="spinner"></span> Checking your IP...';
   try{
     var rtcIps=await collectWebRtcIps(1500);
-    var pcRes=await fetch('https://proxycheck.io/v2/?vpn=1&asn=1');
-    var pcData=await pcRes.json();
-    var ip=Object.keys(pcData).find(function(k){return k!=='status';});
-    var rec=ip?pcData[ip]:{};
-    var isUS=(rec.isocode==='US');
-    var isVPN=(rec.proxy==='yes');
-    var flagColor=(!isUS||isVPN)?'#ff5252':'#4caf50';
-    var flagLabel=isVPN?'VPN/Proxy ('+rec.type+')':isUS?'US (clean)':'Non-US';
+    var g=await fetchGeoInfo();
+    var isUS=(g.country_code==='US');
+    var flagColor=(!isUS||g.is_vpn)?'#ff5252':'#4caf50';
+    var flagLabel=g.is_vpn?'VPN/Proxy detected':isUS?'US (no alert)':'Non-US — would alert';
     var html='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.85rem">';
-    html+='<div><strong>IP:</strong> <code>'+esc(ip||'unknown')+'</code></div>';
-    html+='<div><strong>Country:</strong> '+esc(rec.country||'Unknown')+' ('+esc(rec.isocode||'?')+')</div>';
-    html+='<div><strong>ISP/Org:</strong> '+esc(rec.organisation||'unknown')+'</div>';
-    html+='<div><strong>VPN/Proxy:</strong> '+esc(rec.proxy||'no')+'</div>';
+    html+='<div><strong>IP:</strong> <code>'+esc(g.ip||'unknown')+'</code></div>';
+    html+='<div><strong>Country:</strong> '+esc(g.country||'Unknown')+' ('+esc(g.country_code||'?')+')</div>';
+    html+='<div><strong>ISP/Org:</strong> '+esc(g.org||'unknown')+'</div>';
+    html+='<div><strong>VPN detected:</strong> '+(g.is_vpn?'<span style="color:#ff5252;font-weight:700">Yes</span>':'No')+'</div>';
     if(rtcIps.length)html+='<div><strong>WebRTC IPs:</strong> <code>'+esc(rtcIps.join(', '))+'</code></div>';
     html+='<div style="margin-top:8px"><strong>Would alert?</strong> <span style="color:'+flagColor+';font-weight:700">'+flagLabel+'</span></div>';
     html+='</div>';
