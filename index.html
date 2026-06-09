@@ -3060,14 +3060,12 @@ async function doResendEmailOtp(){
 }
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
 var LOGIN_ALERT_FN=SUPABASE_URL+'/functions/v1/login-alert';
+// Supabase Edge Functions require Authorization: Bearer header
+function fnHeaders(){return{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY};}
 
 // Route all alert logic through the Edge Function — handles DB insert (service role) + Slack (server-side, no CORS)
 function fireLoginAlert(alertData, slackMsg){
-  fetch(LOGIN_ALERT_FN,{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
-    body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg})
-  }).catch(function(){});
+  fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(),body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg})}).catch(function(){});
 }
 
 async function adminTestSlack(){
@@ -3076,13 +3074,17 @@ async function adminTestSlack(){
   try{
     var g=await fetchGeoInfo();
     var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+ADMIN_EMAIL+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
-    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({slack_msg:msg})});
-    var result=await r.json();
-    btn.textContent=result.slack?'✅ Slack delivered!':'❌ Slack failed ('+result.slackStatus+')';
+    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(),body:JSON.stringify({slack_msg:msg})});
+    var raw=await r.text();
+    var result=JSON.parse(raw);
+    if(result.slack){btn.textContent='✅ Slack delivered!';}
+    else if(result.error){btn.textContent='❌ FN error: '+result.error;}
+    else if(!r.ok){btn.textContent='❌ HTTP '+r.status+': '+raw.slice(0,80);}
+    else{btn.textContent='❌ Slack failed (HTTP '+result.slackStatus+'). Check SLACK_WEBHOOK_URL secret in Supabase.';}
   }catch(e){
-    btn.textContent='❌ Error: '+e.message;
+    btn.textContent='❌ '+e.message;
   }
-  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},5000);
+  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},7000);
 }
 
 async function geoCheckAndNotify(userId, email){
