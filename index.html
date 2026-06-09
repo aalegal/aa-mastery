@@ -3059,17 +3059,15 @@ async function doResendEmailOtp(){
   setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
-function sendSlackMsg(msg){
-  if(!SLACK_WEBHOOK)return;
-  // mode:no-cors avoids CORS preflight; Slack parses JSON body even as text/plain
-  fetch(SLACK_WEBHOOK,{method:'POST',mode:'no-cors',body:JSON.stringify({text:msg})}).catch(function(){});
-}
+var LOGIN_ALERT_FN=SUPABASE_URL+'/functions/v1/login-alert';
 
-function sendSlackLoginAlert(email, ip, rec, isVPN, hasRtcLeak, rtcIps){
-  var flag=isVPN?'🔴 VPN/Proxy ('+rec.type+')':'🌍 Non-US Login';
-  var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
-  var msg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(ip||'unknown')+'\n>*Country:* '+(rec.country||'Unknown')+' ('+(rec.isocode||'?')+')'+'\n>*ISP/Org:* '+(rec.organisation||'unknown')+'\n>*Flag:* '+flag+leakLine;
-  sendSlackMsg(msg);
+// Route all alert logic through the Edge Function — handles DB insert (service role) + Slack (server-side, no CORS)
+function fireLoginAlert(alertData, slackMsg){
+  fetch(LOGIN_ALERT_FN,{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},
+    body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg,slack_webhook:SLACK_WEBHOOK})
+  }).catch(function(){});
 }
 
 async function adminTestSlack(){
@@ -3078,43 +3076,29 @@ async function adminTestSlack(){
   try{
     var g=await fetchGeoInfo();
     var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+ADMIN_EMAIL+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
-    sendSlackMsg(msg);
-    btn.textContent='✅ Sent! Check Slack.';
+    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY},body:JSON.stringify({slack_msg:msg,slack_webhook:SLACK_WEBHOOK})});
+    var result=await r.json();
+    btn.textContent=result.slack?'✅ Slack delivered!':'❌ Slack failed ('+result.slackStatus+')';
   }catch(e){
     btn.textContent='❌ Error: '+e.message;
   }
-  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},4000);
-}
-
-// Insert login alert using anon key directly — avoids auth-token timing issues
-// (geoCheckAndNotify fires async; by the time INSERT runs, SB.token may have changed due to signOut/signIn)
-function insertLoginAlert(data){
-  fetch(SUPABASE_URL+'/rest/v1/login_alerts',{
-    method:'POST',
-    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Prefer':'return=minimal'},
-    body:JSON.stringify(data)
-  }).catch(function(){});
+  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},5000);
 }
 
 async function geoCheckAndNotify(userId, email){
   try{
-    // Collect WebRTC IPs in parallel — reveals real IP when behind a VPN
     var rtcIps=await collectWebRtcIps(1500);
-    var geoInfo=await fetchGeoInfo();
-    var isUS=(geoInfo.country_code==='US');
-    var isVPN=geoInfo.is_vpn;
+    var g=await fetchGeoInfo();
+    var isUS=(g.country_code==='US');
+    var isVPN=g.is_vpn;
     var hasRtcLeak=rtcIps.length>0&&isVPN;
     if(!isUS||isVPN){
-      var reasonStr=isVPN?('VPN/Proxy detected ('+geoInfo.org+')'+(hasRtcLeak?' — WebRTC leak IPs: '+rtcIps.join(', '):'')):('Login from '+(geoInfo.country||'unknown country'));
-      insertLoginAlert({
-        user_email:email||'',user_id:userId||'',ip_address:geoInfo.ip||'',
-        country:geoInfo.country||'Unknown',country_code:geoInfo.country_code||'',
-        isp:geoInfo.org||'',is_vpn:isVPN,is_proxy:isVPN,
-        alert_type:isVPN?'vpn':'non_us',reason:reasonStr,
-        created_at:new Date().toISOString()
-      });
-      var slackRec={country:geoInfo.country,isocode:geoInfo.country_code,organisation:geoInfo.org,type:isVPN?'VPN':'Residential',proxy:isVPN?'yes':'no'};
-      sendSlackLoginAlert(email,geoInfo.ip,slackRec,isVPN,hasRtcLeak,rtcIps);
+      var reasonStr=isVPN?('VPN/Proxy ('+g.org+')'+(hasRtcLeak?' — WebRTC leak: '+rtcIps.join(', '):'')):('Login from '+g.country);
+      var alertData={user_email:email||'',user_id:userId||'',ip_address:g.ip||'',country:g.country||'Unknown',country_code:g.country_code||'',isp:g.org||'',is_vpn:isVPN,is_proxy:isVPN,alert_type:isVPN?'vpn':'non_us',reason:reasonStr,created_at:new Date().toISOString()};
+      var flag=isVPN?'🔴 VPN/Proxy ('+g.org+')':'🌍 Non-US Login';
+      var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
+      var slackMsg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(g.ip||'?')+'\n>*Country:* '+g.country+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'?')+'\n>*Flag:* '+flag+leakLine;
+      fireLoginAlert(alertData,slackMsg);
     }
   }catch(e){}
 }
@@ -3123,11 +3107,20 @@ async function geoCheckAndNotify(userId, email){
 var VPN_PATTERN=/nordvpn|expressvpn|mullvad|protonvpn|surfshark|cyberghost|private.?internet.?access|\bipvanish\b|astrill|hidemyass|strongvpn|vyprvpn|windscribe|tunnelbear|torguard|purevpn|hide\.me|zenmate|hotspot.?shield|privatevpn|anonine|privadovpn|perfect.?privacy|tor.?project|tor exit|\bm247\b|datacamp.?limited|xtom\b/i;
 
 async function fetchGeoInfo(){
-  // ipapi.co: CORS-enabled, free 1000 req/day, no API key needed
-  var r=await fetch('https://ipapi.co/json/');
-  var d=await r.json();
-  var org=d.org||'';
-  return{ip:d.ip,country:d.country_name,country_code:d.country_code,org:org,is_vpn:VPN_PATTERN.test(org)};
+  // Try ipinfo.io first (more reliable globally, no rate limit for basic use)
+  try{
+    var r=await fetch('https://ipinfo.io/json');
+    var d=await r.json();
+    if(d.ip&&d.country){
+      var org=d.org||'';
+      return{ip:d.ip,country:d.country,country_code:d.country,org:org,is_vpn:VPN_PATTERN.test(org)};
+    }
+  }catch(e){}
+  // Fallback: ipapi.co
+  var r2=await fetch('https://ipapi.co/json/');
+  var d2=await r2.json();
+  var org2=d2.org||'';
+  return{ip:d2.ip,country:d2.country_name||d2.country_code,country_code:d2.country_code,org:org2,is_vpn:VPN_PATTERN.test(org2)};
 }
 
 async function adminRunGeoTest(){
