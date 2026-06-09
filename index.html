@@ -2954,27 +2954,8 @@ btn.innerHTML = 'Log In';
 
 if (r.error) { showErr(r.error); return; }
 
-// ← GEO CHECK
-try {
-  var geoRes = await fetch(
-    "https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login",
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ip: null, userId: r.data?.user?.id })
-    }
-  );
-  var geoData = await geoRes.json();
-  if (!geoData.allowed) {
-    await SB.signOut();
-    showErr(geoData.reason || "Access Denied: Logins are only permitted from within the United States.");
-    return;
-  }
-} catch (e) {
-  await SB.signOut();
-  showErr("Unable to verify your location. Please try again.");
-  return;
-}
+// Geo check — non-blocking, logs foreign logins for admin review
+geoCheckAndNotify(r.data&&r.data.user&&r.data.user.id, email);
 
 // Password OK – now handle MFA.
   var fl=await SB.mfaListFactors();
@@ -3046,12 +3027,7 @@ async function doVerifyEmailOtp(){
   var r=await SB.verifyEmailOtp(MFA_STATE.email,code);
   btn.disabled=false;btn.innerHTML='Verify &amp; Continue';
   if(r.error){showErr(r.error);return;}
-  // Re-run geo check on the new session before granting access.
-  try{
-    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:SB.user?.id})});
-    var geoData=await geoRes.json();
-    if(!geoData.allowed){await SB.signOut();showErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
-  }catch(e){await SB.signOut();showErr('Unable to verify your location. Please try again.');return;}
+  geoCheckAndNotify(SB.user&&SB.user.id, MFA_STATE.email);
   onLogin();closeModal();
 }
 async function doResendEmailOtp(){
@@ -3061,6 +3037,17 @@ async function doResendEmailOtp(){
   showOk('Code resent — check your email.');
   document.getElementById('inp-mfa-email-code').value='';
   setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
+}
+// Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
+async function geoCheckAndNotify(userId, email){
+  try{
+    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:userId})});
+    var geoData=await geoRes.json();
+    if(!geoData.allowed){
+      // Fire-and-forget: write a login alert row for the admin panel
+      SB.req('POST','/rest/v1/login_alerts',{user_email:email||'',user_id:userId||'',reason:geoData.reason||'Login from outside the United States',created_at:new Date().toISOString()});
+    }
+  }catch(e){}
 }
 // Set this to your deployed login-guard function URL to enable WebRTC-leak reporting.
 var LOGIN_GUARD_URL='';
@@ -3614,11 +3601,7 @@ async function lwDoLogin(){
   var r=await SB.signIn(email,pass);
   btn.disabled=false;btn.innerHTML='Log In →';
   if(r.error){lwErr(r.error);return;}
-  try{
-    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:r.data&&r.data.user&&r.data.user.id})});
-    var geoData=await geoRes.json();
-    if(!geoData.allowed){await SB.signOut();lwErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
-  }catch(e){await SB.signOut();lwErr('Unable to verify your location. Please try again.');return;}
+  geoCheckAndNotify(r.data&&r.data.user&&r.data.user.id, email);
   var fl=await SB.mfaListFactors();
   var verified=(fl.data&&fl.data.totp)||[];
   if(verified.length>0){
@@ -3645,11 +3628,7 @@ async function lwDoVerifyOtp(){
   var r=await SB.verifyEmailOtp(MFA_STATE.email,code);
   btn.disabled=false;btn.innerHTML='Verify &amp; Continue';
   if(r.error){lwErr(r.error);return;}
-  try{
-    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:SB.user&&SB.user.id})});
-    var geoData=await geoRes.json();
-    if(!geoData.allowed){await SB.signOut();lwErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
-  }catch(e){await SB.signOut();lwErr('Unable to verify your location. Please try again.');return;}
+  geoCheckAndNotify(SB.user&&SB.user.id, MFA_STATE.email);
   lwHide();onLogin();
 }
 async function lwDoVerifyTotp(){
