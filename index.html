@@ -3060,12 +3060,11 @@ async function doResendEmailOtp(){
 }
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
 var LOGIN_ALERT_FN=SUPABASE_URL+'/functions/v1/login-alert';
-// Supabase Edge Functions require Authorization: Bearer header
-function fnHeaders(){return{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY};}
+function fnHeaders(tok){return{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+(tok||SB.token||SUPABASE_ANON_KEY)};}
 
 // Route all alert logic through the Edge Function — handles DB insert (service role) + Slack (server-side, no CORS)
-function fireLoginAlert(alertData, slackMsg){
-  fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(),body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg})}).catch(function(){});
+function fireLoginAlert(alertData, slackMsg, tok){
+  fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(tok),body:JSON.stringify({alert_data:alertData,slack_msg:slackMsg})}).catch(function(){});
 }
 
 async function adminTestSlack(){
@@ -3074,13 +3073,13 @@ async function adminTestSlack(){
   try{
     var g=await fetchGeoInfo();
     var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+ADMIN_EMAIL+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
-    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(),body:JSON.stringify({slack_msg:msg})});
+    var r=await fetch(LOGIN_ALERT_FN,{method:'POST',headers:fnHeaders(SB.token),body:JSON.stringify({slack_msg:msg})});
     var raw=await r.text();
-    var result=JSON.parse(raw);
+    var result={};try{result=JSON.parse(raw);}catch(pe){}
     if(result.slack){btn.textContent='✅ Slack delivered!';}
     else if(result.error){btn.textContent='❌ FN error: '+result.error;}
-    else if(!r.ok){btn.textContent='❌ HTTP '+r.status+': '+raw.slice(0,80);}
-    else{btn.textContent='❌ Slack failed (HTTP '+result.slackStatus+'). Check SLACK_WEBHOOK_URL secret in Supabase.';}
+    else if(!r.ok){btn.textContent='❌ HTTP '+r.status+': '+raw.slice(0,100);}
+    else{btn.textContent='❌ Slack not sent (HTTP '+result.slackStatus+'). Check SLACK_WEBHOOK_URL secret.';}
   }catch(e){
     btn.textContent='❌ '+e.message;
   }
@@ -3088,6 +3087,7 @@ async function adminTestSlack(){
 }
 
 async function geoCheckAndNotify(userId, email){
+  var capturedToken=SB.token; // capture now — signOut may clear SB.token before async completes
   try{
     var rtcIps=await collectWebRtcIps(1500);
     var g=await fetchGeoInfo();
@@ -3100,7 +3100,7 @@ async function geoCheckAndNotify(userId, email){
       var flag=isVPN?'🔴 VPN/Proxy ('+g.org+')':'🌍 Non-US Login';
       var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
       var slackMsg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(g.ip||'?')+'\n>*Country:* '+g.country+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'?')+'\n>*Flag:* '+flag+leakLine;
-      fireLoginAlert(alertData,slackMsg);
+      fireLoginAlert(alertData,slackMsg,capturedToken);
     }
   }catch(e){}
 }
