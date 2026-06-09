@@ -1906,6 +1906,14 @@ tr:nth-child(even) td{background:#0d162080}
     <h2>📊 All Scores Overview</h2>
     <div id="admin-scores"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
   </div>
+  <div class="card">
+    <h2>🛡️ Login Security Alerts</h2>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Non-US logins and VPN/proxy connections are logged automatically on every sign-in.</p>
+    <h3>Per-User Summary</h3>
+    <div id="admin-alert-summary"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+    <h3 style="margin-top:24px">Recent Alerts <span id="admin-alerts-count" style="font-size:.8rem;color:var(--muted);font-weight:400"></span></h3>
+    <div id="admin-alerts"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+  </div>
 </div>
 
 
@@ -2641,6 +2649,7 @@ const SB={
   async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
   async getAllScores(){return this.req('GET','/rest/v1/quiz_scores?select=*&order=created_at.desc&limit=300')},
   async deleteUserScores(uid){return this.req('DELETE',`/rest/v1/quiz_scores?user_id=eq.${uid}`)},
+  async getLoginAlerts(){return this.req('GET','/rest/v1/login_alerts?select=*&order=created_at.desc&limit=500')},
   // Timesheets (BH/NBH) and Payments — shared leadership tables
   async getTimesheets(kind){return this.req('GET','/rest/v1/timesheets?select=*&kind=eq.'+kind+'&order=row_date.desc,id.desc')},
   async addTimesheet(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/timesheets',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
@@ -3046,13 +3055,111 @@ async function doResendEmailOtp(){
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
 async function geoCheckAndNotify(userId, email){
   try{
-    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:userId})});
-    var geoData=await geoRes.json();
-    if(!geoData.allowed){
-      // Fire-and-forget: write a login alert row for the admin panel
-      SB.req('POST','/rest/v1/login_alerts',{user_email:email||'',user_id:userId||'',reason:geoData.reason||'Login from outside the United States',created_at:new Date().toISOString()});
+    // Collect WebRTC IPs in parallel — reveals real IP when behind a VPN
+    var rtcIps=await collectWebRtcIps(1500);
+    // proxycheck.io: free tier, auto-detects client IP, returns geo + VPN/proxy flag
+    var pcRes=await fetch('https://proxycheck.io/v2/?vpn=1&asn=1');
+    var pcData=await pcRes.json();
+    var ip=Object.keys(pcData).find(function(k){return k!=='status';});
+    var rec=ip?pcData[ip]:{};
+    var isUS=(rec.isocode==='US');
+    var isVPN=(rec.proxy==='yes');
+    var hasRtcLeak=rtcIps.length>0&&isVPN;
+    if(!isUS||isVPN){
+      var reasonStr=isVPN?('VPN/Proxy detected ('+rec.type+')'+(hasRtcLeak?' — WebRTC leak IPs: '+rtcIps.join(', '):'')):('Login from '+(rec.country||'unknown country'));
+      SB.req('POST','/rest/v1/login_alerts',{
+        user_email:email||'',user_id:userId||'',ip_address:ip||'',
+        country:rec.country||'Unknown',country_code:rec.isocode||'',
+        isp:rec.organisation||'',is_vpn:isVPN,is_proxy:isVPN,
+        alert_type:isVPN?'vpn':'non_us',reason:reasonStr,
+        created_at:new Date().toISOString()
+      });
     }
   }catch(e){}
+}
+
+async function loadAdmin(){
+  var u=SB.user;
+  if(!u||u.email!==ADMIN_EMAIL){
+    document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Access denied.</p>';
+    return;
+  }
+  // Load quiz scores
+  var sr=await SB.getAllScores();
+  if(sr.data){
+    var byUser={};
+    sr.data.forEach(function(s){
+      if(!byUser[s.user_id])byUser[s.user_id]={name:s.display_name,uid:s.user_id,scores:[]};
+      byUser[s.user_id].scores.push(s);
+    });
+    var uHtml='<table class="data-table"><thead><tr><th>User</th><th>Attempts</th><th>Best %</th><th></th></tr></thead><tbody>';
+    Object.values(byUser).forEach(function(u){
+      var best=Math.max.apply(null,u.scores.map(function(s){return s.pct;}));
+      uHtml+='<tr><td>'+esc(u.name)+'</td><td style="text-align:center">'+u.scores.length+'</td><td style="text-align:center">'+best+'%</td><td><button class="btn btn-sm btn-red" onclick="adminDeleteScores(\''+escAttr(u.uid)+'\',\''+escAttr(u.name)+'\')">Delete</button></td></tr>';
+    });
+    uHtml+='</tbody></table>';
+    document.getElementById('admin-users').innerHTML=Object.keys(byUser).length?uHtml:'<p style="color:var(--muted)">No scores yet.</p>';
+    var sHtml='<table class="data-table" style="font-size:.82rem"><thead><tr><th>User</th><th>Category</th><th>Score</th><th>%</th><th>Date</th></tr></thead><tbody>';
+    sr.data.slice(0,100).forEach(function(s){
+      sHtml+='<tr><td>'+esc(s.display_name)+'</td><td>'+esc(s.category)+'</td><td>'+s.score+'/'+s.total+'</td><td>'+s.pct+'%</td><td>'+new Date(s.created_at).toLocaleDateString()+'</td></tr>';
+    });
+    sHtml+='</tbody></table>';
+    document.getElementById('admin-scores').innerHTML=sHtml;
+  }else{
+    document.getElementById('admin-users').innerHTML='<p style="color:var(--muted)">'+esc(sr.error||'No data')+'</p>';
+  }
+  loadLoginAlerts();
+}
+
+async function adminDeleteScores(uid,name){
+  if(!confirm('Delete ALL scores for '+name+'? This cannot be undone.'))return;
+  var r=await SB.deleteUserScores(uid);
+  if(r.error){alert('Error: '+r.error);return;}
+  loadAdmin();
+}
+
+async function loadLoginAlerts(){
+  var alertsEl=document.getElementById('admin-alerts');
+  var summaryEl=document.getElementById('admin-alert-summary');
+  var countEl=document.getElementById('admin-alerts-count');
+  if(!alertsEl)return;
+  var r=await SB.getLoginAlerts();
+  if(r.error||!r.data){
+    alertsEl.innerHTML='<p style="color:var(--muted);font-size:.85rem">No alerts yet, or run the SQL below to add missing columns to login_alerts.</p>';
+    summaryEl.innerHTML='';return;
+  }
+  var alerts=r.data;
+  if(countEl)countEl.textContent='('+alerts.length+' total)';
+  if(!alerts.length){
+    alertsEl.innerHTML='<p style="color:var(--muted)">No flagged logins yet.</p>';
+    summaryEl.innerHTML='<p style="color:var(--muted)">No data.</p>';return;
+  }
+  // Per-user summary
+  var byUser={};
+  alerts.forEach(function(a){
+    var k=a.user_email||a.user_id||'unknown';
+    if(!byUser[k])byUser[k]={email:k,total:0,vpn:0,countries:{}};
+    byUser[k].total++;
+    if(a.is_vpn)byUser[k].vpn++;
+    var c=a.country||a.country_code;
+    if(c)byUser[k].countries[c]=(byUser[k].countries[c]||0)+1;
+  });
+  var sumHtml='<table class="data-table"><thead><tr><th>User</th><th style="text-align:center">Flagged Logins</th><th style="text-align:center">VPN/Proxy</th><th>Countries</th></tr></thead><tbody>';
+  Object.values(byUser).sort(function(a,b){return b.total-a.total;}).forEach(function(u){
+    var vpnColor=u.vpn?'#ff5252':'var(--muted)';
+    sumHtml+='<tr><td>'+esc(u.email)+'</td><td style="text-align:center">'+u.total+'</td><td style="text-align:center;color:'+vpnColor+'">'+u.vpn+'</td><td style="font-size:.78rem">'+esc(Object.keys(u.countries).join(', '))+'</td></tr>';
+  });
+  sumHtml+='</tbody></table>';
+  summaryEl.innerHTML=sumHtml;
+  // Recent alerts table
+  var html='<div style="overflow-x:auto"><table class="data-table" style="font-size:.8rem;min-width:700px"><thead><tr><th>Date</th><th>User</th><th>IP</th><th>Country</th><th>ISP / Org</th><th>Flag</th></tr></thead><tbody>';
+  alerts.forEach(function(a){
+    var flag=a.is_vpn?'<span style="background:#ff525220;color:#ff5252;border-radius:4px;padding:2px 7px;font-weight:700;font-size:.75rem">VPN</span>':'<span style="color:#ff9800;font-size:.8rem">Non-US</span>';
+    var country=a.country_code&&a.country_code!=='US'?'<span style="color:#ff9800">'+esc(a.country||a.country_code)+'</span>':esc(a.country||'—');
+    html+='<tr><td style="white-space:nowrap">'+new Date(a.created_at).toLocaleString()+'</td><td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(a.user_email||'—')+'</td><td style="font-family:monospace">'+esc(a.ip_address||'—')+'</td><td>'+country+'</td><td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;font-size:.75rem">'+esc(a.isp||'—')+'</td><td>'+flag+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  alertsEl.innerHTML=html;
 }
 // Set this to your deployed login-guard function URL to enable WebRTC-leak reporting.
 var LOGIN_GUARD_URL='';
