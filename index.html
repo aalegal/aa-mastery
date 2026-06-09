@@ -1909,7 +1909,10 @@ tr:nth-child(even) td{background:#0d162080}
   <div class="card">
     <h2>🛡️ Login Security Alerts</h2>
     <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Non-US logins and VPN/proxy connections are logged automatically and sent to Slack on every sign-in.</p>
-    <button class="btn btn-outline btn-sm" onclick="adminRunGeoTest()" style="margin-bottom:16px">🔍 Test My Current IP</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+      <button class="btn btn-outline btn-sm" onclick="adminRunGeoTest()">🔍 Test My Current IP</button>
+      <button class="btn btn-outline btn-sm" id="btn-test-slack" onclick="adminTestSlack()">📨 Send Test Slack Alert</button>
+    </div>
     <div id="admin-geo-test" style="margin-bottom:16px"></div>
     <h3>Per-User Summary</h3>
     <div id="admin-alert-summary"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
@@ -3061,7 +3064,21 @@ function sendSlackLoginAlert(email, ip, rec, isVPN, hasRtcLeak, rtcIps){
   var flag=isVPN?'🔴 VPN/Proxy ('+rec.type+')':'🌍 Non-US Login';
   var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
   var msg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(ip||'unknown')+'\n>*Country:* '+(rec.country||'Unknown')+' ('+(rec.isocode||'?')+')'+'\n>*ISP/Org:* '+(rec.organisation||'unknown')+'\n>*Flag:* '+flag+leakLine;
-  fetch(SLACK_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'payload='+encodeURIComponent(JSON.stringify({text:msg}))}).catch(function(){});
+  fetch(SLACK_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg})}).catch(function(){});
+}
+
+async function adminTestSlack(){
+  var btn=document.getElementById('btn-test-slack');
+  btn.disabled=true;btn.textContent='Sending...';
+  try{
+    var g=await fetchGeoInfo();
+    var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+esc(ADMIN_EMAIL)+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
+    var r=await fetch(SLACK_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg})});
+    btn.textContent=r.ok?'✅ Sent!':'❌ Failed ('+r.status+')';
+  }catch(e){
+    btn.textContent='❌ Error: '+e.message;
+  }
+  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},3000);
 }
 
 async function geoCheckAndNotify(userId, email){
