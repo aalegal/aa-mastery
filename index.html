@@ -1245,6 +1245,24 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
       <div class="lw-toggle"><a onclick="lwShowView('login')">← Back to Login</a></div>
     </div>
+    <!-- EMAIL OTP VIEW -->
+    <div id="lw-otp" class="lw-view">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:6px">We sent a 6-digit code to</p>
+      <p id="lw-otp-email" style="font-size:.85rem;color:var(--accent);font-weight:700;margin-bottom:16px;word-break:break-all"></p>
+      <div class="lw-form">
+        <div class="form-group"><label>Verification Code</label><input type="text" id="lw-otp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:.3em;text-align:center;font-size:1.2rem" onkeydown="if(event.key==='Enter')lwDoVerifyOtp()"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-otp-btn" onclick="lwDoVerifyOtp()">Verify &amp; Continue</button>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:10px;text-align:center">Didn't get it? <a class="btn-ghost" onclick="lwResendOtp()">Resend code</a></p>
+    </div>
+    <!-- TOTP VIEW (authenticator app users) -->
+    <div id="lw-totp" class="lw-view">
+      <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Two-factor authentication is enabled on your account. Enter the 6-digit code from your authenticator app.</p>
+      <div class="lw-form">
+        <div class="form-group"><label>Authenticator Code</label><input type="text" id="lw-totp-code" inputmode="numeric" autocomplete="one-time-code" maxlength="6" placeholder="123456" style="letter-spacing:.3em;text-align:center;font-size:1.2rem" onkeydown="if(event.key==='Enter')lwDoVerifyTotp()"></div>
+        <button class="btn btn-gold" style="width:100%;padding:12px" id="lw-totp-btn" onclick="lwDoVerifyTotp()">Verify &amp; Continue</button>
+      </div>
+    </div>
     <!-- RESET PASSWORD VIEW -->
     <div id="lw-reset" class="lw-view">
       <p style="font-size:.83rem;color:var(--muted);margin-bottom:16px">Enter your new password below.</p>
@@ -3596,7 +3614,60 @@ async function lwDoLogin(){
   var r=await SB.signIn(email,pass);
   btn.disabled=false;btn.innerHTML='Log In →';
   if(r.error){lwErr(r.error);return;}
+  try{
+    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:r.data&&r.data.user&&r.data.user.id})});
+    var geoData=await geoRes.json();
+    if(!geoData.allowed){await SB.signOut();lwErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
+  }catch(e){await SB.signOut();lwErr('Unable to verify your location. Please try again.');return;}
+  var fl=await SB.mfaListFactors();
+  var verified=(fl.data&&fl.data.totp)||[];
+  if(verified.length>0){
+    var fid=verified[0].id;
+    var ch=await SB.mfaChallenge(fid);
+    if(ch.error){lwErr('Could not start MFA challenge: '+ch.error);return;}
+    MFA_STATE={factorId:fid,challengeId:ch.data.id,enroll:false};
+    lwShowView('totp');
+    setTimeout(function(){var i=document.getElementById('lw-totp-code');if(i)i.focus();},50);
+    return;
+  }
+  await SB.signOut();
+  var otpR=await SB.sendEmailOtp(email);
+  if(otpR.error){lwErr('Could not send verification code: '+otpR.error);return;}
+  MFA_STATE={factorId:null,challengeId:null,enroll:false,emailOtp:true,email:email};
+  document.getElementById('lw-otp-email').textContent=email;
+  lwShowView('otp');
+  setTimeout(function(){var i=document.getElementById('lw-otp-code');if(i)i.focus();},50);
+}
+async function lwDoVerifyOtp(){
+  var code=(document.getElementById('lw-otp-code').value||'').replace(/\s/g,'');
+  lwClear();if(code.length<6){lwErr('Enter the 6-digit code from your email.');return;}
+  var btn=document.getElementById('lw-otp-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Verifying...';
+  var r=await SB.verifyEmailOtp(MFA_STATE.email,code);
+  btn.disabled=false;btn.innerHTML='Verify &amp; Continue';
+  if(r.error){lwErr(r.error);return;}
+  try{
+    var geoRes=await fetch('https://mrxhydaoxlxuampmgaoi.supabase.co/functions/v1/geo-block-login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({ip:null,userId:SB.user&&SB.user.id})});
+    var geoData=await geoRes.json();
+    if(!geoData.allowed){await SB.signOut();lwErr(geoData.reason||'Access Denied: Logins are only permitted from within the United States.');return;}
+  }catch(e){await SB.signOut();lwErr('Unable to verify your location. Please try again.');return;}
   lwHide();onLogin();
+}
+async function lwDoVerifyTotp(){
+  var code=(document.getElementById('lw-totp-code').value||'').trim();
+  lwClear();if(code.length<6){lwErr('Enter the 6-digit code.');return;}
+  var btn=document.getElementById('lw-totp-btn');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Verifying...';
+  var r=await SB.mfaVerify(MFA_STATE.factorId,MFA_STATE.challengeId,code);
+  btn.disabled=false;btn.innerHTML='Verify &amp; Continue';
+  if(r.error){lwErr(r.error);return;}
+  lwHide();onLogin();
+}
+async function lwResendOtp(){
+  lwClear();
+  var r=await SB.sendEmailOtp(MFA_STATE.email);
+  if(r.error){lwErr('Could not resend: '+r.error);return;}
+  lwOk('Code resent — check your email.');
+  document.getElementById('lw-otp-code').value='';
+  setTimeout(function(){document.getElementById('lw-otp-code').focus();},50);
 }
 async function lwDoSignup(){
   var name=document.getElementById('lw-name').value.trim();
