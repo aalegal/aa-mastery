@@ -1280,6 +1280,7 @@ tr:nth-child(even) td{background:#0d162080}
     <span id="user-pill" class="user-pill" style="display:none"></span>
     <button id="btn-login" class="btn btn-gold btn-sm" onclick="openModal('login')">Log In</button>
     <button id="btn-logout" class="btn btn-outline btn-sm" style="display:none" onclick="logout()">Log Out</button>
+    <button id="btn-timesheets" class="btn btn-sm btn-gold" style="display:none" onclick="nav('timesheets')">🕒 Timesheets</button>
     <button id="btn-leadership" class="btn btn-sm btn-gold" style="display:none" onclick="nav('leadership')">🔒 Leadership</button>
     <button id="btn-admin" class="btn btn-sm btn-red" style="display:none" onclick="nav('admin')">⚙️ Admin</button>
   </div>
@@ -2433,43 +2434,13 @@ tr:nth-child(even) td{background:#0d162080}
     <h2 style="display:flex;align-items:center;gap:8px">🔒 Leadership Section</h2>
     <p class="muted" style="margin-top:4px">Restricted area for supervisors only — Jeff, Glory, Junior, Simon &amp; Achumboro (Aaron). Use the sub-tabs below.</p>
     <div class="rtabs" id="lead-tabs" style="margin-top:14px">
-      <button class="rtab active" onclick="showLead('timesheets',this)">🕒 Timesheets</button>
-      <button class="rtab" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
+      <button class="rtab active" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
       <button class="rtab" onclick="showLead('payments',this)">💵 Payments</button>
       <button class="rtab" onclick="showLead('other',this)">📦 Other Stuff</button>
     </div>
 
-    <!-- TIMESHEETS -->
-    <div id="lpane-timesheets" class="lpane active">
-      <h3>Timesheets</h3>
-      <p class="muted">Track team hours by category. <strong>BH</strong> = Billable Hours, <strong>NBH</strong> = Non-Billable Hours. Edits save for all supervisors.</p>
-      <div class="rtabs" style="margin-top:10px">
-        <button class="rtab active" onclick="showTime('bh',this)">Billable Hours (BH)</button>
-        <button class="rtab" onclick="showTime('nbh',this)">Non-Billable Hours (NBH)</button>
-      </div>
-      <div id="tpane-bh" class="tpane active">
-        <div id="ts-bh-status" class="lead-status"></div>
-        <table style="width:100%;margin-top:10px">
-          <thead><tr><th>Date</th><th>Team Member</th><th>Project / Matter</th><th>Task</th><th>BH</th><th style="width:40px"></th></tr></thead>
-          <tbody id="ts-bh-body"></tbody>
-          <tfoot><tr><th colspan="4" style="text-align:right">Total Billable</th><th id="ts-bh-total">0.0</th><th></th></tr></tfoot>
-        </table>
-        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('bh')">+ Add BH Row</button>
-      </div>
-      <div id="tpane-nbh" class="tpane">
-        <div id="ts-nbh-status" class="lead-status"></div>
-        <table style="width:100%;margin-top:10px">
-          <thead><tr><th>Date</th><th>Team Member</th><th>Activity</th><th>Reason / Notes</th><th>NBH</th><th style="width:40px"></th></tr></thead>
-          <tbody id="ts-nbh-body"></tbody>
-          <tfoot><tr><th colspan="4" style="text-align:right">Total Non-Billable</th><th id="ts-nbh-total">0.0</th><th></th></tr></tfoot>
-        </table>
-        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('nbh')">+ Add NBH Row</button>
-        <p class="muted" style="margin-top:8px;font-size:.8rem">Examples of NBH: training, internal meetings, admin, downtime, QC calibration.</p>
-      </div>
-    </div>
-
     <!-- TACTICAL MEETING REPORTS -->
-    <div id="lpane-meetings" class="lpane">
+    <div id="lpane-meetings" class="lpane active">
       <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
         <h3 style="margin:0">Tactical Meeting Reports</h3>
         <button class="btn btn-outline btn-sm" onclick="fetchTactical()">⬇️ Import from Monday.com</button>
@@ -2503,6 +2474,39 @@ tr:nth-child(even) td{background:#0d162080}
       <div class="card" style="margin-top:10px">
         <h4 style="margin:0 0 6px">✅ Open Action Items</h4>
         <p class="muted" style="font-size:.85rem">Carry forward unfinished tasks from meetings.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ TIMESHEETS PAGE ══════ -->
+<div id="page-timesheets" class="page">
+  <div class="card" style="border-color:var(--gold);">
+    <h2 style="display:flex;align-items:center;gap:8px">🕒 Timesheets</h2>
+    <p class="muted" style="margin-top:4px">Track team hours by category. <strong>BH</strong> = Billable Hours, <strong>NBH</strong> = Non-Billable Hours. Edits save for all supervisors.</p>
+    <div class="rtabs" style="margin-top:14px">
+      <button class="rtab active" onclick="showTime('bh',this)">Billable Hours (BH)</button>
+      <button class="rtab" onclick="showTime('nbh',this)">Non-Billable Hours (NBH)</button>
+    </div>
+    <div id="lpane-timesheets">
+      <div id="tpane-bh" class="tpane active">
+        <div id="ts-bh-status" class="lead-status"></div>
+        <table style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Project / Matter</th><th>Task</th><th>BH</th><th style="width:40px"></th></tr></thead>
+          <tbody id="ts-bh-body"></tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Billable</th><th id="ts-bh-total">0.0</th><th></th></tr></tfoot>
+        </table>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('bh')">+ Add BH Row</button>
+      </div>
+      <div id="tpane-nbh" class="tpane">
+        <div id="ts-nbh-status" class="lead-status"></div>
+        <table style="width:100%;margin-top:10px">
+          <thead><tr><th>Date</th><th>Team Member</th><th>Activity</th><th>Reason / Notes</th><th>NBH</th><th style="width:40px"></th></tr></thead>
+          <tbody id="ts-nbh-body"></tbody>
+          <tfoot><tr><th colspan="4" style="text-align:right">Total Non-Billable</th><th id="ts-nbh-total">0.0</th><th></th></tr></tfoot>
+        </table>
+        <button class="btn btn-outline btn-sm" style="margin-top:10px" onclick="addTimesheetRow('nbh')">+ Add NBH Row</button>
+        <p class="muted" style="margin-top:8px;font-size:.8rem">Examples of NBH: training, internal meetings, admin, downtime, QC calibration.</p>
       </div>
     </div>
   </div>
@@ -2630,7 +2634,7 @@ const SB={
 let currentPage='home';
 function nav(p){
   var target=document.getElementById('page-'+p);if(!target)return;
-  if(p==='leadership'&&!isLeadership(SB.user)){alert('🔒 The Leadership Section is restricted to authorized supervisors. Please log in with an approved account.');return;}
+  if((p==='leadership'||p==='timesheets')&&!isLeadership(SB.user)){alert('🔒 This section is restricted to authorized supervisors. Please log in with an approved account.');return;}
   document.querySelectorAll('.page').forEach(function(x){x.classList.remove('active');});
   document.querySelectorAll('#topnav button').forEach(function(b){b.classList.remove('active');});
   target.classList.add('active');
@@ -2639,7 +2643,8 @@ function nav(p){
   if(p==='quiz')initQuizPage();
   if(p==='leaderboard')loadLeaderboard();
   if(p==='admin')loadAdmin();
-  if(p==='leadership'){loadTimesheets('bh');loadTimesheets('nbh');}
+  if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
+  if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -3066,7 +3071,7 @@ function onLogin(){
   document.getElementById('user-pill').textContent='👤 '+name;document.getElementById('user-pill').style.display='inline-block';
   document.getElementById('btn-login').style.display='none';document.getElementById('btn-logout').style.display='inline-block';
   if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
-  if(isLeadership(u))document.getElementById('btn-leadership').style.display='inline-block';
+  if(isLeadership(u)){document.getElementById('btn-timesheets').style.display='inline-block';document.getElementById('btn-leadership').style.display='inline-block';}
   if(currentPage==='quiz')initQuizPage();
   if(typeof reportLoginContext==='function')reportLoginContext();
 }
@@ -3074,8 +3079,8 @@ async function logout(){
   await SB.signOut();
   document.getElementById('user-pill').style.display='none';document.getElementById('btn-login').style.display='inline-block';
   document.getElementById('btn-logout').style.display='none';document.getElementById('btn-admin').style.display='none';
-  document.getElementById('btn-leadership').style.display='none';
-  if(currentPage==='leadership')nav('home');
+  document.getElementById('btn-timesheets').style.display='none';document.getElementById('btn-leadership').style.display='none';
+  if(currentPage==='leadership'||currentPage==='timesheets')nav('home');
   if(currentPage==='quiz')initQuizPage();
 }
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
