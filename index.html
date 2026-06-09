@@ -2917,9 +2917,9 @@ function openModal(mode){
 function closeModal(){document.getElementById('modal-bg').classList.remove('open');}
 function setModalHeader(icon,title,sub){document.getElementById('modal-icon').textContent=icon;document.getElementById('modal-title').textContent=title;document.getElementById('modal-sub').textContent=sub;}
 function showView(v){
-  [‘login’,’signup’,’forgot’,’magic’,’reset’,’mfa’,’mfa-enroll’,’mfa-email’].forEach(function(n){var el=document.getElementById(‘view-’+n);if(el)el.style.display=n===v?’block’:’none’;});
+  ['login','signup','forgot','magic','reset','mfa','mfa-enroll','mfa-email'].forEach(function(n){var el=document.getElementById('view-'+n);if(el)el.style.display=n===v?'block':'none';});
   clearAuthMessages();
-  const headers={login:[‘👋’,’Welcome Back’,’Log in to track your progress’],signup:[‘🚀’,’Create Account’,’Join the AA Team Mastery Hub’],forgot:[‘🔑’,’Reset Password’,"We’ll send you a reset link"],magic:[‘✉️’,’Magic Link’,’One-click login — no password needed’],reset:[‘🔐’,’Set New Password’,’Enter your new password below’],’mfa’:[‘🔒’,’Two-Factor Authentication’,’Enter the code from your authenticator app’],’mfa-enroll’:[‘🛡️’,’Set Up Two-Factor’,’Secure your account with an authenticator app’],’mfa-email’:[‘📧’,’Check Your Email’,’Enter the code we just sent you’]};
+  const headers={login:['👋','Welcome Back','Log in to track your progress'],signup:['🚀','Create Account','Join the AA Team Mastery Hub'],forgot:['🔑','Reset Password',"We'll send you a reset link"],magic:['✉️','Magic Link','One-click login — no password needed'],reset:['🔐','Set New Password','Enter your new password below'],'mfa':['🔒','Two-Factor Authentication','Enter the code from your authenticator app'],'mfa-enroll':['🛡️','Set Up Two-Factor','Secure your account with an authenticator app'],'mfa-email':['📧','Check Your Email','Enter the code we just sent you']};
   if(headers[v])setModalHeader(headers[v][0],headers[v][1],headers[v][2]);
 }
 function clearAuthMessages(){var e=document.getElementById('auth-err'),o=document.getElementById('auth-ok');e.style.display='none';e.textContent='';o.style.display='none';o.textContent='';}
