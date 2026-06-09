@@ -2971,9 +2971,14 @@ try {
     setTimeout(function(){var i=document.getElementById('inp-mfa-code');if(i)i.focus();},50);
     return;
   }
-  // No TOTP factor enrolled -> allow in. Email OTP will be enforced once Supabase
-  // email template is configured to send {{ .Token }} instead of a magic link.
-  onLogin();closeModal();
+  // No TOTP factor enrolled -> send email OTP as the second factor.
+  await SB.signOut(); // Drop the password session; a new one is created after OTP verify.
+  var otpR = await SB.sendEmailOtp(email);
+  if(otpR.error){showErr('Could not send verification code: '+otpR.error);return;}
+  MFA_STATE={factorId:null,challengeId:null,enroll:false,emailOtp:true,email:email};
+  document.getElementById('mfa-email-addr').textContent=email;
+  showView('mfa-email');
+  setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 async function startMfaEnrollment(){
   clearAuthMessages();
