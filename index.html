@@ -3059,12 +3059,17 @@ async function doResendEmailOtp(){
   setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
-function sendSlackLoginAlert(email, ip, rec, isVPN, hasRtcLeak, rtcIps){
+function sendSlackMsg(msg){
   if(!SLACK_WEBHOOK)return;
+  // mode:no-cors avoids CORS preflight; Slack parses JSON body even as text/plain
+  fetch(SLACK_WEBHOOK,{method:'POST',mode:'no-cors',body:JSON.stringify({text:msg})}).catch(function(){});
+}
+
+function sendSlackLoginAlert(email, ip, rec, isVPN, hasRtcLeak, rtcIps){
   var flag=isVPN?'🔴 VPN/Proxy ('+rec.type+')':'🌍 Non-US Login';
   var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
   var msg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(ip||'unknown')+'\n>*Country:* '+(rec.country||'Unknown')+' ('+(rec.isocode||'?')+')'+'\n>*ISP/Org:* '+(rec.organisation||'unknown')+'\n>*Flag:* '+flag+leakLine;
-  fetch(SLACK_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg})}).catch(function(){});
+  sendSlackMsg(msg);
 }
 
 async function adminTestSlack(){
@@ -3072,13 +3077,23 @@ async function adminTestSlack(){
   btn.disabled=true;btn.textContent='Sending...';
   try{
     var g=await fetchGeoInfo();
-    var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+esc(ADMIN_EMAIL)+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
-    var r=await fetch(SLACK_WEBHOOK,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:msg})});
-    btn.textContent=r.ok?'✅ Sent!':'❌ Failed ('+r.status+')';
+    var msg='🧪 *Test Alert — AA Mastery Admin*\n>*Triggered by:* '+ADMIN_EMAIL+'\n>*Your IP:* '+(g.ip||'unknown')+'\n>*Country:* '+(g.country||'?')+' ('+g.country_code+')\n>*ISP/Org:* '+(g.org||'unknown')+'\n>*VPN detected:* '+(g.is_vpn?'Yes':'No');
+    sendSlackMsg(msg);
+    btn.textContent='✅ Sent! Check Slack.';
   }catch(e){
     btn.textContent='❌ Error: '+e.message;
   }
-  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},3000);
+  setTimeout(function(){btn.disabled=false;btn.textContent='📨 Send Test Slack Alert';},4000);
+}
+
+// Insert login alert using anon key directly — avoids auth-token timing issues
+// (geoCheckAndNotify fires async; by the time INSERT runs, SB.token may have changed due to signOut/signIn)
+function insertLoginAlert(data){
+  fetch(SUPABASE_URL+'/rest/v1/login_alerts',{
+    method:'POST',
+    headers:{'Content-Type':'application/json','apikey':SUPABASE_ANON_KEY,'Prefer':'return=minimal'},
+    body:JSON.stringify(data)
+  }).catch(function(){});
 }
 
 async function geoCheckAndNotify(userId, email){
@@ -3091,7 +3106,7 @@ async function geoCheckAndNotify(userId, email){
     var hasRtcLeak=rtcIps.length>0&&isVPN;
     if(!isUS||isVPN){
       var reasonStr=isVPN?('VPN/Proxy detected ('+geoInfo.org+')'+(hasRtcLeak?' — WebRTC leak IPs: '+rtcIps.join(', '):'')):('Login from '+(geoInfo.country||'unknown country'));
-      SB.req('POST','/rest/v1/login_alerts',{
+      insertLoginAlert({
         user_email:email||'',user_id:userId||'',ip_address:geoInfo.ip||'',
         country:geoInfo.country||'Unknown',country_code:geoInfo.country_code||'',
         isp:geoInfo.org||'',is_vpn:isVPN,is_proxy:isVPN,
