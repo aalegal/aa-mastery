@@ -1908,7 +1908,9 @@ tr:nth-child(even) td{background:#0d162080}
   </div>
   <div class="card">
     <h2>🛡️ Login Security Alerts</h2>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:16px">Non-US logins and VPN/proxy connections are logged automatically on every sign-in.</p>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Non-US logins and VPN/proxy connections are logged automatically and sent to Slack on every sign-in.</p>
+    <button class="btn btn-outline btn-sm" onclick="adminRunGeoTest()" style="margin-bottom:16px">🔍 Test My Current IP</button>
+    <div id="admin-geo-test" style="margin-bottom:16px"></div>
     <h3>Per-User Summary</h3>
     <div id="admin-alert-summary"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
     <h3 style="margin-top:24px">Recent Alerts <span id="admin-alerts-count" style="font-size:.8rem;color:var(--muted);font-weight:400"></span></h3>
@@ -2608,6 +2610,7 @@ const SUPABASE_URL='https://mrxhydaoxlxuampmgaoi.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
 const ADMIN_EMAIL='jeff@ataandeadvisors.com';
 const SITE_URL='https://aa-mastery.vercel.app';
+const SLACK_WEBHOOK='https://hooks.slack.com/services/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';
 // Supervisors authorized for the Leadership Section. Add/edit emails here.
 const LEADERSHIP_EMAILS=['jeff@ataandeadvisors.com'];
 // Fallback gate by display name (case-insensitive) for accounts whose email isn't listed yet.
@@ -3053,6 +3056,14 @@ async function doResendEmailOtp(){
   setTimeout(function(){var i=document.getElementById('inp-mfa-email-code');if(i)i.focus();},50);
 }
 // Geo check: non-blocking. Logs foreign logins to Supabase for admin review.
+function sendSlackLoginAlert(email, ip, rec, isVPN, hasRtcLeak, rtcIps){
+  if(!SLACK_WEBHOOK)return;
+  var flag=isVPN?'🔴 VPN/Proxy ('+rec.type+')':'🌍 Non-US Login';
+  var leakLine=hasRtcLeak?'\n>*WebRTC Leak IPs:* '+rtcIps.join(', '):'';
+  var msg='🚨 *Login Security Alert — AA Mastery*\n>*User:* '+email+'\n>*IP:* '+(ip||'unknown')+'\n>*Country:* '+(rec.country||'Unknown')+' ('+(rec.isocode||'?')+')'+'\n>*ISP/Org:* '+(rec.organisation||'unknown')+'\n>*Flag:* '+flag+leakLine;
+  fetch(SLACK_WEBHOOK,{method:'POST',mode:'no-cors',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'payload='+encodeURIComponent(JSON.stringify({text:msg}))}).catch(function(){});
+}
+
 async function geoCheckAndNotify(userId, email){
   try{
     // Collect WebRTC IPs in parallel — reveals real IP when behind a VPN
@@ -3074,8 +3085,36 @@ async function geoCheckAndNotify(userId, email){
         alert_type:isVPN?'vpn':'non_us',reason:reasonStr,
         created_at:new Date().toISOString()
       });
+      sendSlackLoginAlert(email,ip,rec,isVPN,hasRtcLeak,rtcIps);
     }
   }catch(e){}
+}
+
+async function adminRunGeoTest(){
+  var el=document.getElementById('admin-geo-test');
+  el.innerHTML='<span class="spinner"></span> Checking your IP...';
+  try{
+    var rtcIps=await collectWebRtcIps(1500);
+    var pcRes=await fetch('https://proxycheck.io/v2/?vpn=1&asn=1');
+    var pcData=await pcRes.json();
+    var ip=Object.keys(pcData).find(function(k){return k!=='status';});
+    var rec=ip?pcData[ip]:{};
+    var isUS=(rec.isocode==='US');
+    var isVPN=(rec.proxy==='yes');
+    var flagColor=(!isUS||isVPN)?'#ff5252':'#4caf50';
+    var flagLabel=isVPN?'VPN/Proxy ('+rec.type+')':isUS?'US (clean)':'Non-US';
+    var html='<div style="background:var(--card);border:1px solid var(--border);border-radius:8px;padding:14px;font-size:.85rem">';
+    html+='<div><strong>IP:</strong> <code>'+esc(ip||'unknown')+'</code></div>';
+    html+='<div><strong>Country:</strong> '+esc(rec.country||'Unknown')+' ('+esc(rec.isocode||'?')+')</div>';
+    html+='<div><strong>ISP/Org:</strong> '+esc(rec.organisation||'unknown')+'</div>';
+    html+='<div><strong>VPN/Proxy:</strong> '+esc(rec.proxy||'no')+'</div>';
+    if(rtcIps.length)html+='<div><strong>WebRTC IPs:</strong> <code>'+esc(rtcIps.join(', '))+'</code></div>';
+    html+='<div style="margin-top:8px"><strong>Would alert?</strong> <span style="color:'+flagColor+';font-weight:700">'+flagLabel+'</span></div>';
+    html+='</div>';
+    el.innerHTML=html;
+  }catch(e){
+    el.innerHTML='<span style="color:var(--red)">Detection failed: '+esc(e.message)+'</span>';
+  }
 }
 
 async function loadAdmin(){
