@@ -6273,26 +6273,36 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 
 <!-- ══════ CASEPOINT SHELL ══════ -->
 <div id="casepoint-shell">
-  <div id="cp-toolbar">
-    <span class="cp-toolbar-logo">Casepoint</span>
-    <div style="width:1px;height:20px;background:var(--border);margin:0 4px;"></div>
-    <span class="cp-case-label">NorthStar Logistics / Meridian Freight — DOJ Antitrust Second Request</span>
-    <div style="display:flex;gap:6px;margin-left:auto;align-items:center;">
-      <span style="font-size:.72rem;color:var(--muted)" id="cp-prog-pct">0%</span>
-      <span style="font-size:.72rem;color:var(--muted)">coded</span>
-      <span style="font-size:.72rem;color:#16b5c4" id="cp-accuracy-disp">—</span>
-      <span style="font-size:.72rem;color:var(--muted)">accuracy</span>
-      <button class="cp-toolbar-btn" onclick="closeCasepoint()">← Back to Projects</button>
+  <!-- Left navigation rail -->
+  <nav id="cp-railnav">
+    <div class="cp-rail-logo">C</div>
+    <button class="cp-rail-btn" type="button"><span class="cp-rail-ico">🏠</span>Home</button>
+    <button class="cp-rail-btn" type="button"><span class="cp-rail-ico">📂</span>Batches</button>
+    <button class="cp-rail-btn active" type="button"><span class="cp-rail-ico">📄</span>Review</button>
+    <button class="cp-rail-btn" type="button"><span class="cp-rail-ico">🔍</span>Search</button>
+    <button class="cp-rail-btn" type="button"><span class="cp-rail-ico">⚙️</span>Actions</button>
+    <button class="cp-rail-btn" type="button"><span class="cp-rail-ico">📊</span>Reports</button>
+  </nav>
+  <!-- Workspace -->
+  <div id="cp-workspace">
+    <div id="cp-topbar">
+      <span class="cp-wordmark">Case<span>point</span></span>
+      <span class="cp-crumb"><b>NorthStar v. Meridian</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; DOJ Second Request</span>
+      <div style="display:flex;gap:8px;margin-left:auto;align-items:center;">
+        <span style="font-size:.72rem;color:#5b6b85">Coded <b id="cp-prog-pct" style="color:#1a2b4a">0%</b></span>
+        <span style="font-size:.72rem;color:#5b6b85">Accuracy <b id="cp-accuracy-disp" style="color:#1f6fc4">—</b></span>
+        <button class="cp-topbar-btn" onclick="closeCasepoint()">Exit Review</button>
+      </div>
     </div>
-  </div>
-  <div id="cp-progress-bar"><div id="cp-progress-fill" style="width:0%"></div></div>
-  <div id="cp-main">
+    <div id="cp-progress-bar"><div id="cp-progress-fill" style="width:0%"></div></div>
+    <div id="cp-main">
     <!-- Left doc list -->
     <div id="cp-left">
-      <div style="padding:8px 10px;background:#080c12;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
-        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('all',this)">All</button>
-        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('uncoded',this)">Uncoded</button>
-        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('coded',this)">Coded</button>
+      <div class="cp-list-header">📄 Documents</div>
+      <div class="cp-filter-bar">
+        <button class="cp-filter-btn active" onclick="cpFilter('all',this)">All</button>
+        <button class="cp-filter-btn" onclick="cpFilter('uncoded',this)">Uncoded</button>
+        <button class="cp-filter-btn" onclick="cpFilter('coded',this)">Coded</button>
       </div>
       <div id="cp-doc-list" style="flex:1;overflow-y:auto;"></div>
     </div>
@@ -6355,6 +6365,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
         <button class="cp-skip-btn" onclick="cpNav(1)">Skip →</button>
       </div>
     </div>
+  </div>
   </div>
 </div>
 
