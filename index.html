@@ -5003,6 +5003,178 @@ function cpNav(dir) {
   cpOpenDoc(visible[newIdx].id);
 }
 
+function cpLabel(val) {
+  if (!val && val !== 0) return "—";
+  if (Array.isArray(val)) return val.length ? val.map(cpLabel).join(", ") : "none";
+  var labels = {
+    "responsive":"Responsive","non-responsive":"Not Responsive","technical":"Technical Issue",
+    "not-privileged":"Not Privileged","privileged":"Privileged","redact-priv":"Redact (Privilege)",
+    "produce":"Produce","withhold":"Withhold","redact":"Redact",
+    "confidential":"Confidential","hc-aeo":"Highly Confidential – AEO",
+    "issue1":"Pricing/Bidding","issue2":"Market Share","issue3":"Merger Rationale","issue4":"Hot Doc"
+  };
+  return labels[val] || val;
+}
+
+function cpLoadCoding(doc) {
+  document.querySelectorAll('#cp-coding-panel .cp-option').forEach(function(o) {
+    o.classList.remove('selected');
+    var inp = o.querySelector('input');
+    if (inp) inp.checked = false;
+  });
+  cpCodingState = {responsive:null,privilege:null,issues:[],action:null,conf:null};
+  var saved = cpCoding[doc.id];
+  if (saved) {
+    cpCodingState = JSON.parse(JSON.stringify(saved));
+    ['responsive','privilege','action','conf'].forEach(function(field) {
+      if (saved[field]) {
+        var container = document.getElementById('cp-field-' + field);
+        if (!container) return;
+        container.querySelectorAll('.cp-option').forEach(function(opt) {
+          var oc = opt.getAttribute('onclick') || '';
+          if (oc.indexOf("'" + saved[field] + "'") > -1) {
+            opt.classList.add('selected');
+            var inp = opt.querySelector('input[type=radio]');
+            if (inp) inp.checked = true;
+          }
+        });
+      }
+    });
+    (saved.issues || []).forEach(function(iss) {
+      var container = document.getElementById('cp-field-issues');
+      if (!container) return;
+      container.querySelectorAll('.cp-option').forEach(function(opt) {
+        var oc = opt.getAttribute('onclick') || '';
+        if (oc.indexOf("'" + iss + "'") > -1) {
+          opt.classList.add('selected');
+          var cb = opt.querySelector('input[type=checkbox]');
+          if (cb) cb.checked = true;
+        }
+      });
+    });
+  }
+  cpCheckSubmit();
+}
+
+function cpSelect(field, val, el) {
+  var container = document.getElementById('cp-field-' + field);
+  if (!container) return;
+  container.querySelectorAll('.cp-option').forEach(function(o) {
+    o.classList.remove('selected');
+    var r = o.querySelector('input[type=radio]');
+    if (r) r.checked = false;
+  });
+  el.classList.add('selected');
+  var radio = el.querySelector('input[type=radio]');
+  if (radio) radio.checked = true;
+  cpCodingState[field] = val;
+  if (cpCodingState.responsive && cpCodingState.action) {
+    if (!cpCodingState.privilege) cpCodingState.privilege = 'not-privileged';
+    if (!cpCodingState.conf) cpCodingState.conf = 'confidential';
+  }
+  cpCheckSubmit();
+}
+
+function cpToggleIssue(issue, el) {
+  el.classList.toggle('selected');
+  var cb = el.querySelector('input[type=checkbox]');
+  if (cb) cb.checked = el.classList.contains('selected');
+  if (!cpCodingState.issues) cpCodingState.issues = [];
+  if (el.classList.contains('selected')) {
+    if (cpCodingState.issues.indexOf(issue) === -1) cpCodingState.issues.push(issue);
+  } else {
+    cpCodingState.issues = cpCodingState.issues.filter(function(i) { return i !== issue; });
+  }
+}
+
+function cpCheckSubmit() {
+  var ready = !!(cpCodingState.responsive && cpCodingState.action);
+  var btn = document.getElementById('cp-submit-btn');
+  if (btn) btn.disabled = !ready;
+}
+
+function cpSubmitCoding() {
+  if (!cpCurrentDoc) return;
+  var doc = cpCurrentDoc;
+  var coding = JSON.parse(JSON.stringify(cpCodingState));
+  if (!coding.privilege) coding.privilege = 'not-privileged';
+  if (!coding.conf) coding.conf = 'confidential';
+  cpCoding[doc.id] = coding;
+  var answer = doc.answer || {};
+  var errors = [];
+  var score = 0;
+  var total = 5;
+  if (coding.responsive === answer.responsive) score++; else errors.push({field:'Responsiveness',yours:coding.responsive,correct:answer.responsive});
+  if (coding.privilege === answer.privilege) score++; else errors.push({field:'Privilege',yours:coding.privilege,correct:answer.privilege});
+  if (coding.action === answer.action) score++; else errors.push({field:'Production',yours:coding.action,correct:answer.action});
+  if (coding.conf === answer.conf) score++; else errors.push({field:'Confidentiality',yours:coding.conf,correct:answer.conf});
+  var correctIssues = answer.issues || [];
+  var userIssues = coding.issues || [];
+  var issuesOk = correctIssues.every(function(i){return userIssues.indexOf(i)>-1;}) && userIssues.every(function(i){return correctIssues.indexOf(i)>-1;});
+  if (issuesOk) score++; else errors.push({field:'Issue Tags',yours:userIssues.join(',')||'none',correct:correctIssues.join(',')||'none'});
+  var pct = Math.round(score/total*100);
+  cpAnswered[doc.id] = {correct:score===total,partial:score>0&&score<total,score:score,total:total};
+  cpShowFeedback(doc, errors, score, total, pct);
+  cpRenderList();
+  cpUpdateProgress();
+  cpUpdateLanding();
+  saveProgress();
+}
+
+function cpShowFeedback(doc, errors, score, total, pct) {
+  var overlay = document.createElement('div');
+  overlay.className = 'rel-feedback-overlay';
+  var isCorrect = score === total;
+  var isPartial = score > 0 && !isCorrect;
+  var boxClass = isCorrect ? 'rel-feedback-correct' : isPartial ? 'rel-feedback-partial' : 'rel-feedback-wrong';
+  var errHtml = '';
+  if (errors.length) {
+    errHtml = '<div style="margin-top:10px;display:flex;flex-direction:column;gap:4px;">';
+    errors.forEach(function(e) {
+      errHtml += '<div style="background:#0d1117;border-radius:5px;padding:6px 9px;font-size:.76rem;">'
+        + '<span style="color:var(--muted);font-weight:600">' + esc(e.field) + ':</span> '
+        + '<span style="color:#ff5252">You: ' + esc(cpLabel(e.yours)) + '</span> → '
+        + '<span style="color:#4caf50">Correct: ' + esc(cpLabel(e.correct)) + '</span></div>';
+    });
+    errHtml += '</div>';
+  }
+  overlay.innerHTML = '<div class="rel-feedback-box ' + boxClass + '">'
+    + '<div style="font-size:1.8rem;text-align:center;margin-bottom:5px">' + (isCorrect?'✅':isPartial?'⚠️':'❌') + '</div>'
+    + '<div style="font-size:1rem;font-weight:800;text-align:center;color:var(--gold-light);margin-bottom:3px">' + (isCorrect?'Perfect Coding!':isPartial?'Partially Correct':'Incorrect Coding') + '</div>'
+    + '<div style="text-align:center;font-size:.83rem;color:var(--muted);margin-bottom:10px">' + score + '/' + total + ' (' + pct + '%)</div>'
+    + '<div style="background:#0e1420;border-radius:7px;padding:10px;font-size:.8rem;color:var(--text2);line-height:1.6;border-left:3px solid #16b5c4">💡 ' + esc(doc.explanation||'') + '</div>'
+    + errHtml
+    + '<div style="display:flex;gap:8px;margin-top:14px;">'
+    + "<button onclick='closeFeedbackOverlay(this);cpNav(1);' style='flex:1;padding:9px;background:linear-gradient(135deg,#0c6b66,#16b5c4);color:#06140f;border:none;border-radius:7px;font-weight:700;cursor:pointer;font-size:.83rem'>Next Document →</button>"
+    + "<button onclick='closeFeedbackOverlay(this);' style='padding:9px 13px;background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:.78rem'>Review</button>"
+    + '</div></div>';
+  document.body.appendChild(overlay);
+}
+
+function cpUpdateProgress() {
+  var total = CP_DOCS.length;
+  var coded = Object.keys(cpCoding).length;
+  var pct = Math.round(coded/total*100);
+  var pp = document.getElementById('cp-prog-pct');
+  var pf = document.getElementById('cp-progress-fill');
+  var ad = document.getElementById('cp-accuracy-disp');
+  if (pp) pp.textContent = pct + '%';
+  if (pf) pf.style.width = pct + '%';
+  var correct = Object.values(cpAnswered).filter(function(a){return a.correct;}).length;
+  var attempted = Object.keys(cpAnswered).length;
+  if (ad) ad.textContent = attempted ? Math.round(correct/attempted*100) + '%' : '—';
+}
+
+function cpUpdateLanding() {
+  var coded = Object.keys(cpCoding).length;
+  var correct = Object.values(cpAnswered).filter(function(a){return a.correct;}).length;
+  var attempted = Object.keys(cpAnswered).length;
+  var p = document.getElementById('cp-proj-coded');
+  var a = document.getElementById('cp-proj-acc');
+  if (p) p.textContent = coded;
+  if (a) a.textContent = attempted ? Math.round(correct/attempted*100) + '%' : '—';
+}
+
 
 // ══════════════════════════════════════════════════════════════════
 // FEATURE 1: BATCH SYSTEM
