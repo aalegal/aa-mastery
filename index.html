@@ -4957,13 +4957,14 @@ function cpRenderList() {
     var dotClass = ans ? (ans.correct ? 'coded-correct' : ans.partial ? 'coded-partial' : 'coded-wrong') : 'uncoded';
     var isActive = cpCurrentDoc && cpCurrentDoc.id === d.id ? ' active' : '';
     return '<div class="cp-doc-item' + isActive + '" onclick="cpOpenDoc(this.dataset.id)" data-id="' + escAttr(d.id) + '">'
-      + '<div style="display:flex;align-items:center;gap:5px;">'
+      + '<div class="cp-doc-check"></div>'
       + '<div class="cp-status-dot ' + dotClass + '"></div>'
-      + '<span class="cp-doc-id">' + esc(d.id) + '</span>'
-      + '<span style="font-size:.67rem;color:var(--muted);margin-left:auto;">' + esc(d.type||'') + '</span>'
-      + '</div>'
+      + '<div class="cp-doc-main">'
+      + '<div class="cp-doc-toprow"><span class="cp-doc-id">' + esc(d.id) + '</span>'
+      + '<span class="cp-doc-type">' + esc(d.type||'') + '</span></div>'
       + '<div class="cp-doc-subject">' + esc(d.subject||'') + '</div>'
       + '<div class="cp-doc-meta-row"><span>' + esc((d.custodian||'').replace('cust-','')) + '</span><span>' + esc((d.date||'').split('·')[0].trim()) + '</span></div>'
+      + '</div>'
       + '</div>';
   }).join('');
 }
@@ -4992,29 +4993,29 @@ function cpOpenDoc(id) {
 }
 
 function cpRenderDoc(doc) {
-  var html = '';
+  var inner = '';
   if (doc.tags && doc.tags.indexOf('issue4') > -1) {
-    html += '<div class="cp-hot-band">🔥 <strong>Hot Document:</strong> This document may contain competitively sensitive or smoking-gun content — code carefully.</div>';
+    inner += '<div class="cp-hot-band">🔥 <strong>Hot Document:</strong> This document may contain competitively sensitive or smoking-gun content — code carefully.</div>';
   }
   if (doc.from) {
-    html += '<div class="cp-email-header">'
+    inner += '<div class="cp-email-header">'
       + '<div class="cp-header-row"><span class="cp-header-label">From:</span><span class="cp-header-val">' + esc(doc.from) + '</span></div>';
-    if (doc.to) html += '<div class="cp-header-row"><span class="cp-header-label">To:</span><span class="cp-header-val">' + esc(doc.to) + '</span></div>';
-    if (doc.cc) html += '<div class="cp-header-row"><span class="cp-header-label">CC:</span><span class="cp-header-val">' + esc(doc.cc) + '</span></div>';
-    html += '<div class="cp-header-row"><span class="cp-header-label">Date:</span><span class="cp-header-val">' + esc(doc.date||'') + '</span></div>'
-      + '<div class="cp-header-row"><span class="cp-header-label">Subject:</span><span class="cp-header-val" style="font-weight:700;color:var(--text)">' + esc(doc.subject||'') + '</span></div>'
+    if (doc.to) inner += '<div class="cp-header-row"><span class="cp-header-label">To:</span><span class="cp-header-val">' + esc(doc.to) + '</span></div>';
+    if (doc.cc) inner += '<div class="cp-header-row"><span class="cp-header-label">CC:</span><span class="cp-header-val">' + esc(doc.cc) + '</span></div>';
+    inner += '<div class="cp-header-row"><span class="cp-header-label">Date:</span><span class="cp-header-val">' + esc(doc.date||'') + '</span></div>'
+      + '<div class="cp-header-row"><span class="cp-header-label">Subject:</span><span class="cp-header-val" style="font-weight:700;color:#1a2b4a">' + esc(doc.subject||'') + '</span></div>'
       + '</div>';
   }
-  var tagColors = {issue1:'#16b5c4',issue2:'#d4a82a',issue3:'#4caf50',issue4:'#e53935'};
+  var tagColors = {issue1:'#1f6fc4',issue2:'#b8860b',issue3:'#2e9e5b',issue4:'#d6453a'};
   var tagLabels = {issue1:'Pricing/Bidding',issue2:'Market Share',issue3:'Merger Rationale',issue4:'Hot Doc'};
   if (doc.tags && doc.tags.length) {
-    html += '<div style="margin-bottom:8px;">' + doc.tags.map(function(t) {
-      return '<span class="cp-tag-chip" style="color:' + (tagColors[t]||'var(--muted)') + ';border-color:' + (tagColors[t]||'var(--border)') + ';background:' + (tagColors[t]||'#111') + '18;">' + esc(tagLabels[t]||t) + '</span>';
+    inner += '<div style="margin-bottom:10px;">' + doc.tags.map(function(t) {
+      return '<span class="cp-tag-chip" style="color:' + (tagColors[t]||'#5b6b85') + ';border-color:' + (tagColors[t]||'#dfe5ee') + ';background:' + (tagColors[t]||'#ccc') + '14;">' + esc(tagLabels[t]||t) + '</span>';
     }).join('') + '</div>';
   }
-  html += '<div class="cp-body-text">' + esc(doc.body||'') + '</div>';
+  inner += '<div class="cp-body-text">' + esc(doc.body||'') + '</div>';
   var body = document.getElementById('cp-doc-body');
-  if (body) body.innerHTML = html;
+  if (body) body.innerHTML = '<div class="cp-doc-page">' + inner + '</div>';
 }
 
 function cpNav(dir) {
@@ -6317,10 +6318,10 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
         </div>
       </div>
       <div id="cp-doc-body">
-        <div style="text-align:center;padding:60px 20px;color:var(--muted);">
-          <div style="font-size:2.5rem;margin-bottom:12px;">📦</div>
-          <div style="font-size:.95rem;font-weight:600;color:#16b5c4;margin-bottom:6px;">Casepoint Document Review</div>
-          <div style="font-size:.82rem;">Select a document from the list to begin.</div>
+        <div class="cp-doc-page" style="text-align:center;color:#8a97ab;">
+          <div style="font-size:2.4rem;margin-bottom:12px;">📦</div>
+          <div style="font-size:.98rem;font-weight:700;color:#13294b;margin-bottom:6px;">Casepoint Document Review</div>
+          <div style="font-size:.83rem;">Select a document from the list to begin.</div>
         </div>
       </div>
     </div>
