@@ -5929,6 +5929,22 @@ applyProgressData = function(d) {
   if (d.cade_batch) cadeBatchState = d.cade_batch;
 };
 
+// Include Casepoint state in saveProgress / loadProgress
+var _origBuildProgressData_cp = buildProgressData;
+buildProgressData = function() {
+  var d = _origBuildProgressData_cp();
+  d.cp_coding = cpCoding;
+  d.cp_answered = cpAnswered;
+  return d;
+};
+
+var _origApplyProgressData_cp = applyProgressData;
+applyProgressData = function(d) {
+  _origApplyProgressData_cp(d);
+  if (d && d.cp_coding) cpCoding = d.cp_coding;
+  if (d && d.cp_answered) cpAnswered = d.cp_answered;
+};
+
 // Everlaw filter buttons need to work in CADE mode too
 var _origEvFilter = evFilter;
 evFilter = function(mode, btn) {
