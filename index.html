@@ -6301,9 +6301,9 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
     <div id="cp-left">
       <div class="cp-list-header">📄 Documents</div>
       <div class="cp-filter-bar">
-        <button class="cp-filter-btn active" onclick="cpFilter('all',this)">All</button>
-        <button class="cp-filter-btn" onclick="cpFilter('uncoded',this)">Uncoded</button>
-        <button class="cp-filter-btn" onclick="cpFilter('coded',this)">Coded</button>
+        <button type="button" class="cp-filter-btn active" onclick="cpFilter('all',this)">All</button>
+        <button type="button" class="cp-filter-btn" onclick="cpFilter('uncoded',this)">Uncoded</button>
+        <button type="button" class="cp-filter-btn" onclick="cpFilter('coded',this)">Coded</button>
       </div>
       <div id="cp-doc-list" style="flex:1;overflow-y:auto;"></div>
     </div>
