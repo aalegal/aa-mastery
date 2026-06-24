@@ -1102,6 +1102,89 @@ tr:nth-child(even) td{background:#0d162080}
   transition:width .3s;}
 
 
+/* ══ CASEPOINT SHELL ══ */
+#casepoint-shell{
+  display:none;position:fixed;inset:0;z-index:200;
+  background:var(--dark);flex-direction:column;
+}
+#casepoint-shell.open{display:flex;}
+#cp-toolbar{
+  background:linear-gradient(135deg,#06140f,#08231d);
+  border-bottom:2px solid #0fa0b0;padding:0 16px;
+  display:flex;align-items:center;height:46px;gap:10px;flex-shrink:0;
+}
+.cp-toolbar-logo{font-size:.85rem;font-weight:800;color:#16b5c4;letter-spacing:.5px;}
+.cp-case-label{color:var(--muted);font-size:.78rem;font-style:italic;flex:1;}
+.cp-toolbar-btn{background:rgba(22,181,196,.16);border:1px solid #0fa0b0;color:#16b5c4;
+  padding:4px 12px;border-radius:5px;font-size:.74rem;font-weight:600;cursor:pointer;}
+.cp-toolbar-btn:hover{background:rgba(22,181,196,.32);}
+#cp-main{display:flex;flex:1;min-height:0;}
+#cp-left{width:200px;flex-shrink:0;background:#080c12;border-right:1px solid var(--border);
+  display:flex;flex-direction:column;overflow:hidden;}
+#cp-doc-list{flex:1;overflow-y:auto;}
+.cp-doc-item{padding:8px 10px;border-bottom:1px solid var(--border);cursor:pointer;
+  transition:background .15s;}
+.cp-doc-item:hover{background:#0e1420;}
+.cp-doc-item.active{background:#08231d;border-left:3px solid #16b5c4;}
+.cp-doc-id{font-size:.67rem;color:#16b5c4;font-weight:700;font-family:monospace;}
+.cp-doc-subject{font-size:.74rem;color:var(--text2);margin-top:2px;overflow:hidden;
+  text-overflow:ellipsis;white-space:nowrap;}
+.cp-doc-meta-row{font-size:.67rem;color:var(--muted);margin-top:2px;display:flex;gap:6px;}
+.cp-status-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0;margin-top:2px;}
+.cp-status-dot.uncoded{background:var(--muted);}
+.cp-status-dot.coded-correct{background:#4caf50;}
+.cp-status-dot.coded-partial{background:#f9a825;}
+.cp-status-dot.coded-wrong{background:var(--red);}
+#cp-viewer{flex:1;display:flex;flex-direction:column;overflow:hidden;}
+#cp-doc-header{padding:10px 14px;background:#0e1420;border-bottom:1px solid var(--border);
+  flex-shrink:0;}
+#cp-doc-subject-bar{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:4px;}
+#cp-doc-nav{display:flex;gap:6px;align-items:center;}
+.cp-nav-btn{background:#111827;border:1px solid var(--border);color:var(--muted);
+  padding:3px 10px;border-radius:5px;cursor:pointer;font-size:.75rem;}
+.cp-nav-btn:hover{border-color:#0fa0b0;color:#16b5c4;}
+.cp-nav-btn:disabled{opacity:.3;cursor:default;}
+#cp-doc-counter{font-size:.74rem;color:var(--muted);}
+#cp-doc-body{flex:1;overflow-y:auto;padding:16px;}
+.cp-email-header{background:#08201b;border:1px solid #0f5a4e;border-radius:8px;
+  padding:12px;margin-bottom:12px;}
+.cp-header-row{display:flex;gap:8px;margin-bottom:4px;font-size:.8rem;}
+.cp-header-label{color:#16b5c4;font-weight:700;min-width:60px;flex-shrink:0;}
+.cp-header-val{color:var(--text2);}
+.cp-hot-band{background:linear-gradient(90deg,#2a0a0a,#300a0a);
+  border:1px solid #e53935;border-radius:6px;padding:7px 12px;margin-bottom:10px;
+  font-size:.73rem;color:#ff9a9a;display:flex;align-items:center;gap:8px;}
+.cp-body-text{font-size:.83rem;color:var(--text2);line-height:1.75;white-space:pre-wrap;
+  word-break:break-word;}
+.cp-tag-chip{display:inline-block;padding:1px 7px;border-radius:10px;font-size:.67rem;
+  font-weight:700;margin:2px;border:1px solid;}
+#cp-coding-panel{width:230px;flex-shrink:0;background:#0a0f18;border-left:1px solid var(--border);
+  display:flex;flex-direction:column;overflow-y:auto;}
+#cp-panel-header{padding:8px 12px;background:#080c12;border-bottom:1px solid var(--border);
+  flex-shrink:0;}
+.cp-panel-title{font-size:.74rem;font-weight:700;color:#16b5c4;text-transform:uppercase;
+  letter-spacing:.5px;}
+.cp-field-label{font-size:.67rem;font-weight:700;color:var(--muted);text-transform:uppercase;
+  letter-spacing:.4px;margin-bottom:4px;padding:0 10px;margin-top:10px;}
+.cp-option{display:flex;align-items:center;gap:7px;padding:5px 10px;border-radius:6px;
+  border:1px solid var(--border);background:#111827;cursor:pointer;
+  transition:all .15s;font-size:.75rem;color:var(--text2);margin:0 8px 3px;}
+.cp-option:hover{border-color:#0fa0b0;background:#08231d;color:#16b5c4;}
+.cp-option.selected{border-color:#0fa0b0;background:rgba(22,181,196,.18);color:#16b5c4;}
+.cp-option input{width:13px;height:13px;flex-shrink:0;}
+.cp-submit-section{padding:10px;margin-top:auto;border-top:1px solid var(--border);flex-shrink:0;}
+.cp-submit-btn{width:100%;background:linear-gradient(135deg,#0c6b66,#16b5c4);
+  color:#e8fbff;border:none;border-radius:7px;padding:9px;font-weight:700;
+  font-size:.82rem;cursor:pointer;margin-bottom:5px;}
+.cp-submit-btn:hover{filter:brightness(1.15);}
+.cp-submit-btn:disabled{opacity:.4;cursor:default;filter:none;}
+.cp-skip-btn{width:100%;background:transparent;border:1px solid var(--border);
+  color:var(--muted);border-radius:7px;padding:6px;font-size:.76rem;cursor:pointer;}
+#cp-progress-bar{height:3px;background:var(--border);flex-shrink:0;}
+#cp-progress-fill{height:100%;background:linear-gradient(90deg,#0c6b66,#16b5c4);
+  transition:width .3s;}
+
+
 /* ══ BATCH SYSTEM ══ */
 .batch-selector{
   background:#080c12;border-bottom:1px solid var(--border);
@@ -2319,6 +2402,30 @@ tr:nth-child(even) td{background:#0d162080}
     </div>
     <div style="margin-top:12px;background:linear-gradient(135deg,#1a2a4a,#2954a3);color:#e8f0fe;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Everlaw →</div>
   </div>
+  <!-- PROJECT 5: CASEPOINT — ANTITRUST SECOND REQUEST -->
+  <div class="card proj-case-card" onclick="openCasepointCase()" style="border-color:#0fa0b0;margin-bottom:14px;">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+      <div>
+        <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:14px;font-size:.71rem;font-weight:700;margin-bottom:8px;background:rgba(22,181,196,.16);color:#16b5c4;border:1px solid #0fa0b0;">🏛️ Antitrust · DOJ Second Request · Casepoint Platform</div>
+        <div class="proj-case-title" style="color:#16b5c4">📦 NorthStar / Meridian — Merger Review</div>
+        <div class="proj-case-sub">NorthStar Logistics' Acquisition of Meridian Freight · DOJ Antitrust Division · HSR Second Request · Responsiveness, Privilege &amp; Confidentiality Coding</div>
+        <div class="proj-issues-bar" style="margin-top:8px;">
+          <span class="proj-issue-tag" style="background:rgba(22,181,196,.15);color:#16b5c4;border:1px solid #0fa0b0;">Issue 1: Pricing/Bidding</span>
+          <span class="proj-issue-tag" style="background:rgba(212,168,42,.15);color:var(--gold-light);border:1px solid var(--gold-deep);">Issue 2: Market Share</span>
+          <span class="proj-issue-tag" style="background:rgba(0,105,92,.15);color:#4caf50;border:1px solid #00695c;">Issue 3: Merger Rationale</span>
+          <span class="proj-issue-tag" style="background:rgba(229,57,53,.15);color:#ff5252;border:1px solid #e53935;">Issue 4: Hot Doc</span>
+        </div>
+        <div style="margin-top:10px;font-size:.78rem;color:var(--muted);">🖥️ Runs on <strong style="color:#16b5c4">Casepoint</strong> · 500 documents · DOJ Antitrust Division</div>
+      </div>
+      <div style="text-align:center;flex-shrink:0;">
+        <div style="font-size:1.5rem;font-weight:800;color:#16b5c4" id="cp-proj-coded">0</div>
+        <div style="font-size:.7rem;color:var(--muted)">coded</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="cp-proj-acc">— accuracy</div>
+      </div>
+    </div>
+    <div style="margin-top:12px;background:linear-gradient(135deg,#0c2f2b,#16b5c4);color:#06140f;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Casepoint →</div>
+  </div>
+
   <!-- PROJECT 4: AI -->
   <div class="card proj-case-card" onclick="openAICase()" style="border-color:var(--emerald-mid);margin-bottom:14px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
@@ -5715,6 +5822,94 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
       <div class="ev-submit-section">
         <button class="ev-submit-btn" id="ev-submit-btn" onclick="evSubmitCoding()" disabled>Save Coding →</button>
         <button class="ev-skip-btn" onclick="evNav(1)">Skip →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ══════ CASEPOINT SHELL ══════ -->
+<div id="casepoint-shell">
+  <div id="cp-toolbar">
+    <span class="cp-toolbar-logo">Casepoint</span>
+    <div style="width:1px;height:20px;background:var(--border);margin:0 4px;"></div>
+    <span class="cp-case-label">NorthStar Logistics / Meridian Freight — DOJ Antitrust Second Request</span>
+    <div style="display:flex;gap:6px;margin-left:auto;align-items:center;">
+      <span style="font-size:.72rem;color:var(--muted)" id="cp-prog-pct">0%</span>
+      <span style="font-size:.72rem;color:var(--muted)">coded</span>
+      <span style="font-size:.72rem;color:#16b5c4" id="cp-accuracy-disp">—</span>
+      <span style="font-size:.72rem;color:var(--muted)">accuracy</span>
+      <button class="cp-toolbar-btn" onclick="closeCasepoint()">← Back to Projects</button>
+    </div>
+  </div>
+  <div id="cp-progress-bar"><div id="cp-progress-fill" style="width:0%"></div></div>
+  <div id="cp-main">
+    <!-- Left doc list -->
+    <div id="cp-left">
+      <div style="padding:8px 10px;background:#080c12;border-bottom:1px solid var(--border);display:flex;gap:6px;flex-wrap:wrap;">
+        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('all',this)">All</button>
+        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('uncoded',this)">Uncoded</button>
+        <button class="cp-toolbar-btn" style="padding:3px 8px;font-size:.68rem;" onclick="cpFilter('coded',this)">Coded</button>
+      </div>
+      <div id="cp-doc-list" style="flex:1;overflow-y:auto;"></div>
+    </div>
+    <!-- Center viewer -->
+    <div id="cp-viewer">
+      <div id="cp-doc-header">
+        <div id="cp-doc-subject-bar" style="color:var(--muted);font-size:.84rem">Select a document to begin</div>
+        <div id="cp-doc-nav">
+          <button class="cp-nav-btn" id="cp-prev-btn" onclick="cpNav(-1)" disabled>←</button>
+          <button class="cp-nav-btn" id="cp-next-btn" onclick="cpNav(1)" disabled>→</button>
+          <span id="cp-doc-counter" style="font-size:.73rem;color:var(--muted)"></span>
+        </div>
+      </div>
+      <div id="cp-doc-body">
+        <div style="text-align:center;padding:60px 20px;color:var(--muted);">
+          <div style="font-size:2.5rem;margin-bottom:12px;">📦</div>
+          <div style="font-size:.95rem;font-weight:600;color:#16b5c4;margin-bottom:6px;">Casepoint Document Review</div>
+          <div style="font-size:.82rem;">Select a document from the list to begin.</div>
+        </div>
+      </div>
+    </div>
+    <!-- Right coding panel -->
+    <div id="cp-coding-panel">
+      <div id="cp-panel-header">
+        <div class="cp-panel-title">Second Request Coding</div>
+        <div style="font-size:.68rem;color:var(--muted);margin-top:2px;" id="cp-panel-doc-id">No document loaded</div>
+      </div>
+      <div class="cp-field-label">RESPONSIVENESS</div>
+      <div id="cp-field-responsive">
+        <div class="cp-option" onclick="cpSelect('responsive','responsive',this)"><input type="radio" name="cp-responsive"><span>Responsive</span></div>
+        <div class="cp-option" onclick="cpSelect('responsive','non-responsive',this)"><input type="radio" name="cp-responsive"><span>Not Responsive</span></div>
+        <div class="cp-option" onclick="cpSelect('responsive','technical',this)"><input type="radio" name="cp-responsive"><span>Technical Issue</span></div>
+      </div>
+      <div class="cp-field-label">PRIVILEGE</div>
+      <div id="cp-field-privilege">
+        <div class="cp-option" onclick="cpSelect('privilege','not-privileged',this)"><input type="radio" name="cp-privilege"><span>Not Privileged</span></div>
+        <div class="cp-option" onclick="cpSelect('privilege','privileged',this)"><input type="radio" name="cp-privilege"><span>Privileged</span></div>
+        <div class="cp-option" onclick="cpSelect('privilege','redact-priv',this)"><input type="radio" name="cp-privilege"><span>Redact (Privilege)</span></div>
+      </div>
+      <div class="cp-field-label">ISSUE TAGS</div>
+      <div id="cp-field-issues">
+        <div class="cp-option" onclick="cpToggleIssue('issue1',this)"><input type="checkbox"><span style="font-size:.71rem;">Pricing/Bidding</span></div>
+        <div class="cp-option" onclick="cpToggleIssue('issue2',this)"><input type="checkbox"><span style="font-size:.71rem;">Market Share</span></div>
+        <div class="cp-option" onclick="cpToggleIssue('issue3',this)"><input type="checkbox"><span style="font-size:.71rem;">Merger Rationale</span></div>
+        <div class="cp-option" onclick="cpToggleIssue('issue4',this)"><input type="checkbox"><span style="font-size:.71rem;">Hot Doc</span></div>
+      </div>
+      <div class="cp-field-label">PRODUCTION</div>
+      <div id="cp-field-action">
+        <div class="cp-option" onclick="cpSelect('action','produce',this)"><input type="radio" name="cp-action"><span>Produce</span></div>
+        <div class="cp-option" onclick="cpSelect('action','withhold',this)"><input type="radio" name="cp-action"><span>Withhold</span></div>
+        <div class="cp-option" onclick="cpSelect('action','redact',this)"><input type="radio" name="cp-action"><span>Redact</span></div>
+      </div>
+      <div class="cp-field-label">CONFIDENTIALITY</div>
+      <div id="cp-field-conf">
+        <div class="cp-option" onclick="cpSelect('conf','confidential',this)"><input type="radio" name="cp-conf"><span>Confidential</span></div>
+        <div class="cp-option" onclick="cpSelect('conf','hc-aeo',this)"><input type="radio" name="cp-conf"><span>Highly Conf. – AEO</span></div>
+      </div>
+      <div class="cp-submit-section">
+        <button class="cp-submit-btn" id="cp-submit-btn" onclick="cpSubmitCoding()" disabled>Save Coding →</button>
+        <button class="cp-skip-btn" onclick="cpNav(1)">Skip →</button>
       </div>
     </div>
   </div>
