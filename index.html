@@ -4916,6 +4916,252 @@ var CP_DOCS = [
     explanation:"Smoking-gun hot document: the CEO tries to keep the post-merger price-increase plan out of writing to evade government discovery. Highly responsive — Issue 1 (Pricing/Bidding) and Issue 4 (Hot Doc). Not privileged (no lawyer, no legal advice). Produce as Highly Confidential – AEO." }
 ];
 
+// ══════════════════════════════════════════════════════════════════════════
+// CASEPOINT — GENERATED SECOND-REQUEST REVIEW VOLUME (NS-0016 … NS-0415)
+// 400 additional documents built deterministically from weighted first-level
+// review archetypes. Each archetype fixes a defensible coding answer; surface
+// details (custodian, names, dates, lanes, customers, $ figures) vary so the
+// queue reads like a real DOJ Second Request review while every document stays
+// codeable. Deterministic PRNG => the same 400 docs render every load, so
+// localStorage progress (keyed by doc id) stays stable.
+// ══════════════════════════════════════════════════════════════════════════
+(function buildCasepointVolume(){
+  function rngFor(seed){ var s=(seed>>>0)||1; return function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+  function pick(r,a){ return a[Math.floor(r()*a.length)]; }
+  function first(name){ return (name||'').split(' ')[0]; }
+
+  var ROSTER = {
+    'cust-ceo':  {name:'Daniel Reyes (CEO)',           email:'d.reyes@northstarlog.com'},
+    'cust-cfo':  {name:'Karen Whitfield (CFO)',        email:'k.whitfield@northstarlog.com'},
+    'cust-gc':   {name:'Monica Feld (GC)',             email:'m.feld@northstarlog.com'},
+    'cust-strat':{name:'Alan Pierce (Strategy)',       email:'a.pierce@northstarlog.com'},
+    'cust-vps':  {name:'Tom Bachová (VP Sales)',       email:'t.bachova@northstarlog.com'},
+    'cust-coo':  {name:'Priya Nadkarni (COO)',         email:'p.nadkarni@northstarlog.com'},
+    'cust-fin':  {name:'Greg Tanaka (Finance Dir.)',   email:'g.tanaka@northstarlog.com'},
+    'cust-ops':  {name:'Operations Desk',              email:'ops@northstarlog.com'},
+    'cust-hr':   {name:'HR Shared Services',           email:'hr@northstarlog.com'},
+    'cust-mktg': {name:'Rachel Lindqvist (Marketing)', email:'r.lindqvist@northstarlog.com'}
+  };
+  function person(cust){ var r=ROSTER[cust]; return r.name+' <'+r.email+'>'; }
+  function other(r, notCust){
+    var keys=Object.keys(ROSTER).filter(function(k){return k!==notCust;});
+    return ROSTER[pick(r,keys)];
+  }
+  var COUNSEL = [
+    {name:'Susan Choi',   email:'s.choi@harlancrowe.com'},
+    {name:'David Mercer', email:'d.mercer@harlancrowe.com'},
+    {name:'Elena Vargas', email:'e.vargas@harlancrowe.com'}
+  ];
+  function counsel(r){ var c=pick(r,COUNSEL); return c.name+' <'+c.email+'>'; }
+
+  var LANES = ['the I-70 corridor','the KC–STL lane','the Chicago–Detroit lane','the I-35 corridor','the Twin Cities lanes','the Ohio Valley lanes','the Dallas–Houston lane','the Gulf Coast lanes','the Mid-Atlantic lanes'];
+  var CUSTOMERS = ['GlobalMart','ChainPoint','BuildRite Supply','Atlas Retail','NovaParts','Continental Foods','MetroGoods','Pacific Imports','Sunbelt Distributors'];
+  var REGIONS = ['the Midwest','the Southeast','the Gulf Coast','the Mid-Atlantic','the Great Lakes region','the 5-state Midwest region'];
+  var MONTHS = [['November',2023],['December',2023],['January',2024],['February',2024],['March',2024],['April',2024],['May',2024]];
+  function dateStr(r){ var m=pick(r,MONTHS), day=1+Math.floor(r()*28), h=1+Math.floor(r()*12), mn=Math.floor(r()*60), ap=r()<0.5?'AM':'PM'; return m[0]+' '+day+', '+m[1]+' · '+h+':'+(mn<10?'0'+mn:mn)+' '+ap; }
+  function pct(r){ return 8+Math.floor(r()*13); }
+  function bigPct(r){ return 52+Math.floor(r()*18); }
+  function dealVal(r){ return pick(r,['$1.2B','$1.4B','$1.6B','$980M','$1.1B']); }
+  function synVal(r){ return pick(r,['$150M','$180M','$210M','$165M','$195M']); }
+
+  // Each archetype: weight w, eligible custodians, and make(r,cust,ros) returning
+  // { type, subject, from, to, cc, body, issues, answer, explanation }.
+  var A = [
+    { w:6, cust:['cust-ceo','cust-cfo','cust-vps','cust-strat'], make:function(r,cust,ros){
+        var rcv=other(r,cust), lane=pick(r,LANES), p=pct(r);
+        return { type:'email',
+          subject:pick(r,['Re: post-close pricing plan','Rate plan once the deal clears','Pricing after close — keep quiet','Don’t put this in a deck','Post-close increase schedule']),
+          from:person(cust), to:rcv.name+' <'+rcv.email+'>', cc:'',
+          body:first(rcv.name)+',\n\nGood work on the rate model. Once we own Meridian we can move rates up '+p+'% on '+lane+' — there is nowhere else for those shippers to go. Let’s NOT put the increase schedule in writing or in any deck until the deal actually clears; talk it through with me by phone. — '+first(ros.name),
+          issues:['issue1','issue4'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue1','issue4'] },
+          explanation:'Hot document tying a post-close price increase to the merger and trying to keep it out of writing — highly responsive, Issue 1 (Pricing/Bidding) and Issue 4 (Hot Doc). No lawyer and no legal advice, so not privileged. Produce as Highly Confidential – AEO.' };
+      }},
+    { w:5, cust:['cust-vps','cust-ops'], make:function(r,cust,ros){
+        var cn=pick(r,CUSTOMERS);
+        return { type:'email',
+          subject:pick(r,['Re: '+cn+' RFP — hold the line',''+cn+' bid — do not undercut','Pricing on the '+cn+' tender']),
+          from:person(cust), to:'Regional Sales Leads <sales-leads@northstarlog.com>', cc:'',
+          body:'Team,\n\nOn the '+cn+' RFP — do NOT undercut Meridian’s number. We are about to own them anyway, and a price war now just trains the customer to expect discounts we’ll want to claw back post-close. Hold at list. If they push, tell them capacity is tight.\n\n'+first(ros.name),
+          issues:['issue1','issue4'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue1','issue4'] },
+          explanation:'Direct evidence of bidding strategy coordinated around the pending merger — responsive, Issue 1 (Pricing/Bidding) and Issue 4 (Hot Doc). Not privileged. Produce as Highly Confidential – AEO because it is competitively sensitive.' };
+      }},
+    { w:4, cust:['cust-vps','cust-fin'], make:function(r,cust){
+        var cn=pick(r,CUSTOMERS);
+        return { type:'file',
+          subject:cn+' national rate card 2024 (confidential)',
+          from:'', to:'', cc:'',
+          body:'Customer-specific negotiated rate card for '+cn+', one of NorthStar’s largest accounts. Contains per-lane pricing, fuel-surcharge formulas, and volume rebate tiers.',
+          issues:['issue1'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue1'] },
+          explanation:'Customer-specific competitive pricing — responsive and Issue 1 (Pricing/Bidding). Not privileged, but extremely competitively sensitive, so produce as Highly Confidential – AEO under the protective order.' };
+      }},
+    { w:5, cust:['cust-strat','cust-fin'], make:function(r,cust){
+        var region=pick(r,REGIONS), comb=bigPct(r), ns=24+Math.floor(r()*8), me=14+Math.floor(r()*8);
+        return { type:'memo',
+          subject:'Combined market share — '+region.replace('the ','')+' LTL (analysis summary)',
+          from:person(cust), to:'Strategy Distribution <strategy@northstarlog.com>', cc:'',
+          body:'Summary of attached model:\n\n- NorthStar regional LTL share: '+ns+'%\n- Meridian regional LTL share: '+me+'%\n- Combined: '+(ns+me)+'% in '+region+'\n- In several metro lanes the combined share exceeds '+comb+'%.\n\nRecommend legal review the concentration figures before any external use.',
+          issues:['issue2'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue2'] },
+          explanation:'Internal market-share analysis going to the heart of the competitive-effects inquiry — responsive, Issue 2 (Market Share). The ‘recommend legal review’ line is a routine business suggestion, not legal advice, so it is not privileged. Produce as Highly Confidential – AEO.' };
+      }},
+    { w:5, cust:['cust-ceo','cust-strat','cust-coo'], make:function(r,cust,ros){
+        return { type:'memo',
+          subject:pick(r,['Board memo — strategic rationale for Meridian','Why the Meridian deal matters','Strategic case for the acquisition']),
+          from:person(cust), to:'Board of Directors <board@northstarlog.com>', cc:'',
+          body:'Directors,\n\nThe strategic case for acquiring Meridian rests on three pillars: (1) terminal-network overlap yielding '+synVal(r)+' in synergies, (2) removal of the most aggressive discounter in our core region, and (3) a stronger negotiating position with national shippers. Management recommends approval to proceed.\n\n'+first(ros.name),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Board-level statement of deal rationale — squarely responsive and Issue 3 (Merger Rationale). ‘Removal of the most aggressive discounter’ is competitively significant. Not privileged; produce as Highly Confidential – AEO.' };
+      }},
+    { w:4, cust:['cust-strat','cust-coo','cust-fin'], make:function(r,cust,ros){
+        return { type:'memo',
+          subject:pick(r,['Integration synergy plan v'+(2+Math.floor(r()*6)),'Terminal consolidation roadmap','Post-close integration plan']),
+          from:person(cust), to:'Integration Steering Committee <integration@northstarlog.com>', cc:'',
+          body:'Draft integration plan targeting '+synVal(r)+' in run-rate synergies, mostly from terminal consolidation across overlapping lanes. Timeline assumes a Q4 close. Operations should NOT receive the pricing portion until the waiting period expires.\n\n'+first(ros.name),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Integration planning tied to the merger — responsive, Issue 3 (Merger Rationale). Business planning, not legal advice, so not privileged. Produce as Highly Confidential – AEO given the competitively sensitive synergy detail.' };
+      }},
+    { w:4, cust:['cust-strat','cust-vps'], make:function(r,cust,ros){
+        var lane=pick(r,LANES), rcv=other(r,cust);
+        return { type:'email',
+          subject:pick(r,['Meridian pricing intel','Competitor read — Meridian','What Meridian is quoting on '+lane]),
+          from:person(cust), to:rcv.name+' <'+rcv.email+'>',
+          cc:'',
+          body:'Heard from a shipper that Meridian is quoting roughly '+pct(r)+'% under us on '+lane+', and their regional share is creeping up. Once we combine, that pressure goes away. Flagging for the share model.',
+          issues:['issue1','issue2'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'hc-aeo', issues:['issue1','issue2'] },
+          explanation:'Competitive intelligence on the target’s pricing and share — responsive, Issue 1 (Pricing/Bidding) and Issue 2 (Market Share). Not privileged. Produce as Highly Confidential – AEO.' };
+      }},
+    { w:6, cust:['cust-ops','cust-vps'], make:function(r,cust){
+        var lane=pick(r,LANES), wk=1+Math.floor(r()*20);
+        return { type:'email',
+          subject:'Weekly volume report — wk '+(wk<10?'0'+wk:wk),
+          from:'Operations Desk <ops@northstarlog.com>', to:person(cust), cc:'',
+          body:'Weekly lane volumes attached. Notable: Meridian appears to have pulled capacity from '+lane+'; our tonnage there is up '+(2+Math.floor(r()*6))+'% week-over-week. No service issues to report.',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:[] },
+          explanation:'Ordinary-course operational report that mentions the target’s competitive behavior — responsive and producible, but routine. No hot-doc or strategy content, so no issue tags. Produce as Confidential.' };
+      }},
+    { w:3, cust:['cust-gc'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Logistics for the DOJ collection kickoff','Conference room + lunch for Thursday','Custodian list logistics']),
+          from:person(cust), to:'Alan Pierce (Strategy) <a.pierce@northstarlog.com>', cc:'',
+          body:'Can you book the large conference room for Thursday 2pm and make sure IT has the custodian list ready? Also please order lunch for ~'+(10+Math.floor(r()*10))+'. Thanks.',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:[] },
+          explanation:'Although it is from the GC, this is pure logistics (booking a room, ordering lunch) with no legal advice — so NOT privileged. It references the DOJ collection, making it responsive. Produce as Confidential. Counsel involvement alone does not create privilege.' };
+      }},
+    { w:4, cust:['cust-gc'], make:function(r,cust){
+        return { type:'email',
+          subject:'PRIVILEGED & CONFIDENTIAL — '+pick(r,['Antitrust risk assessment','HHI analysis','Merger litigation-risk memo']),
+          from:counsel(r), to:person(cust), cc:'Daniel Reyes (CEO) <d.reyes@northstarlog.com>',
+          body:first(ROSTER[cust].name)+',\n\nAt your request, this memo sets out our legal assessment of antitrust exposure for the Meridian acquisition, including post-merger HHI in the relevant LTL markets and our advice on litigation risk should DOJ challenge the deal. This communication is provided for the purpose of legal advice and is protected by the attorney-client privilege.\n\n[Legal analysis follows...]\n\nHarlan & Crowe LLP',
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'privileged', action:'withhold', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Legal advice from outside antitrust counsel to the GC, for the purpose of legal advice — attorney-client privileged. Responsive to merger rationale (Issue 3) but withheld for privilege. The CEO cc does not break privilege because he is the client.' };
+      }},
+    { w:3, cust:['cust-gc'], make:function(r,cust){
+        return { type:'memo',
+          subject:'WORK PRODUCT — '+pick(r,['DOJ Second Request response strategy','merger-challenge defense outline','agency theories-of-harm analysis']),
+          from:person(cust), to:'File — Litigation Prep', cc:'',
+          body:'Prepared in anticipation of a DOJ Second Request and potential merger-challenge litigation. This memo reflects counsel’s mental impressions and strategy regarding likely custodians, anticipated agency theories of harm, and our defense approach. Attorney work product — do not distribute.',
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'privileged', action:'withhold', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Attorney work product prepared in anticipation of litigation, reflecting counsel’s mental impressions — privileged and withheld. Responsive and touches merger rationale/defense (Issue 3). Withhold and log on the privilege log.' };
+      }},
+    { w:4, cust:['cust-ceo','cust-strat','cust-cfo'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Re: gun-jumping question','HSR waiting period — counsel’s view','Can we share the pricing plan yet?']),
+          from:'Monica Feld (GC) <m.feld@northstarlog.com>', to:person(cust), cc:'',
+          body:'Per my legal advice: do not circulate the integration pricing plan to operations or coordinate pricing with Meridian until the HSR waiting period expires — doing so creates gun-jumping exposure. Call me before any external step. This email is for the purpose of legal advice. — Monica',
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'privileged', action:'withhold', conf:'confidential', issues:['issue3'] },
+          explanation:'In-house counsel giving legal advice on gun-jumping/HSR compliance, confidentially — attorney-client privileged. Responsive to merger rationale (Issue 3). Withhold and log; here the advice is the entire document, so withhold rather than redact.' };
+      }},
+    { w:4, cust:['cust-strat','cust-ceo','cust-cfo'], make:function(r,cust,ros){
+        return { type:'email',
+          subject:'Meridian — deal terms + one legal note',
+          from:person(cust), to:'Daniel Reyes (CEO) <d.reyes@northstarlog.com>', cc:'Monica Feld (GC) <m.feld@northstarlog.com>',
+          body:'Deal structure for the board: '+dealVal(r)+' enterprise value, 60/40 cash-stock, targeting Q4 close. Synergy target '+synVal(r)+' run-rate, mostly terminal consolidation.\n\nMonica adds (for our legal benefit): per counsel’s advice, we should not circulate the integration pricing plan to operations until after the waiting period expires, to limit antitrust gun-jumping exposure.\n\n'+first(ros.name),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'redact-priv', action:'redact', conf:'confidential', issues:['issue3'] },
+          explanation:'Mixed document: deal terms are ordinary responsive business content (Issue 3), but the paragraph relaying the GC’s legal advice is privileged. Redact the privileged paragraph and produce the rest — Privilege = ‘Redact (Privilege)’, Production = ‘Redact’.' };
+      }},
+    { w:3, cust:['cust-hr','cust-cfo'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Retention bonus list — integration team','Integration-team comp + PII','Severance/retention detail']),
+          from:'HR Shared Services <hr@northstarlog.com>', to:person(cust), cc:'',
+          body:'Proposed retention bonuses for the '+(8+Math.floor(r()*9))+' integration-team employees, with names, home addresses, SSNs, and salary. Please approve. (Full PII included per Finance request.)',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'redact', conf:'confidential', issues:[] },
+          explanation:'Responsive (integration planning), not privileged, but contains employee PII (SSNs, home addresses). Redact the PII before producing — Production = ‘Redact’. Confidential designation.' };
+      }},
+    { w:5, cust:['cust-ceo','cust-cfo','cust-vps','cust-coo','cust-strat'], make:function(r,cust,ros){
+        var rcv=other(r,cust);
+        return { type:'email',
+          subject:pick(r,['Saturday golf?','Dinner Friday','Kid’s recital','Fantasy league draft','Lunch next week?']),
+          from:person(cust), to:rcv.name+' <'+rcv.email+'>', cc:'',
+          body:first(rcv.name)+' — '+pick(r,['the club has a 9:10 tee time Saturday, bring your better driver.','dinner with the families after the game?','can you make the recital at 6? Running late from the office.','our fantasy draft is Thursday, don’t forget.','want to grab lunch next week? My treat.'])+' — '+first(ros.name),
+          issues:[],
+          answer:{ responsive:'non-responsive', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'Purely personal/social arrangement with no connection to the transaction or any Second Request specification. Not responsive; withhold (do not produce). No privilege and no issue tags.' };
+      }},
+    { w:4, cust:['cust-cfo','cust-coo'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Office sublease — NorthStar Realty Holdings','Parking-garage lease renewal','HQ floor sublet terms']),
+          from:'RealCo Property <leasing@realco.com>', to:person(cust), cc:'',
+          body:'Attached is the proposed sublease for the downtown floor held by NorthStar Realty Holdings, your commercial real-estate subsidiary. This is unrelated to freight operations. Let us know on the renewal terms.',
+          issues:[],
+          answer:{ responsive:'non-responsive', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'Concerns a commercial real-estate subsidiary unrelated to the freight business under review — outside the scope of the Second Request specifications. Not responsive; withhold. No privilege or issue tags.' };
+      }},
+    { w:4, cust:['cust-mktg','cust-ops','cust-hr'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Logistics Weekly — industry newsletter','Webinar: 2024 freight trends','Your office-supply order shipped','Wellness Wednesday reminder']),
+          from:pick(r,['Logistics Weekly <news@logisticsweekly.com>','Events <events@freightconf.com>','Staples Business <orders@staples.com>','Wellness <wellness@northstarlog.com>']),
+          to:person(cust), cc:'',
+          body:pick(r,['This week in freight: capacity trends, fuel index, and a webinar invite. Unsubscribe at the link below.','Join our webinar on 2024 LTL trends. Free registration.','Your recent office-supply order has shipped and will arrive in 2 business days.','Friendly reminder: Wellness Wednesday yoga at noon in the atrium.']),
+          issues:[],
+          answer:{ responsive:'non-responsive', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'Bulk newsletter / routine administrative noise with no connection to the merger or any specification. Not responsive; withhold. No privilege or issue tags. Teaches quick disposal of obvious junk without over-coding.' };
+      }},
+    { w:3, cust:['cust-cfo','cust-fin','cust-strat','cust-ops'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['meridian_synergy_model_v'+(2+Math.floor(r()*7))+'.xlsm (unreadable)','board_deck_final.pptx (corrupted)','pricing_workbook.xlsb (no text extracted)']),
+          from:'', to:'', cc:'',
+          body:'[This file could not be rendered for review. It appears to be password-protected / corrupted and no text could be extracted. Flag to the technical/processing team for re-collection.]',
+          issues:[],
+          answer:{ responsive:'technical', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'The document cannot be reviewed because it failed processing. Code Responsiveness as ‘Technical Issue’ and route for re-collection rather than guessing. Withhold pending a readable version; do not assign substantive issue tags to an unreadable file.' };
+      }}
+  ];
+
+  function fileDate(r){ var m=pick(r,MONTHS); return m[0]+' '+(1+Math.floor(r()*28))+', '+m[1]; }
+
+  // Weighted pool of archetype indices.
+  var POOL=[];
+  A.forEach(function(a,i){ for(var k=0;k<a.w;k++) POOL.push(i); });
+
+  for (var n=16; n<=415; n++){
+    var r = rngFor(n*2654435761 + 17);
+    var arch = A[POOL[Math.floor(r()*POOL.length)]];
+    var cust = pick(r, arch.cust);
+    var d = arch.make(r, cust, ROSTER[cust]);
+    var id = 'NS-' + (n<1000 ? ('000'+n).slice(-4) : n);
+    CP_DOCS.push({
+      id:id, type:d.type, custodian:cust, tags:d.issues.slice(),
+      from:d.from, to:d.to, cc:d.cc,
+      date:(d.type==='file' ? fileDate(r) : dateStr(r)),
+      subject:d.subject, body:d.body,
+      answer:d.answer, explanation:d.explanation
+    });
+  }
+})();
+
 function openCasepointCase() {
   var shell = document.getElementById('casepoint-shell');
   shell.style.display = 'flex';
