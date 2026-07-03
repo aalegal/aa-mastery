@@ -13,13 +13,15 @@ Deno.serve(async (req) => {
   if (!token || token !== Deno.env.get("JOB_INGEST_TOKEN")) {
     return json({ error: "unauthorized" }, 401);
   }
+  const raw = await req.text();
+  if (raw.length > 512 * 1024) return json({ error: "payload too large" }, 413);
   let body: { leads?: unknown[] };
   try {
-    body = await req.json();
+    body = JSON.parse(raw);
   } catch {
     return json({ error: "bad json" }, 400);
   }
-  const leads = Array.isArray(body.leads) ? body.leads : [];
+  const leads = Array.isArray(body.leads) ? body.leads.slice(0, 200) : [];
 
   const VALID_SOURCES = ["indeed", "craigslist", "linkedin", "glassdoor", "ziprecruiter", "google", "agency", "other"];
   const rows = [];
@@ -30,15 +32,16 @@ Deno.serve(async (req) => {
     const norm = [l.title, l.company || "", source].join("|").toLowerCase().replace(/\s+/g, " ").trim();
     const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(norm));
     const hash = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, "0")).join("");
+    const cap = (v: unknown, n: number) => (typeof v === "string" && v ? v.slice(0, n) : null);
     rows.push({
       title: String(l.title).slice(0, 300),
-      company: l.company || null,
+      company: cap(l.company, 200),
       source,
-      url: l.url || null,
-      apply_email: l.apply_email || null,
-      pay: l.pay || null,
-      location: l.location || null,
-      description: l.description ? String(l.description).slice(0, 1000) : null,
+      url: typeof l.url === "string" && /^https?:\/\//i.test(l.url) ? l.url.slice(0, 500) : null,
+      apply_email: cap(l.apply_email, 200),
+      pay: cap(l.pay, 100),
+      location: cap(l.location, 200),
+      description: cap(l.description, 1000),
       posted_date: l.posted_date && /^\d{4}-\d{2}-\d{2}$/.test(l.posted_date) ? l.posted_date : null,
       dedupe_hash: hash,
     });
