@@ -229,6 +229,17 @@ tr:nth-child(even) td{background:#0d162080}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:5px}
 @keyframes spin{to{transform:rotate(360deg)}}
 .admin-warning{background:#e5393518;border:1px solid var(--red);border-radius:8px;padding:13px;margin-bottom:14px;font-size:.85rem;color:#ff5252}
+.jl-row{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;background:#0b111c;border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:10px;flex-wrap:wrap}
+.jl-row.jl-new{border-color:var(--gold)}
+.jl-badge{display:inline-block;font-size:.68rem;font-weight:700;padding:2px 8px;border-radius:10px;text-transform:uppercase;letter-spacing:.4px;color:#fff}
+.jl-meta{font-size:.78rem;color:var(--muted);margin-top:4px}
+.jl-title{font-weight:700;font-size:.95rem}
+.jl-title a{color:var(--gold-light);text-decoration:none}
+.jl-title a:hover{text-decoration:underline}
+.jl-chip{background:#111827;border:1px solid var(--border);color:var(--muted);padding:4px 10px;border-radius:14px;cursor:pointer;font-size:.75rem}
+.jl-chip.active{background:linear-gradient(135deg,var(--sapphire),var(--sapphire-mid));color:var(--gold-light);border-color:var(--sapphire-light);font-weight:700}
+.jl-newtag{background:var(--gold);color:#111;font-size:.62rem;font-weight:800;border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:middle}
+.jl-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 
 /* ══ eDISCOVERY PLAYBOOK ══ */
 .pb-agency-tabs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:16px}
@@ -2007,25 +2018,70 @@ tr:nth-child(even) td{background:#0d162080}
   <div class="card">
     <h2>⚙️ Admin Panel</h2>
     <div class="admin-warning">⚠️ This panel is restricted to the site administrator only. Actions here are irreversible.</div>
-    <h3>User Score Management</h3>
-    <div id="admin-users"><div style="color:var(--muted)"><span class="spinner"></span>Loading users...</div></div>
-  </div>
-  <div class="card">
-    <h2>📊 All Scores Overview</h2>
-    <div id="admin-scores"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
-  </div>
-  <div class="card">
-    <h2>🛡️ Login Security Alerts</h2>
-    <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Non-US logins and VPN/proxy connections are logged automatically and sent to Slack on every sign-in.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
-      <button class="btn btn-outline btn-sm" onclick="adminRunGeoTest()">🔍 Test My Current IP</button>
-      <button class="btn btn-outline btn-sm" id="btn-test-slack" onclick="adminTestSlack()">📨 Send Test Slack Alert</button>
+    <div class="stat-row" style="margin:16px 0 14px">
+      <div class="stat"><div class="stat-num" id="ast-new">—</div><div class="stat-lbl">New Leads Today</div></div>
+      <div class="stat"><div class="stat-num" id="ast-leads">—</div><div class="stat-lbl">Total Leads</div></div>
+      <div class="stat"><div class="stat-num" id="ast-users">—</div><div class="stat-lbl">Users</div></div>
+      <div class="stat"><div class="stat-num" id="ast-alerts">—</div><div class="stat-lbl">Alerts (7d)</div></div>
     </div>
-    <div id="admin-geo-test" style="margin-bottom:16px"></div>
-    <h3>Per-User Summary</h3>
-    <div id="admin-alert-summary"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
-    <h3 style="margin-top:24px">Recent Alerts <span id="admin-alerts-count" style="font-size:.8rem;color:var(--muted);font-weight:400"></span></h3>
-    <div id="admin-alerts"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+    <div class="rtabs" id="admin-tabs">
+      <button type="button" class="rtab active" onclick="showAdminTab('jobs',this)">📋 Job Leads</button>
+      <button type="button" class="rtab" onclick="showAdminTab('users',this)">👥 Users &amp; Scores</button>
+      <button type="button" class="rtab" onclick="showAdminTab('security',this)">🛡️ Security</button>
+    </div>
+  </div>
+
+  <div id="apane-jobs" class="rpane active">
+    <div class="card">
+      <h2>💼 Job Leads <span id="jl-count" style="font-size:.8rem;color:var(--muted);font-weight:400"></span></h2>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Remote document review &amp; eDiscovery roles found daily by the AI scanner (runs ~8 AM ET).</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px" id="jl-status-chips">
+        <button type="button" class="jl-chip active" onclick="jlSetFilter('status','new',this)">🆕 New</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('status','applied',this)">✅ Applied</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('status','dismissed',this)">🚫 Dismissed</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('status','all',this)">All</button>
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px" id="jl-source-chips">
+        <button type="button" class="jl-chip active" onclick="jlSetFilter('source','all',this)">All Sources</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','indeed',this)">Indeed</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','linkedin',this)">LinkedIn</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','craigslist',this)">Craigslist</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','glassdoor',this)">Glassdoor</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','ziprecruiter',this)">ZipRecruiter</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','google',this)">Google</button>
+        <button type="button" class="jl-chip" onclick="jlSetFilter('source','agency',this)">Agencies</button>
+      </div>
+      <input id="jl-search" placeholder="Search title, company, description…" oninput="jlSearch(this.value)"
+        style="width:100%;background:#0b111c;border:1px solid var(--border);border-radius:6px;color:inherit;padding:8px 10px;margin-bottom:12px;font-size:.85rem">
+      <div id="jl-list"><div style="color:var(--muted)"><span class="spinner"></span>Loading leads...</div></div>
+    </div>
+  </div>
+
+  <div id="apane-users" class="rpane">
+    <div class="card">
+      <h3>User Score Management</h3>
+      <div id="admin-users"><div style="color:var(--muted)"><span class="spinner"></span>Loading users...</div></div>
+    </div>
+    <div class="card">
+      <h2>📊 All Scores Overview</h2>
+      <div id="admin-scores"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+    </div>
+  </div>
+
+  <div id="apane-security" class="rpane">
+    <div class="card">
+      <h2>🛡️ Login Security Alerts</h2>
+      <p style="color:var(--muted);font-size:.85rem;margin-bottom:12px">Non-US logins and VPN/proxy connections are logged automatically and sent to Slack on every sign-in.</p>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">
+        <button class="btn btn-outline btn-sm" onclick="adminRunGeoTest()">🔍 Test My Current IP</button>
+        <button class="btn btn-outline btn-sm" id="btn-test-slack" onclick="adminTestSlack()">📨 Send Test Slack Alert</button>
+      </div>
+      <div id="admin-geo-test" style="margin-bottom:16px"></div>
+      <h3>Per-User Summary</h3>
+      <div id="admin-alert-summary"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+      <h3 style="margin-top:24px">Recent Alerts <span id="admin-alerts-count" style="font-size:.8rem;color:var(--muted);font-weight:400"></span></h3>
+      <div id="admin-alerts"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+    </div>
   </div>
 </div>
 
@@ -2801,7 +2857,10 @@ const SB={
   async getTactical(){return this.req('GET','/rest/v1/tactical?select=*&order=person.asc,row_date.desc,id.desc')},
   async addTactical(rec){try{const r=await axios({method:'POST',url:this.url+'/rest/v1/tactical',headers:this.hdr({'Prefer':'return=representation'}),data:rec});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
   async updateTactical(id,patch){return this.req('PATCH','/rest/v1/tactical?id=eq.'+id,patch)},
-  async deleteTactical(id){return this.req('DELETE','/rest/v1/tactical?id=eq.'+id)}
+  async deleteTactical(id){return this.req('DELETE','/rest/v1/tactical?id=eq.'+id)},
+  // Job leads (admin-only via RLS)
+  async getJobLeads(){return this.req('GET','/rest/v1/job_leads?select=*&order=found_at.desc&limit=500')},
+  async updateJobLead(id,patch){return this.req('PATCH','/rest/v1/job_leads?id=eq.'+id,patch)}
 };
 
 // Token handling moved to checkWallToken() below — runs after DOM is ready
@@ -3280,6 +3339,12 @@ async function adminRunGeoTest(){
   }
 }
 
+function showAdminTab(id,btn){
+  document.querySelectorAll('#page-admin .rpane').forEach(function(p){p.classList.remove('active');});
+  document.querySelectorAll('#admin-tabs .rtab').forEach(function(t){t.classList.remove('active');});
+  var pane=document.getElementById('apane-'+id);if(pane)pane.classList.add('active');
+  if(btn)btn.classList.add('active');
+}
 async function loadAdmin(){
   var u=SB.user;
   if(!u||u.email!==ADMIN_EMAIL){
