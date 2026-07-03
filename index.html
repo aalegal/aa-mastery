@@ -3339,6 +3339,69 @@ async function adminRunGeoTest(){
   }
 }
 
+/* ===================== JOB LEADS BOARD (admin) ===================== */
+var JL_DATA=[],JL_FILTER={status:'new',source:'all',q:''},JL_LAST_VISIT=0;
+var JL_SRC_COLORS={indeed:'#2557a7',craigslist:'#8a2be2',linkedin:'#0a66c2',glassdoor:'#0caa41',ziprecruiter:'#6fa82f',google:'#ea4335',agency:'#b8860b',other:'#5a6a7a'};
+function astSet(id,v){var e=document.getElementById(id);if(e)e.textContent=v;}
+async function loadJobLeads(){
+  var el=document.getElementById('jl-list');if(!el)return;
+  el.innerHTML='<div style="color:var(--muted)"><span class="spinner"></span>Loading leads...</div>';
+  JL_LAST_VISIT=parseInt(localStorage.getItem('jl_last_visit')||'0',10);
+  var r=await SB.getJobLeads();
+  if(r.error){el.innerHTML='<p style="color:var(--red)">'+esc(r.error)+' <button type="button" class="btn btn-sm btn-outline" onclick="loadJobLeads()">Retry</button></p>';return;}
+  JL_DATA=r.data||[];
+  renderJobLeads();
+  var t=new Date();t.setHours(0,0,0,0);
+  astSet('ast-new',JL_DATA.filter(function(l){return new Date(l.found_at)>=t;}).length);
+  astSet('ast-leads',JL_DATA.length);
+  localStorage.setItem('jl_last_visit',String(Date.now()));
+}
+function jlSetFilter(kind,val,btn){
+  JL_FILTER[kind]=val;
+  if(btn){btn.parentElement.querySelectorAll('.jl-chip').forEach(function(c){c.classList.remove('active');});btn.classList.add('active');}
+  renderJobLeads();
+}
+function jlSearch(v){JL_FILTER.q=(v||'').toLowerCase();renderJobLeads();}
+async function jlSetStatus(id,status){
+  var r=await SB.updateJobLead(id,{status:status});
+  if(r.error){alert('Update failed: '+r.error);return;}
+  JL_DATA.forEach(function(l){if(l.id===id)l.status=status;});
+  renderJobLeads();
+}
+function renderJobLeads(){
+  var el=document.getElementById('jl-list');if(!el)return;
+  var f=JL_FILTER;
+  var rows=JL_DATA.filter(function(l){
+    if(f.status!=='all'&&l.status!==f.status)return false;
+    if(f.source!=='all'&&l.source!==f.source)return false;
+    if(f.q&&((l.title||'')+' '+(l.company||'')+' '+(l.description||'')).toLowerCase().indexOf(f.q)===-1)return false;
+    return true;
+  });
+  var cnt=document.getElementById('jl-count');if(cnt)cnt.textContent='('+rows.length+' shown · '+JL_DATA.length+' total)';
+  if(!rows.length){el.innerHTML='<p style="color:var(--muted)">No leads here. The scanner runs daily at ~8 AM ET — try the All filter or check back tomorrow.</p>';return;}
+  var h='';
+  rows.forEach(function(l){
+    var c=JL_SRC_COLORS[l.source]||JL_SRC_COLORS.other;
+    var isNew=l.status==='new'&&JL_LAST_VISIT&&new Date(l.found_at).getTime()>JL_LAST_VISIT;
+    var safeUrl=(l.url&&/^https?:\/\//i.test(l.url))?l.url:null; // only link http(s) — scraped data could carry javascript: URLs
+    var title=safeUrl?'<a href="'+escAttr(safeUrl)+'" target="_blank" rel="noopener">'+esc(l.title)+'</a>':esc(l.title);
+    var applyBtn=safeUrl?'<a class="btn btn-sm" href="'+escAttr(safeUrl)+'" target="_blank" rel="noopener">Apply ↗</a>':(l.apply_email?'<a class="btn btn-sm" href="mailto:'+escAttr(l.apply_email)+'">✉️ Email Resume</a>':'');
+    var acts='';
+    if(l.status==='new')acts='<button type="button" class="btn btn-sm btn-outline" onclick="jlSetStatus(\''+escAttr(l.id)+'\',\'applied\')">✅ Applied</button><button type="button" class="btn btn-sm btn-outline" onclick="jlSetStatus(\''+escAttr(l.id)+'\',\'dismissed\')">🚫 Dismiss</button>';
+    else acts='<button type="button" class="btn btn-sm btn-outline" onclick="jlSetStatus(\''+escAttr(l.id)+'\',\'new\')">↩︎ Restore</button>';
+    h+='<div class="jl-row'+(isNew?' jl-new':'')+'">'
+      +'<div style="flex:1;min-width:240px">'
+      +'<div class="jl-title">'+title+(isNew?'<span class="jl-newtag">NEW</span>':'')+'</div>'
+      +'<div class="jl-meta">'+esc(l.company||'—')+(l.location?' · '+esc(l.location):'')+(l.pay?' · <strong style="color:var(--gold-light)">'+esc(l.pay)+'</strong>':'')+'</div>'
+      +(l.description?'<div class="jl-meta">'+esc(l.description)+'</div>':'')
+      +'<div class="jl-meta"><span class="jl-badge" style="background:'+c+'">'+esc(l.source)+'</span>'
+      +(l.posted_date?' posted '+esc(l.posted_date):'')+' · found '+new Date(l.found_at).toLocaleDateString()+'</div>'
+      +'</div>'
+      +'<div class="jl-actions">'+applyBtn+acts+'</div>'
+      +'</div>';
+  });
+  el.innerHTML=h;
+}
 function showAdminTab(id,btn){
   document.querySelectorAll('#page-admin .rpane').forEach(function(p){p.classList.remove('active');});
   document.querySelectorAll('#admin-tabs .rtab').forEach(function(t){t.classList.remove('active');});
@@ -3351,6 +3414,7 @@ async function loadAdmin(){
     document.getElementById('admin-users').innerHTML='<p style="color:var(--red)">Access denied.</p>';
     return;
   }
+  loadJobLeads();
   // Load quiz scores
   var sr=await SB.getAllScores();
   if(sr.data){
@@ -3366,6 +3430,7 @@ async function loadAdmin(){
     });
     uHtml+='</tbody></table>';
     document.getElementById('admin-users').innerHTML=Object.keys(byUser).length?uHtml:'<p style="color:var(--muted)">No scores yet.</p>';
+    astSet('ast-users',Object.keys(byUser).length);
     var sHtml='<table class="data-table" style="font-size:.82rem"><thead><tr><th>User</th><th>Category</th><th>Score</th><th>%</th><th>Date</th></tr></thead><tbody>';
     sr.data.slice(0,100).forEach(function(s){
       sHtml+='<tr><td>'+esc(s.display_name)+'</td><td>'+esc(s.category)+'</td><td>'+s.score+'/'+s.total+'</td><td>'+s.pct+'%</td><td>'+new Date(s.created_at).toLocaleDateString()+'</td></tr>';
@@ -3397,6 +3462,8 @@ async function loadLoginAlerts(){
   }
   var alerts=r.data;
   if(countEl)countEl.textContent='('+alerts.length+' total)';
+  var wk=Date.now()-7*24*60*60*1000;
+  astSet('ast-alerts',alerts.filter(function(a){return new Date(a.created_at).getTime()>=wk;}).length);
   if(!alerts.length){
     alertsEl.innerHTML='<p style="color:var(--muted)">No flagged logins yet.</p>';
     summaryEl.innerHTML='<p style="color:var(--muted)">No data.</p>';return;
