@@ -1,0 +1,5 @@
+
+# Supabase CLI local state
+supabase/.temp/
+.env
+.env.*
