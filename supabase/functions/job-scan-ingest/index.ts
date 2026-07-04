@@ -57,7 +57,9 @@ Deno.serve(async (req) => {
     inserted = data?.length ?? 0;
 
     if (inserted > 0) {
-      const hook = Deno.env.get("SLACK_WEBHOOK_URL");
+      // Dedicated jobs webhook (#ai-agents). Intentionally NOT falling back to
+      // the IT-channel SLACK_WEBHOOK_URL — job alerts must not go to IT.
+      const hook = Deno.env.get("SLACK_JOBS_WEBHOOK_URL");
       if (hook) {
         const top = (data ?? []).slice(0, 5).map((d) => "• " + d.title).join("\n");
         const more = inserted > 5 ? `\n…and ${inserted - 5} more` : "";
