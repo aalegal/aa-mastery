@@ -2484,7 +2484,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div style="margin-top:12px;background:linear-gradient(135deg,#1a2a4a,#2954a3);color:#e8f0fe;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Everlaw →</div>
   </div>
   <!-- PROJECT 5: CASEPOINT — ANTITRUST SECOND REQUEST -->
-  <div class="card proj-case-card" onclick="openCasepointCase()" style="border-color:#1f6fc4;margin-bottom:14px;">
+  <div class="card proj-case-card" onclick="openCasepointCase('antitrust')" style="border-color:#1f6fc4;margin-bottom:14px;">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
       <div>
         <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:14px;font-size:.71rem;font-weight:700;margin-bottom:8px;background:rgba(31,111,196,.14);color:#1f6fc4;border:1px solid #1f6fc4;">🏛️ Antitrust · DOJ Second Request · Casepoint Platform</div>
@@ -2499,9 +2499,9 @@ tr:nth-child(even) td{background:#0d162080}
         <div style="margin-top:10px;font-size:.78rem;color:var(--muted);">🖥️ Runs on <strong style="color:#1f6fc4">Casepoint</strong> · 500 documents · DOJ Antitrust Division</div>
       </div>
       <div style="text-align:center;flex-shrink:0;">
-        <div style="font-size:1.5rem;font-weight:800;color:#1f6fc4" id="cp-proj-coded">0</div>
+        <div style="font-size:1.5rem;font-weight:800;color:#1f6fc4" id="cp-proj-coded-antitrust">0</div>
         <div style="font-size:.7rem;color:var(--muted)">coded</div>
-        <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="cp-proj-acc">— accuracy</div>
+        <div style="font-size:.78rem;color:var(--muted);margin-top:4px" id="cp-proj-acc-antitrust">— accuracy</div>
       </div>
     </div>
     <div style="margin-top:12px;background:#1f6fc4;color:#fff;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Casepoint →</div>
@@ -5301,7 +5301,97 @@ var CP_DOCS = [
   }
 })();
 
-function openCasepointCase() {
+// ══════════════════════════════════════════════════════════════════
+// CASEPOINT — MULTI-CASE CONFIG
+// ══════════════════════════════════════════════════════════════════
+var CP_CASES = {
+  antitrust: {
+    id: 'antitrust',
+    crumb: '<b>NorthStar v. Meridian</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; DOJ Second Request',
+    panelTitle: 'Second Request Coding',
+    docs: CP_DOCS,
+    hotBand: '🔥 <strong>Hot Document:</strong> This document may contain competitively sensitive or smoking-gun content — code carefully.',
+    fields: [
+      { key:'responsive', label:'RESPONSIVENESS', options:[
+        {v:'responsive',l:'Responsive'},{v:'non-responsive',l:'Not Responsive'},{v:'technical',l:'Technical Issue'}]},
+      { key:'privilege', label:'PRIVILEGE', options:[
+        {v:'not-privileged',l:'Not Privileged'},{v:'privileged',l:'Privileged'},{v:'redact-priv',l:'Redact (Privilege)'}]},
+      { key:'action', label:'PRODUCTION', options:[
+        {v:'produce',l:'Produce'},{v:'withhold',l:'Withhold'},{v:'redact',l:'Redact'}]},
+      { key:'conf', label:'CONFIDENTIALITY', options:[
+        {v:'confidential',l:'Confidential'},{v:'hc-aeo',l:'Highly Conf. – AEO'}]}
+    ],
+    issues: { label:'ISSUE TAGS', options:[
+      {v:'issue1',l:'Pricing/Bidding',color:'#1f6fc4'},{v:'issue2',l:'Market Share',color:'#b8860b'},
+      {v:'issue3',l:'Merger Rationale',color:'#2e9e5b'},{v:'issue4',l:'Hot Doc',color:'#d6453a'}]},
+    labels: {
+      'responsive':'Responsive','non-responsive':'Not Responsive','technical':'Technical Issue',
+      'not-privileged':'Not Privileged','privileged':'Privileged','redact-priv':'Redact (Privilege)',
+      'produce':'Produce','withhold':'Withhold','redact':'Redact',
+      'confidential':'Confidential','hc-aeo':'Highly Confidential – AEO',
+      'issue1':'Pricing/Bidding','issue2':'Market Share','issue3':'Merger Rationale','issue4':'Hot Doc'
+    }
+  }
+};
+var CP_ACTIVE = 'antitrust';
+function cpCase(){ return CP_CASES[CP_ACTIVE]; }
+function cpDocs(){ return cpCase().docs; }
+function cpCodingFor(){ if(!cpCoding[CP_ACTIVE]) cpCoding[CP_ACTIVE]={}; return cpCoding[CP_ACTIVE]; }
+function cpAnsweredFor(){ if(!cpAnswered[CP_ACTIVE]) cpAnswered[CP_ACTIVE]={}; return cpAnswered[CP_ACTIVE]; }
+function cpMigrateFlatState(){ // one-time: flat NS-* keys -> antitrust bucket
+  var flat = Object.keys(cpCoding).filter(function(k){ return k.indexOf('NS-')===0; });
+  if (flat.length) {
+    var bucket = cpCoding.antitrust = cpCoding.antitrust || {};
+    flat.forEach(function(k){ bucket[k]=cpCoding[k]; delete cpCoding[k]; });
+  }
+  var flatA = Object.keys(cpAnswered).filter(function(k){ return k.indexOf('NS-')===0; });
+  if (flatA.length) {
+    var bucketA = cpAnswered.antitrust = cpAnswered.antitrust || {};
+    flatA.forEach(function(k){ bucketA[k]=cpAnswered[k]; delete cpAnswered[k]; });
+  }
+}
+
+function cpRenderPanel(){
+  var c = cpCase(), html = '';
+  c.fields.forEach(function(f){
+    html += '<div class="cp-field-label">' + esc(f.label) + '</div><div id="cp-field-' + escAttr(f.key) + '">';
+    f.options.forEach(function(o){
+      html += '<div class="cp-option" data-f="' + escAttr(f.key) + '" data-v="' + escAttr(o.v) + '" onclick="cpSelect(this.dataset.f,this.dataset.v,this)">'
+        + '<input type="radio" name="cp-' + escAttr(f.key) + '"><span>' + esc(o.l) + '</span></div>';
+    });
+    html += '</div>';
+    if (f.key === 'privilege') {
+      html += '<div class="cp-field-label">' + esc(c.issues.label) + '</div><div id="cp-field-issues">';
+      c.issues.options.forEach(function(o){
+        html += '<div class="cp-option" data-v="' + escAttr(o.v) + '" onclick="cpToggleIssue(this.dataset.v,this)">'
+          + '<input type="checkbox"><span style="font-size:.71rem;">' + esc(o.l) + '</span></div>';
+      });
+      html += '</div>';
+    }
+  });
+  document.getElementById('cp-panel-fields').innerHTML = html;
+}
+
+function openCasepointCase(caseId) {
+  CP_ACTIVE = CP_CASES[caseId] ? caseId : 'antitrust';
+  cpMigrateFlatState();
+  cpCurrentDoc = null;
+  cpCurrentIdx = -1;
+  cpFilterMode = 'all';
+  var crumb = document.getElementById('cp-crumb');
+  if (crumb) crumb.innerHTML = cpCase().crumb;
+  var title = document.querySelector('#cp-coding-panel .cp-panel-title');
+  if (title) title.textContent = cpCase().panelTitle;
+  cpRenderPanel();
+  var subj = document.getElementById('cp-doc-subject-bar');
+  if (subj) subj.textContent = 'Select a document to begin';
+  var pid = document.getElementById('cp-panel-doc-id');
+  if (pid) pid.textContent = 'No document loaded';
+  var body = document.getElementById('cp-doc-body');
+  if (body) body.innerHTML = '<div class="cp-doc-page" style="text-align:center;color:#8a97ab;">'
+    + '<div style="font-size:2.4rem;margin-bottom:12px;">📦</div>'
+    + '<div style="font-size:.98rem;font-weight:700;color:#13294b;margin-bottom:6px;">Casepoint Document Review</div>'
+    + '<div style="font-size:.83rem;">Select a document from the list to begin.</div></div>';
   var shell = document.getElementById('casepoint-shell');
   shell.style.display = 'flex';
   shell.style.position = 'fixed';
@@ -5321,9 +5411,9 @@ function closeCasepoint() {
 }
 
 function cpGetVisible() {
-  return CP_DOCS.filter(function(d) {
-    if (cpFilterMode === 'uncoded') return !cpCoding[d.id];
-    if (cpFilterMode === 'coded') return !!cpCoding[d.id];
+  return cpDocs().filter(function(d) {
+    if (cpFilterMode === 'uncoded') return !cpCodingFor()[d.id];
+    if (cpFilterMode === 'coded') return !!cpCodingFor()[d.id];
     return true;
   });
 }
@@ -5338,7 +5428,7 @@ function cpRenderList() {
   var list = document.getElementById('cp-doc-list');
   if (!list) return;
   list.innerHTML = visible.map(function(d) {
-    var ans = cpAnswered[d.id];
+    var ans = cpAnsweredFor()[d.id];
     var dotClass = ans ? (ans.correct ? 'coded-correct' : ans.partial ? 'coded-partial' : 'coded-wrong') : 'uncoded';
     var isActive = cpCurrentDoc && cpCurrentDoc.id === d.id ? ' active' : '';
     return '<div class="cp-doc-item' + isActive + '" onclick="cpOpenDoc(this.dataset.id)" data-id="' + escAttr(d.id) + '">'
@@ -5355,7 +5445,7 @@ function cpRenderList() {
 }
 
 function cpOpenDoc(id) {
-  var doc = CP_DOCS.find(function(d) { return d.id === id; });
+  var doc = cpDocs().find(function(d) { return d.id === id; });
   if (!doc) return;
   cpCurrentDoc = doc;
   var visible = cpGetVisible();
@@ -5380,7 +5470,7 @@ function cpOpenDoc(id) {
 function cpRenderDoc(doc) {
   var inner = '';
   if (doc.tags && doc.tags.indexOf('issue4') > -1) {
-    inner += '<div class="cp-hot-band">🔥 <strong>Hot Document:</strong> This document may contain competitively sensitive or smoking-gun content — code carefully.</div>';
+    inner += '<div class="cp-hot-band">' + cpCase().hotBand + '</div>';
   }
   if (doc.from) {
     inner += '<div class="cp-email-header">'
@@ -5391,8 +5481,8 @@ function cpRenderDoc(doc) {
       + '<div class="cp-header-row"><span class="cp-header-label">Subject:</span><span class="cp-header-val" style="font-weight:700;color:#1a2b4a">' + esc(doc.subject||'') + '</span></div>'
       + '</div>';
   }
-  var tagColors = {issue1:'#1f6fc4',issue2:'#b8860b',issue3:'#2e9e5b',issue4:'#d6453a'};
-  var tagLabels = {issue1:'Pricing/Bidding',issue2:'Market Share',issue3:'Merger Rationale',issue4:'Hot Doc'};
+  var tagColors = {}, tagLabels = {};
+  cpCase().issues.options.forEach(function(o){ tagColors[o.v]=o.color; tagLabels[o.v]=o.l; });
   if (doc.tags && doc.tags.length) {
     inner += '<div style="margin-bottom:10px;">' + doc.tags.map(function(t) {
       return '<span class="cp-tag-chip" style="color:' + (tagColors[t]||'#5b6b85') + ';border-color:' + (tagColors[t]||'#dfe5ee') + ';background:' + (tagColors[t]||'#ccc') + '14;">' + esc(tagLabels[t]||t) + '</span>';
@@ -5417,14 +5507,7 @@ function cpNav(dir) {
 function cpLabel(val) {
   if (!val && val !== 0) return "—";
   if (Array.isArray(val)) return val.length ? val.map(cpLabel).join(", ") : "none";
-  var labels = {
-    "responsive":"Responsive","non-responsive":"Not Responsive","technical":"Technical Issue",
-    "not-privileged":"Not Privileged","privileged":"Privileged","redact-priv":"Redact (Privilege)",
-    "produce":"Produce","withhold":"Withhold","redact":"Redact",
-    "confidential":"Confidential","hc-aeo":"Highly Confidential – AEO",
-    "issue1":"Pricing/Bidding","issue2":"Market Share","issue3":"Merger Rationale","issue4":"Hot Doc"
-  };
-  return labels[val] || val;
+  return cpCase().labels[val] || val;
 }
 
 function cpLoadCoding(doc) {
@@ -5434,7 +5517,7 @@ function cpLoadCoding(doc) {
     if (inp) inp.checked = false;
   });
   cpCodingState = {responsive:null,privilege:null,issues:[],action:null,conf:null};
-  var saved = cpCoding[doc.id];
+  var saved = cpCodingFor()[doc.id];
   if (saved) {
     cpCodingState = JSON.parse(JSON.stringify(saved));
     ['responsive','privilege','action','conf'].forEach(function(field) {
@@ -5442,8 +5525,7 @@ function cpLoadCoding(doc) {
         var container = document.getElementById('cp-field-' + field);
         if (!container) return;
         container.querySelectorAll('.cp-option').forEach(function(opt) {
-          var oc = opt.getAttribute('onclick') || '';
-          if (oc.indexOf("'" + saved[field] + "'") > -1) {
+          if (opt.dataset.v === saved[field]) {
             opt.classList.add('selected');
             var inp = opt.querySelector('input[type=radio]');
             if (inp) inp.checked = true;
@@ -5455,8 +5537,7 @@ function cpLoadCoding(doc) {
       var container = document.getElementById('cp-field-issues');
       if (!container) return;
       container.querySelectorAll('.cp-option').forEach(function(opt) {
-        var oc = opt.getAttribute('onclick') || '';
-        if (oc.indexOf("'" + iss + "'") > -1) {
+        if (opt.dataset.v === iss) {
           opt.classList.add('selected');
           var cb = opt.querySelector('input[type=checkbox]');
           if (cb) cb.checked = true;
@@ -5510,7 +5591,7 @@ function cpSubmitCoding() {
   var coding = JSON.parse(JSON.stringify(cpCodingState));
   if (!coding.privilege) coding.privilege = 'not-privileged';
   if (!coding.conf) coding.conf = 'confidential';
-  cpCoding[doc.id] = coding;
+  cpCodingFor()[doc.id] = coding;
   var answer = doc.answer || {};
   var errors = [];
   var score = 0;
@@ -5524,7 +5605,7 @@ function cpSubmitCoding() {
   var issuesOk = correctIssues.every(function(i){return userIssues.indexOf(i)>-1;}) && userIssues.every(function(i){return correctIssues.indexOf(i)>-1;});
   if (issuesOk) score++; else errors.push({field:'Issue Tags',yours:userIssues.join(',')||'none',correct:correctIssues.join(',')||'none'});
   var pct = Math.round(score/total*100);
-  cpAnswered[doc.id] = {correct:score===total,partial:score>0&&score<total,score:score,total:total};
+  cpAnsweredFor()[doc.id] = {correct:score===total,partial:score>0&&score<total,score:score,total:total};
   cpShowFeedback(doc, errors, score, total, pct);
   cpRenderList();
   cpUpdateProgress();
@@ -5563,27 +5644,32 @@ function cpShowFeedback(doc, errors, score, total, pct) {
 }
 
 function cpUpdateProgress() {
-  var total = CP_DOCS.length;
-  var coded = Object.keys(cpCoding).length;
+  var total = cpDocs().length;
+  var coded = Object.keys(cpCodingFor()).length;
   var pct = Math.round(coded/total*100);
   var pp = document.getElementById('cp-prog-pct');
   var pf = document.getElementById('cp-progress-fill');
   var ad = document.getElementById('cp-accuracy-disp');
   if (pp) pp.textContent = pct + '%';
   if (pf) pf.style.width = pct + '%';
-  var correct = Object.values(cpAnswered).filter(function(a){return a.correct;}).length;
-  var attempted = Object.keys(cpAnswered).length;
+  var correct = Object.values(cpAnsweredFor()).filter(function(a){return a.correct;}).length;
+  var attempted = Object.keys(cpAnsweredFor()).length;
   if (ad) ad.textContent = attempted ? Math.round(correct/attempted*100) + '%' : '—';
 }
 
 function cpUpdateLanding() {
-  var coded = Object.keys(cpCoding).length;
-  var correct = Object.values(cpAnswered).filter(function(a){return a.correct;}).length;
-  var attempted = Object.keys(cpAnswered).length;
-  var p = document.getElementById('cp-proj-coded');
-  var a = document.getElementById('cp-proj-acc');
-  if (p) p.textContent = coded;
-  if (a) a.textContent = attempted ? Math.round(correct/attempted*100) + '%' : '—';
+  cpMigrateFlatState();
+  Object.keys(CP_CASES).forEach(function(caseId) {
+    var coding = cpCoding[caseId] || {};
+    var answered = cpAnswered[caseId] || {};
+    var coded = Object.keys(coding).length;
+    var correct = Object.values(answered).filter(function(a){return a.correct;}).length;
+    var attempted = Object.keys(answered).length;
+    var p = document.getElementById('cp-proj-coded-' + caseId);
+    var a = document.getElementById('cp-proj-acc-' + caseId);
+    if (p) p.textContent = coded;
+    if (a) a.textContent = attempted ? Math.round(correct/attempted*100) + '%' : '— accuracy';
+  });
 }
 
 
@@ -6673,7 +6759,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
   <div id="cp-workspace">
     <div id="cp-topbar">
       <span class="cp-wordmark">Case<span>point</span></span>
-      <span class="cp-crumb"><b>NorthStar v. Meridian</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; DOJ Second Request</span>
+      <span class="cp-crumb" id="cp-crumb"><b>NorthStar v. Meridian</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; DOJ Second Request</span>
       <div style="display:flex;gap:8px;margin-left:auto;align-items:center;">
         <span style="font-size:.72rem;color:#5b6b85">Coded <b id="cp-prog-pct" style="color:#1a2b4a">0%</b></span>
         <span style="font-size:.72rem;color:#5b6b85">Accuracy <b id="cp-accuracy-disp" style="color:#1f6fc4">—</b></span>
@@ -6716,36 +6802,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
         <div class="cp-panel-title">Second Request Coding</div>
         <div style="font-size:.68rem;color:var(--muted);margin-top:2px;" id="cp-panel-doc-id">No document loaded</div>
       </div>
-      <div class="cp-field-label">RESPONSIVENESS</div>
-      <div id="cp-field-responsive">
-        <div class="cp-option" onclick="cpSelect('responsive','responsive',this)"><input type="radio" name="cp-responsive"><span>Responsive</span></div>
-        <div class="cp-option" onclick="cpSelect('responsive','non-responsive',this)"><input type="radio" name="cp-responsive"><span>Not Responsive</span></div>
-        <div class="cp-option" onclick="cpSelect('responsive','technical',this)"><input type="radio" name="cp-responsive"><span>Technical Issue</span></div>
-      </div>
-      <div class="cp-field-label">PRIVILEGE</div>
-      <div id="cp-field-privilege">
-        <div class="cp-option" onclick="cpSelect('privilege','not-privileged',this)"><input type="radio" name="cp-privilege"><span>Not Privileged</span></div>
-        <div class="cp-option" onclick="cpSelect('privilege','privileged',this)"><input type="radio" name="cp-privilege"><span>Privileged</span></div>
-        <div class="cp-option" onclick="cpSelect('privilege','redact-priv',this)"><input type="radio" name="cp-privilege"><span>Redact (Privilege)</span></div>
-      </div>
-      <div class="cp-field-label">ISSUE TAGS</div>
-      <div id="cp-field-issues">
-        <div class="cp-option" onclick="cpToggleIssue('issue1',this)"><input type="checkbox"><span style="font-size:.71rem;">Pricing/Bidding</span></div>
-        <div class="cp-option" onclick="cpToggleIssue('issue2',this)"><input type="checkbox"><span style="font-size:.71rem;">Market Share</span></div>
-        <div class="cp-option" onclick="cpToggleIssue('issue3',this)"><input type="checkbox"><span style="font-size:.71rem;">Merger Rationale</span></div>
-        <div class="cp-option" onclick="cpToggleIssue('issue4',this)"><input type="checkbox"><span style="font-size:.71rem;">Hot Doc</span></div>
-      </div>
-      <div class="cp-field-label">PRODUCTION</div>
-      <div id="cp-field-action">
-        <div class="cp-option" onclick="cpSelect('action','produce',this)"><input type="radio" name="cp-action"><span>Produce</span></div>
-        <div class="cp-option" onclick="cpSelect('action','withhold',this)"><input type="radio" name="cp-action"><span>Withhold</span></div>
-        <div class="cp-option" onclick="cpSelect('action','redact',this)"><input type="radio" name="cp-action"><span>Redact</span></div>
-      </div>
-      <div class="cp-field-label">CONFIDENTIALITY</div>
-      <div id="cp-field-conf">
-        <div class="cp-option" onclick="cpSelect('conf','confidential',this)"><input type="radio" name="cp-conf"><span>Confidential</span></div>
-        <div class="cp-option" onclick="cpSelect('conf','hc-aeo',this)"><input type="radio" name="cp-conf"><span>Highly Conf. – AEO</span></div>
-      </div>
+      <div id="cp-panel-fields"></div>
       <div class="cp-submit-section">
         <button class="cp-submit-btn" id="cp-submit-btn" onclick="cpSubmitCoding()" disabled>Save Coding →</button>
         <button class="cp-skip-btn" onclick="cpNav(1)">Skip →</button>
