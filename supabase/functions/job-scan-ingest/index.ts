@@ -63,7 +63,7 @@ Deno.serve(async (req) => {
       if (hook) {
         const top = (data ?? []).slice(0, 5).map((d) => "• " + d.title).join("\n");
         const more = inserted > 5 ? `\n…and ${inserted - 5} more` : "";
-        const msg = `💼 *${inserted} new job lead${inserted === 1 ? "" : "s"} — AA Mastery Job Scanner*\n${top}${more}\n<https://aa-mastery.vercel.app|Open the admin board>`;
+        const msg = `💼 *${inserted} new job lead${inserted === 1 ? "" : "s"} — AA Mastery Job Scanner*\n${top}${more}\n<https://aa-mastery.vercel.app/admin|Open the admin board>`;
         await fetch(hook, {
           method: "POST",
           headers: { "Content-Type": "application/json" },

@@ -2866,6 +2866,12 @@ const SB={
 // Token handling moved to checkWallToken() below — runs after DOM is ready
 
 let currentPage='home';
+// Deep link support: e.g. /admin from Slack job alerts. Captured at load,
+// applied after login since the login wall gates every fresh page load.
+var PENDING_NAV=(function(){
+  var seg=window.location.pathname.replace(/\/+$/,'').replace(/^\//,'');
+  return (seg&&document.getElementById('page-'+seg))?seg:null;
+})();
 function nav(p){
   var target=document.getElementById('page-'+p);if(!target)return;
   if((p==='leadership'||p==='timesheets')&&!isLeadership(SB.user)){alert('🔒 This section is restricted to authorized supervisors. Please log in with an approved account.');return;}
@@ -3562,6 +3568,7 @@ function onLogin(){
   if(isLeadership(u)){document.getElementById('btn-timesheets').style.display='inline-block';document.getElementById('btn-leadership').style.display='inline-block';}
   if(currentPage==='quiz')initQuizPage();
   if(typeof reportLoginContext==='function')reportLoginContext();
+  if(PENDING_NAV){var pn=PENDING_NAV;PENDING_NAV=null;nav(pn);}
 }
 async function logout(){
   await SB.signOut();
