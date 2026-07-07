@@ -1220,6 +1220,21 @@ tr:nth-child(even) td{background:#0d162080}
   color:#5b6b85;border-radius:6px;padding:7px;font-size:.76rem;cursor:pointer;}
 .cp-skip-btn:hover{border-color:#1f6fc4;color:#1f6fc4;}
 
+/* ══ CASEPOINT CLICK-TO-REDACT ══ */
+.cp-redactable{background:rgba(31,111,196,.08);border-bottom:1px dashed #9fb6d6;cursor:pointer;border-radius:2px;}
+.cp-redactable:hover{background:rgba(31,111,196,.18);}
+.cp-redacted{background:#111;color:#111;border-radius:3px;cursor:pointer;position:relative;border-bottom:none;user-select:none;}
+.cp-redacted .cp-rdx-chip{position:absolute;top:-9px;right:-4px;background:#c62828;color:#fff;font-size:.52rem;
+  font-weight:800;padding:0 4px;border-radius:6px;letter-spacing:.4px;line-height:1.5;}
+#cp-rdx-pop{position:fixed;z-index:900;background:#fff;border:1px solid #dfe5ee;border-radius:8px;
+  box-shadow:0 8px 28px rgba(19,41,75,.25);padding:8px;display:none;min-width:150px;}
+#cp-rdx-pop .cp-rdx-title{font-size:.62rem;font-weight:800;color:#8a97ab;text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:6px;}
+.cp-rdx-btn{display:block;width:100%;text-align:left;background:#f2f5fa;border:1px solid #dfe5ee;color:#13294b;
+  border-radius:6px;padding:5px 10px;font-size:.74rem;font-weight:700;cursor:pointer;margin-bottom:4px;}
+.cp-rdx-btn:hover{border-color:#1f6fc4;background:#e8f1fb;}
+.cp-rdx-btn.unredact{color:#c62828;}
+
 
 /* ══ BATCH SYSTEM ══ */
 .batch-selector{
@@ -5372,6 +5387,110 @@ function cpRenderPanel(){
   document.getElementById('cp-panel-fields').innerHTML = html;
 }
 
+// ══════════════════════════════════════════════════════════════════
+// CASEPOINT — CLICK-TO-REDACT SPANS (PII / PHI / SBI)
+// Doc bodies may embed ⟦PII|…⟧ ⟦PHI|…⟧ ⟦SBI|…⟧ ⟦DECOY|…⟧ markers.
+// ══════════════════════════════════════════════════════════════════
+var cpRedactions = {};
+var CP_RDX_RE = /⟦(PII|PHI|SBI|DECOY)\|([^⟧]+)⟧/g;
+
+function cpRedactionsFor(docId){
+  if(!cpRedactions[CP_ACTIVE]) cpRedactions[CP_ACTIVE]={};
+  if(!cpRedactions[CP_ACTIVE][docId]) cpRedactions[CP_ACTIVE][docId]={};
+  return cpRedactions[CP_ACTIVE][docId];
+}
+
+function cpParseBody(body){
+  var out=[], last=0, m, idx=0;
+  CP_RDX_RE.lastIndex = 0;
+  while((m=CP_RDX_RE.exec(body))!==null){
+    if(m.index>last) out.push({text:body.slice(last,m.index),span:null});
+    out.push({text:m[2],span:m[1].toLowerCase(),idx:idx++});
+    last=CP_RDX_RE.lastIndex;
+  }
+  if(last<body.length) out.push({text:body.slice(last),span:null});
+  return out;
+}
+
+function cpDocHasSpans(doc){
+  CP_RDX_RE.lastIndex = 0;
+  return CP_RDX_RE.test(doc.body||'');
+}
+
+function cpRenderBodyHtml(doc){
+  var user = cpRedactionsFor(doc.id);
+  return cpParseBody(doc.body||'').map(function(seg){
+    if(seg.span===null) return esc(seg.text);
+    var tag = user[seg.idx];
+    return '<span class="' + (tag?'cp-redacted':'cp-redactable') + '" data-idx="' + seg.idx + '" onclick="cpSpanClick(event,this)">'
+      + esc(seg.text) + (tag?'<span class="cp-rdx-chip">'+esc(tag.toUpperCase())+'</span>':'')
+      + '</span>';
+  }).join('');
+}
+
+function cpSpanClick(ev, el){
+  ev.stopPropagation();
+  if(!cpCurrentDoc) return;
+  var idx = el.dataset.idx;
+  var pop = document.getElementById('cp-rdx-pop');
+  var tagged = cpRedactionsFor(cpCurrentDoc.id)[idx];
+  var html = '<div class="cp-rdx-title">' + (tagged ? 'Redacted — ' + esc(tagged.toUpperCase()) : 'Redact as…') + '</div>';
+  if(tagged){
+    html += '<button class="cp-rdx-btn unredact" onclick="cpTagSpan(\'' + escAttr(idx) + '\',null)">✕ Remove redaction</button>';
+  } else {
+    html += '<button class="cp-rdx-btn" onclick="cpTagSpan(\'' + escAttr(idx) + '\',\'pii\')">👤 PII — Personal Info</button>'
+      + '<button class="cp-rdx-btn" onclick="cpTagSpan(\'' + escAttr(idx) + '\',\'phi\')">🏥 PHI — Health Info</button>'
+      + '<button class="cp-rdx-btn" onclick="cpTagSpan(\'' + escAttr(idx) + '\',\'sbi\')">🏢 SBI — Sensitive Business</button>';
+  }
+  pop.innerHTML = html;
+  pop.style.display = 'block';
+  var x = Math.min(ev.clientX, window.innerWidth - 190);
+  var y = Math.min(ev.clientY + 8, window.innerHeight - 150);
+  pop.style.left = x + 'px';
+  pop.style.top = y + 'px';
+}
+
+function cpHideRdxPop(){
+  var pop = document.getElementById('cp-rdx-pop');
+  if (pop) pop.style.display = 'none';
+}
+
+document.addEventListener('click', function(ev){
+  var pop = document.getElementById('cp-rdx-pop');
+  if (pop && pop.style.display === 'block' && !pop.contains(ev.target)
+      && !(ev.target.closest && ev.target.closest('.cp-redactable,.cp-redacted'))) {
+    cpHideRdxPop();
+  }
+});
+
+function cpTagSpan(idx, type){
+  if(!cpCurrentDoc) return;
+  var user = cpRedactionsFor(cpCurrentDoc.id);
+  if(type) user[idx] = type; else delete user[idx];
+  cpHideRdxPop();
+  cpRenderDoc(cpCurrentDoc);
+}
+
+function cpGradeRedactions(doc){
+  var segs=cpParseBody(doc.body||''), user=cpRedactionsFor(doc.id);
+  var res={caught:0,mistyped:0,missed:0,over:0,total:0,details:[]};
+  var any=false;
+  segs.forEach(function(s){
+    if(!s.span) return;
+    any=true;
+    var tagged=user[s.idx];
+    if(s.span==='decoy'){
+      if(tagged){res.over++;res.details.push({kind:'over',text:s.text,yours:tagged});}
+      return;
+    }
+    res.total++;
+    if(!tagged){res.missed++;res.details.push({kind:'missed',text:s.text,correct:s.span});}
+    else if(tagged===s.span){res.caught++;}
+    else {res.mistyped++;res.details.push({kind:'mistyped',text:s.text,yours:tagged,correct:s.span});}
+  });
+  return any?res:null;
+}
+
 function openCasepointCase(caseId) {
   CP_ACTIVE = CP_CASES[caseId] ? caseId : 'antitrust';
   cpMigrateFlatState();
@@ -5488,9 +5607,10 @@ function cpRenderDoc(doc) {
       return '<span class="cp-tag-chip" style="color:' + (tagColors[t]||'#5b6b85') + ';border-color:' + (tagColors[t]||'#dfe5ee') + ';background:' + (tagColors[t]||'#ccc') + '14;">' + esc(tagLabels[t]||t) + '</span>';
     }).join('') + '</div>';
   }
-  inner += '<div class="cp-body-text">' + esc(doc.body||'') + '</div>';
+  inner += '<div class="cp-body-text">' + cpRenderBodyHtml(doc) + '</div>';
   var body = document.getElementById('cp-doc-body');
   if (body) body.innerHTML = '<div class="cp-doc-page">' + inner + '</div>';
+  cpHideRdxPop();
 }
 
 function cpNav(dir) {
@@ -5605,19 +5725,24 @@ function cpSubmitCoding() {
   var issuesOk = correctIssues.every(function(i){return userIssues.indexOf(i)>-1;}) && userIssues.every(function(i){return correctIssues.indexOf(i)>-1;});
   if (issuesOk) score++; else errors.push({field:'Issue Tags',yours:userIssues.join(',')||'none',correct:correctIssues.join(',')||'none'});
   var pct = Math.round(score/total*100);
-  cpAnsweredFor()[doc.id] = {correct:score===total,partial:score>0&&score<total,score:score,total:total};
-  cpShowFeedback(doc, errors, score, total, pct);
+  var rdx = cpGradeRedactions(doc);
+  var rdxClean = !rdx || (rdx.missed===0 && rdx.mistyped===0 && rdx.over===0);
+  var allCorrect = score===total && rdxClean;
+  var anyCredit = score>0 || (rdx && rdx.caught>0);
+  cpAnsweredFor()[doc.id] = {correct:allCorrect,partial:!allCorrect&&anyCredit,score:score,total:total,rdx:rdx||undefined};
+  cpShowFeedback(doc, errors, score, total, pct, rdx);
   cpRenderList();
   cpUpdateProgress();
   cpUpdateLanding();
   saveProgress();
 }
 
-function cpShowFeedback(doc, errors, score, total, pct) {
+function cpShowFeedback(doc, errors, score, total, pct, rdx) {
   var overlay = document.createElement('div');
   overlay.className = 'rel-feedback-overlay';
-  var isCorrect = score === total;
-  var isPartial = score > 0 && !isCorrect;
+  var rdxClean = !rdx || (rdx.missed===0 && rdx.mistyped===0 && rdx.over===0);
+  var isCorrect = score === total && rdxClean;
+  var isPartial = !isCorrect && (score > 0 || (rdx && rdx.caught > 0));
   var boxClass = isCorrect ? 'rel-feedback-correct' : isPartial ? 'rel-feedback-partial' : 'rel-feedback-wrong';
   var errHtml = '';
   if (errors.length) {
@@ -5627,6 +5752,21 @@ function cpShowFeedback(doc, errors, score, total, pct) {
         + '<span style="color:var(--muted);font-weight:600">' + esc(e.field) + ':</span> '
         + '<span style="color:#ff5252">You: ' + esc(cpLabel(e.yours)) + '</span> → '
         + '<span style="color:#4caf50">Correct: ' + esc(cpLabel(e.correct)) + '</span></div>';
+    });
+    errHtml += '</div>';
+  }
+  if (rdx) {
+    var rdxKind = {pii:'PII',phi:'PHI',sbi:'SBI'};
+    errHtml += '<div style="margin-top:10px;background:#0d1117;border-radius:7px;padding:8px 10px;border-left:3px solid #c62828;">'
+      + '<div style="font-size:.72rem;font-weight:800;color:var(--gold-light);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">⬛ Redactions</div>'
+      + '<div style="font-size:.78rem;color:' + (rdxClean ? '#4caf50' : '#ff9800') + ';font-weight:700;">'
+      + rdx.caught + '/' + rdx.total + ' caught · ' + rdx.missed + ' missed · ' + rdx.mistyped + ' mistyped · ' + rdx.over + ' over-redacted</div>';
+    rdx.details.forEach(function(d) {
+      var line;
+      if (d.kind === 'missed') line = '<span style="color:#ff5252">Missed:</span> “' + esc(d.text) + '” <span style="color:#4caf50">should be redacted as ' + esc(rdxKind[d.correct]||d.correct) + '</span>';
+      else if (d.kind === 'mistyped') line = '<span style="color:#ff9800">Wrong reason:</span> “' + esc(d.text) + '” <span style="color:#ff5252">yours: ' + esc(rdxKind[d.yours]||d.yours) + '</span> → <span style="color:#4caf50">correct: ' + esc(rdxKind[d.correct]||d.correct) + '</span>';
+      else line = '<span style="color:#ff5252">Over-redaction:</span> “' + esc(d.text) + '” is not ' + esc(rdxKind[d.yours]||d.yours) + ' — it did not need redaction';
+      errHtml += '<div style="font-size:.75rem;color:var(--text2);margin-top:4px;line-height:1.5;">' + line + '</div>';
     });
     errHtml += '</div>';
   }
@@ -6810,6 +6950,7 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
     </div>
   </div>
   </div>
+  <div id="cp-rdx-pop"></div>
 </div>
 
 
