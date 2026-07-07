@@ -5348,6 +5348,147 @@ var CP_CASES = {
     }
   }
 };
+// ══════════════════════════════════════════════════════════════════
+// CASEPOINT — ST. AURELIUS HEALTH DATA BREACH (Doe v. St. Aurelius)
+// CryptVault ransomware · 2.1M patient records · HHS OCR + class action
+// ══════════════════════════════════════════════════════════════════
+var SAH_DOCS = [
+  { id:"SAH-0001", type:"memo", custodian:"cust-gc", tags:["issue3"],
+    from:"Sentinel Forensics <ir-team@sentinelforensics.com>", to:"Sarah Lindqvist <s.lindqvist@whitmoregray.com>", cc:"Diane Okafor (GC) <d.okafor@staurelius.org>",
+    date:"March 24, 2025 · 6:10 PM", subject:"PRIVILEGED & CONFIDENTIAL — Preliminary forensic findings (prepared at direction of counsel)",
+    body:"Counsel,\n\nPer the engagement letter executed by Whitmore & Gray LLP, Sentinel Forensics was retained at the direction of counsel to assist in providing legal advice in anticipation of litigation arising from the March 14 incident.\n\nPreliminary findings: initial access via the unpatched VPN concentrator on February 27; lateral movement to the EHR database cluster beginning March 3; staging and exfiltration of approximately 2.1 million patient records completed March 12. Full attack-path analysis to follow.\n\nThis report is attorney work product. Distribution restricted to counsel.\n\nSentinel IR Team",
+    answer:{ responsive:"responsive", privilege:"privileged", action:"withhold", conf:"hc-aeo", issues:["issue3"] },
+    explanation:"A forensic report prepared by a consultant retained BY outside counsel, at counsel's direction, in anticipation of litigation is protected work product (the Kovel/BofA line of cases). Responsive to incident response (Issue 3) but withheld; log it on the privilege log. Compare SAH-0002 — the same technical content without counsel direction is not protected." },
+
+  { id:"SAH-0002", type:"memo", custodian:"cust-it", tags:["issue1"],
+    from:"Marcus Webb (IT Dir.) <m.webb@staurelius.org>", to:"Priya Raman (CISO) <p.raman@staurelius.org>", cc:"",
+    date:"January 21, 2025 · 9:00 AM", subject:"Q1 security audit — findings summary",
+    body:"Priya,\n\nSummary of the Q1 internal security audit:\n\n- VPN concentrator firmware is 14 months out of date; vendor patch for the authentication-bypass CVE has been available since last June.\n- EHR database service accounts still share a single credential.\n- Backup encryption keys are stored on the same network segment as the backups.\n\nWe should prioritize the VPN patch this quarter. Legal exposure if this is ever exploited could be significant — might be worth flagging to compliance.\n\nMarcus",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue1"] },
+    explanation:"A routine internal security audit conducted in the ordinary course of business is NOT privileged, even though it mentions 'legal exposure' — no lawyer was involved and no legal advice was sought or given. Squarely responsive to Security Failures (Issue 1): it documents that the exploited VPN vulnerability was known six weeks before the breach. Produce as Confidential." },
+
+  { id:"SAH-0003", type:"email", custodian:"cust-ceo", tags:["issue3"],
+    from:"Corporate Communications <comms@staurelius.org>", to:"Robert Ellison (CEO) <r.ellison@staurelius.org>", cc:"Diane Okafor (GC) <d.okafor@staurelius.org>",
+    date:"April 28, 2025 · 2:45 PM", subject:"DRAFT press statement v4 — patient notification",
+    body:"Robert,\n\nAttached is draft four of the public statement announcing the incident. Key changes: we now say 'sophisticated cyberattack' instead of 'ransomware incident,' and we moved the credit-monitoring offer to the first paragraph.\n\nDiane is cc'd so she stays in the loop on timing.\n\nPlanning to release alongside the patient notification letters next week.\n\nComms Team",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue3"] },
+    explanation:"A PR draft circulated for business purposes is not privileged merely because the GC is cc'd — copying a lawyer 'to stay in the loop' does not create privilege. No legal advice is sought or conveyed. Responsive to incident response/communications (Issue 3); produce as Confidential." },
+
+  { id:"SAH-0004", type:"file", custodian:"cust-ciso", tags:["issue3","issue4"],
+    from:"", to:"", cc:"",
+    date:"March 17, 2025", subject:"cryptvault_negotiation_transcript_0317.txt",
+    body:"[Secure chat transcript — CryptVault negotiation portal]\n\nCRYPTVAULT: You have 2.1M patient files. Payment is ⟦SBI|$2.4M in Bitcoin⟧. Deadline 96 hours or we publish to the leak site.\n\nSAH-NEGOTIATOR: We need proof of deletion capability and a file tree before any discussion of payment.\n\nCRYPTVAULT: File tree uploaded. Clock is running.\n\nSAH-NEGOTIATOR: Our team is reviewing. We will respond within 24 hours.\n\n[End excerpt]",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"redact", conf:"hc-aeo", issues:["issue3","issue4"] },
+    explanation:"The ransom negotiation transcript is highly responsive to incident response (Issue 3) and a hot document (Issue 4). It is a communication with the threat actor, not with counsel — no privilege. The demand amount is competitively/securely sensitive business information: redact it as SBI and produce the document as Highly Confidential – AEO." },
+
+  { id:"SAH-0005", type:"file", custodian:"cust-hr", tags:[],
+    from:"", to:"", cc:"",
+    date:"March 28, 2025", subject:"IR_team_retention_bonuses_FINAL.xlsx (exported text)",
+    body:"Retention bonus schedule — incident response team (HR CONFIDENTIAL)\n\n1. Marcus Webb — ⟦DECOY|IT Director⟧ — SSN ⟦PII|514-22-8891⟧ — ⟦PII|1182 Cedarbrook Lane, Dayton OH⟧ — $30,000\n2. Alicia Torres — Sr. Systems Engineer — SSN ⟦PII|603-48-1120⟧ — $22,000\n3. Devon Park — Network Analyst — retention pending review\n\nApproved by J. Cole, HR Director. Distribution: HR + Finance only.",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"redact", conf:"confidential", issues:[] },
+    explanation:"Responsive (retention of the incident-response team relates to the breach response) and not privileged. Employee SSNs and home addresses are PII that must be redacted before production; a job title is not — redacting it would be over-redaction. Code Production as Redact, Confidential designation." },
+
+  { id:"SAH-0006", type:"email", custodian:"cust-ceo", tags:["issue2"],
+    from:"Gloria Whitfield <gwhitfield1954@personalmail.com>", to:"Patient Relations <patientrelations@staurelius.org>", cc:"",
+    date:"May 6, 2025 · 10:22 AM", subject:"How long did you know?? My records were stolen",
+    body:"To whom it may concern,\n\nI received your letter dated May 2 saying my information was taken in a 'security incident' back in MARCH. Why am I only hearing about this now, two months later?\n\nYour letter says my file included my date of birth ⟦PII|June 3, 1954⟧, my medical record number ⟦PHI|MRN-0042871⟧, and my treatment history for ⟦PHI|congestive heart failure⟧. I have already had two fraud alerts on my credit this week.\n\nI want answers about why you waited so long to tell patients in the ⟦DECOY|cardiology department⟧.\n\nGloria Whitfield",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"redact", conf:"confidential", issues:["issue2"] },
+    explanation:"A patient complaint about notification delay is responsive to Timeline & Notification (Issue 2) and not privileged. Her DOB is PII; her medical record number and diagnosis are PHI — all must be redacted before production. The department name is not protected information; redacting it would be over-redaction." },
+
+  { id:"SAH-0007", type:"memo", custodian:"cust-ceo", tags:["issue3"],
+    from:"Robert Ellison (CEO) <r.ellison@staurelius.org>", to:"Board of Directors <board@staurelius.org>", cc:"",
+    date:"April 2, 2025 · 8:00 AM", subject:"Board briefing — incident financial exposure",
+    body:"Directors,\n\nAhead of Thursday's session on ⟦DECOY|April 10, 2025⟧, three points on financial exposure from the March incident:\n\n1. Our cyber policy carries a ⟦SBI|$40 million aggregate coverage cap⟧ with a $2M retention; outside estimates of total incident cost already approach that cap.\n2. Ransom decision economics are covered in the separate closed-session memo.\n3. Most sensitively: if this becomes public litigation, it could jeopardize the ⟦SBI|pending acquisition of Meridian Community Health⟧, which remains unannounced.\n\nRobert",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"redact", conf:"hc-aeo", issues:["issue3"] },
+    explanation:"Board-level incident briefing — responsive to incident response (Issue 3), no counsel involved so not privileged. The insurance coverage cap and the unannounced acquisition are sensitive business information (SBI): redact both and produce as Highly Confidential – AEO. The meeting date is routine and must not be redacted." },
+
+  { id:"SAH-0008", type:"file", custodian:"cust-it", tags:[],
+    from:"", to:"", cc:"",
+    date:"March 30, 2025", subject:"backup_vault_2025.enc (unreadable)",
+    body:"[This file could not be rendered for review. The container appears to be encrypted by the ransomware payload and no text could be extracted. Flag to the technical/processing team for re-collection or decryption.]",
+    answer:{ responsive:"technical", privilege:"not-privileged", action:"withhold", conf:"confidential", issues:[] },
+    explanation:"The file failed processing and cannot be reviewed. Code Responsiveness as Technical Issue and route for re-collection — do not guess at substantive coding for an unreadable file. Withhold pending a readable version." },
+
+  { id:"SAH-0009", type:"email", custodian:"cust-ceo", tags:[],
+    from:"Robert Ellison (CEO) <r.ellison@staurelius.org>", to:"Karen Ellison <k.ellison@personalmail.com>", cc:"",
+    date:"March 22, 2025 · 7:40 PM", subject:"Re: Sam's soccer schedule",
+    body:"Karen — I can take Sam to the 9am game Saturday, but I'll need to leave at halftime for a work call. Can your mom cover the afternoon tournament slot? Also we still owe the league the registration check.\n\nR",
+    answer:{ responsive:"non-responsive", privilege:"not-privileged", action:"withhold", conf:"confidential", issues:[] },
+    explanation:"Purely personal family logistics with no connection to the breach, the investigation, or any discovery request. Not responsive; withhold. The passing mention of 'a work call' does not make it responsive." },
+
+  { id:"SAH-0010", type:"email", custodian:"cust-it", tags:["issue1","issue4"],
+    from:"RedShield Testing <engagements@redshieldsec.com>", to:"Marcus Webb (IT Dir.) <m.webb@staurelius.org>", cc:"Priya Raman (CISO) <p.raman@staurelius.org>",
+    date:"February 11, 2025 · 4:55 PM", subject:"URGENT — penetration test finding: VPN authentication bypass",
+    body:"Marcus,\n\nFlagging this outside our normal reporting cycle. During this week's external penetration test we achieved full internal network access through the VPN concentrator's authentication bypass in under an hour. This is a critical, actively-exploited vulnerability class. We strongly recommend emergency patching this week.\n\n---\nReply from M. Webb, Feb 12: Understood. Patching window is a problem — clinical systems can't take downtime and there's no budget for the after-hours change until Q3. Adding it to the Q3 plan.\n\nRedShield Engagement Team",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue1","issue4"] },
+    explanation:"Smoking-gun security-failure document: an external tester exploited the exact breach entry point a month before the attack and was told the fix would wait for budget. Responsive, Issue 1 (Security Failures) and Issue 4 (Hot Doc). No privilege — vendor and IT, no counsel. Produce as Confidential." },
+
+  { id:"SAH-0011", type:"email", custodian:"cust-ciso", tags:["issue2","issue4"],
+    from:"Priya Raman (CISO) <p.raman@staurelius.org>", to:"Robert Ellison (CEO) <r.ellison@staurelius.org>", cc:"",
+    date:"March 20, 2025 · 9:58 PM", subject:"Notification timing — sensitive",
+    body:"Robert,\n\nConfirmed today that the exfiltrated data set includes patient identities, not just system files. Under HIPAA we have obligations that start running from discovery.\n\nThat said — I suggest we hold patient notification until after the ⟦SBI|hospital revenue bond issuance⟧ closes on April 18. Announcing a 2.1M-record breach mid-offering would be devastating to pricing. Two or three weeks of delay feels survivable.\n\nCan we discuss by phone tomorrow rather than email?\n\nPriya",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"hc-aeo", issues:["issue2","issue4"] },
+    explanation:"Hot document at the heart of Timeline & Notification (Issue 2): the CISO proposes delaying legally required patient notification to protect a bond offering, then tries to move the discussion off email. Not privileged — no lawyer, no legal advice. The bond issuance is SBI to redact. Produce as Highly Confidential – AEO." },
+
+  { id:"SAH-0012", type:"memo", custodian:"cust-gc", tags:["issue2"],
+    from:"Sarah Lindqvist <s.lindqvist@whitmoregray.com>", to:"Diane Okafor (GC) <d.okafor@staurelius.org>", cc:"",
+    date:"March 26, 2025 · 11:30 AM", subject:"PRIVILEGED & CONFIDENTIAL — Notification obligations analysis",
+    body:"Diane,\n\nAt your request, this memo sets out our legal advice on St. Aurelius's breach-notification obligations: the HIPAA Breach Notification Rule's 60-day outer limit and 'without unreasonable delay' standard, the interaction with the four state notification statutes in your service area, and our recommended notification sequencing in light of the pending law-enforcement request.\n\nThis communication is provided for the purpose of legal advice and is protected by the attorney-client privilege and work product doctrine.\n\nSarah Lindqvist\nWhitmore & Gray LLP",
+    answer:{ responsive:"responsive", privilege:"privileged", action:"withhold", conf:"confidential", issues:["issue2"] },
+    explanation:"Classic attorney-client privileged communication: outside counsel providing requested legal advice to the GC on notification obligations. Responsive to Issue 2 but withheld in full and logged. Contrast SAH-0003 and SAH-0013, where counsel involvement is peripheral or partial." },
+
+  { id:"SAH-0013", type:"memo", custodian:"cust-ciso", tags:["issue3"],
+    from:"Priya Raman (CISO) <p.raman@staurelius.org>", to:"Incident Response Distribution <ir-team@staurelius.org>", cc:"Diane Okafor (GC) <d.okafor@staurelius.org>",
+    date:"April 8, 2025 · 3:15 PM", subject:"Incident timeline v6 — master chronology",
+    body:"Team,\n\nUpdated master chronology:\n\n- Feb 27: Initial access (VPN concentrator)\n- Mar 3: Lateral movement to EHR cluster begins\n- Mar 12: Exfiltration complete (~2.1M records)\n- Mar 14: Ransomware detonation; incident declared\n- Mar 15: CryptVault ransom note received\n- Mar 17: Negotiation channel opened\n\nLEGAL NOTE (from Diane, per Whitmore & Gray): counsel advises that we should treat the March 14 detection date — not the February 27 intrusion date — as the HIPAA 'discovery' date for notification-deadline purposes, and that this position should not be discussed outside this group.\n\nNext update Friday.\n\nPriya",
+    answer:{ responsive:"responsive", privilege:"redact-priv", action:"redact", conf:"confidential", issues:["issue3"] },
+    explanation:"Mixed document: the factual incident chronology is ordinary responsive business content (Issue 3), but the 'LEGAL NOTE' paragraph relays outside counsel's legal advice on the HIPAA discovery date — that paragraph is privileged. Code Privilege as Redact (Privilege) and Production as Redact: produce the timeline, redact the legal advice." },
+
+  { id:"SAH-0014", type:"file", custodian:"cust-gc", tags:[],
+    from:"", to:"", cc:"",
+    date:"April 15, 2025", subject:"Sentinel Forensics — Invoice #SF-2025-0389",
+    body:"INVOICE — Sentinel Forensics LLC\n\nBill to: St. Aurelius Health System, Office of General Counsel\nEngagement: Incident response services, March 2025\n\nProfessional services (388.5 hrs @ blended rate): $214,675\nThreat-intelligence subscription surcharge: $12,000\nTotal due net 30: $226,675\n\nRemit to accounts receivable. Questions to billing@sentinelforensics.com.",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:[] },
+    explanation:"A vendor invoice is routine business documentation — responsive (it evidences the forensic engagement) but carries no privileged content: invoices, hours, and amounts are not legal advice even when the vendor was retained through counsel. Produce as Confidential with no issue tags beyond responsiveness." },
+
+  { id:"SAH-0015", type:"file", custodian:"cust-hr", tags:["issue2"],
+    from:"", to:"", cc:"",
+    date:"April 30, 2025", subject:"Patient notification letter — merge template (QA copy)",
+    body:"[MAIL-MERGE QA PROOF — DO NOT SEND]\n\nDear ⟦PII|Harold Jenkins, DOB 02/14/1948⟧,\n\nWe are writing to inform you that your personal information was involved in a security incident affecting St. Aurelius Health System. Our records indicate the affected data may include your name, date of birth, and clinical information, including ⟦PHI|your positive hepatitis C test result from January 2025⟧.\n\nWe are offering 24 months of complimentary credit monitoring. Enrollment instructions are enclosed.\n\nSt. Aurelius Health System — Patient Privacy Office",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"redact", conf:"confidential", issues:["issue2"] },
+    explanation:"A QA proof of the notification letter that still contains a real patient's identity and test result. Responsive to notification (Issue 2), not privileged. The patient name/DOB is PII and the test result is PHI — both must be redacted before production. Code Production as Redact." }
+];
+
+CP_CASES.breach = {
+  id: 'breach',
+  crumb: '<b>Doe v. St. Aurelius Health</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; Breach Litigation',
+  panelTitle: 'Breach Review Coding',
+  docs: SAH_DOCS,
+  hotBand: '🔥 <strong>Hot Document:</strong> This document may contain smoking-gun content about the breach, notification delay, or ignored warnings — code carefully.',
+  fields: [
+    { key:'responsive', label:'RESPONSIVENESS', options:[
+      {v:'responsive',l:'Responsive'},{v:'non-responsive',l:'Not Responsive'},{v:'technical',l:'Technical Issue'}]},
+    { key:'privilege', label:'PRIVILEGE', options:[
+      {v:'not-privileged',l:'Not Privileged'},{v:'privileged',l:'Privileged'},{v:'redact-priv',l:'Redact (Privilege)'}]},
+    { key:'action', label:'PRODUCTION', options:[
+      {v:'produce',l:'Produce'},{v:'withhold',l:'Withhold'},{v:'redact',l:'Redact'}]},
+    { key:'conf', label:'CONFIDENTIALITY', options:[
+      {v:'confidential',l:'Confidential'},{v:'hc-aeo',l:'Highly Conf. – AEO'}]}
+  ],
+  issues: { label:'ISSUE TAGS', options:[
+    {v:'issue1',l:'Security Failures',color:'#c62828'},
+    {v:'issue2',l:'Timeline & Notification',color:'#b8860b'},
+    {v:'issue3',l:'Incident Response',color:'#2e9e5b'},
+    {v:'issue4',l:'Hot Doc',color:'#d6453a'}]},
+  labels: {
+    'responsive':'Responsive','non-responsive':'Not Responsive','technical':'Technical Issue',
+    'not-privileged':'Not Privileged','privileged':'Privileged','redact-priv':'Redact (Privilege)',
+    'produce':'Produce','withhold':'Withhold','redact':'Redact',
+    'confidential':'Confidential','hc-aeo':'Highly Confidential – AEO',
+    'issue1':'Security Failures','issue2':'Timeline & Notification','issue3':'Incident Response','issue4':'Hot Doc'
+  }
+};
+
 var CP_ACTIVE = 'antitrust';
 function cpCase(){ return CP_CASES[CP_ACTIVE]; }
 function cpDocs(){ return cpCase().docs; }
