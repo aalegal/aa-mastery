@@ -5459,6 +5459,212 @@ var SAH_DOCS = [
     explanation:"A QA proof of the notification letter that still contains a real patient's identity and test result. Responsive to notification (Issue 2), not privileged. The patient name/DOB is PII and the test result is PHI — both must be redacted before production. Code Production as Redact." }
 ];
 
+// ══════════════════════════════════════════════════════════════════════════
+// CASEPOINT — GENERATED BREACH REVIEW VOLUME (SAH-0016 … SAH-0400)
+// 385 additional documents built deterministically from weighted breach-review
+// archetypes. Each archetype fixes a defensible coding answer AND emits
+// ⟦PII|…⟧ / ⟦PHI|…⟧ / ⟦SBI|…⟧ / ⟦DECOY|…⟧ redaction spans where appropriate,
+// so every document is fully gradeable. Deterministic PRNG => the same 385
+// docs render every load, so progress keyed by doc id stays stable.
+// ══════════════════════════════════════════════════════════════════════════
+(function buildBreachVolume(){
+  function rngFor(seed){ var s=(seed>>>0)||1; return function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+  function pick(r,a){ return a[Math.floor(r()*a.length)]; }
+
+  var ROSTER = {
+    'cust-ceo':    {name:'Robert Ellison (CEO)',          email:'r.ellison@staurelius.org'},
+    'cust-ciso':   {name:'Priya Raman (CISO)',            email:'p.raman@staurelius.org'},
+    'cust-gc':     {name:'Diane Okafor (GC)',             email:'d.okafor@staurelius.org'},
+    'cust-it':     {name:'Marcus Webb (IT Dir.)',         email:'m.webb@staurelius.org'},
+    'cust-hr':     {name:'Janet Cole (HR Dir.)',          email:'j.cole@staurelius.org'},
+    'cust-fin':    {name:'Tom Okonkwo (Finance Dir.)',    email:'t.okonkwo@staurelius.org'},
+    'cust-privacy':{name:'Patient Privacy Office',        email:'privacy@staurelius.org'}
+  };
+  function person(cust){ var p=ROSTER[cust]; return p.name+' <'+p.email+'>'; }
+
+  var PATIENTS = ['Gloria Whitfield','Harold Jenkins','Rosa Delgado','Walter Kim','Betty Nakamura','Frank Osei','Marlene Dubois','Curtis Boone','Ida Petrov','Sam Whitaker','Nora Vance','Elias Ford'];
+  var EMPLOYEES = ['Alicia Torres','Devon Park','Sheila Grant','Omar Haddad','Lena Fischer','Ray Coleman','Tina Vasquez','Neil Barrett'];
+  var DIAGNOSES = ['type 2 diabetes','stage II lymphoma','major depressive disorder','hepatitis C','chronic kidney disease','atrial fibrillation','HIV treatment history','opioid use disorder treatment','rheumatoid arthritis','congestive heart failure'];
+  var DEPTS = ['cardiology department','oncology unit','outpatient pharmacy','emergency department','radiology group','billing office'];
+  var STREETS = ['482 Maplewood Ct, Dayton OH','77 Birchfield Rd, Springfield OH','1301 Harbor View Dr, Columbus OH','25 Quarry St, Kettering OH','940 Elmhurst Ave, Dayton OH'];
+  var MONTHS = [['February',2025],['March',2025],['April',2025],['May',2025],['June',2025]];
+  function dateStr(r){ var m=pick(r,MONTHS), day=1+Math.floor(r()*28), h=1+Math.floor(r()*12), mn=Math.floor(r()*60), ap=r()<0.5?'AM':'PM'; return m[0]+' '+day+', '+m[1]+' · '+h+':'+(mn<10?'0'+mn:mn)+' '+ap; }
+  function fileDate(r){ var m=pick(r,MONTHS); return m[0]+' '+(1+Math.floor(r()*28))+', '+m[1]; }
+  function ssn(r){ return (100+Math.floor(r()*800))+'-'+(10+Math.floor(r()*89))+'-'+(1000+Math.floor(r()*8999)); }
+  function mrn(r){ return 'MRN-00'+(10000+Math.floor(r()*89999)); }
+  function dob(r){ var mo=pick(r,['January','February','March','April','May','June','July','August','September','October','November','December']); return mo+' '+(1+Math.floor(r()*28))+', '+(1938+Math.floor(r()*50)); }
+  function money(r,lo,hi){ return '$'+(lo+Math.floor(r()*(hi-lo))).toLocaleString(); }
+
+  // Each archetype: weight w, eligible custodians, make(r,cust) returning
+  // { type, subject, from, to, cc, body, issues, answer, explanation }.
+  var A = [
+    // Patient complaint — PHI/PII spans, redact (w:14)
+    { w:14, cust:['cust-privacy','cust-ceo'], make:function(r,cust){
+        var name=pick(r,PATIENTS), diag=pick(r,DIAGNOSES), withMrn=r()<0.6, withDecoy=r()<0.5, dept=pick(r,DEPTS);
+        var body='To whom it may concern,\n\nI received your notification letter about the security incident. Your letter confirms that my stolen file included my date of birth ⟦PII|'+dob(r)+'⟧'
+          + (withMrn ? ', my medical record number ⟦PHI|'+mrn(r)+'⟧,' : '')
+          + ' and my treatment records for ⟦PHI|'+diag+'⟧.\n\n'
+          + pick(r,['I have already seen suspicious activity on my credit report.','I am extremely upset that it took this long to tell me.','I want to know exactly what you are doing to protect patients now.','My bank flagged two fraud attempts this week.'])
+          + (withDecoy ? ' I have been a patient of your '+ '⟦DECOY|'+dept+'⟧ for years.' : '')
+          + '\n\n'+name;
+        return { type:'email',
+          subject:pick(r,['My records were stolen — what now?','Upset about your data breach letter','Questions about the security incident','You lost my medical information']),
+          from:name+' <'+name.toLowerCase().replace(/[^a-z]/g,'')+'@personalmail.com>', to:'Patient Relations <patientrelations@staurelius.org>', cc:'',
+          body:body, issues:['issue2'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'redact', conf:'confidential', issues:['issue2'] },
+          explanation:'Patient complaint about the breach and notification — responsive to Timeline & Notification (Issue 2), not privileged. The DOB is PII and the medical details are PHI: redact them before production. Department names and general upset are not protected content.' };
+      }},
+    // HR PII list — redact (w:8)
+    { w:8, cust:['cust-hr','cust-fin'], make:function(r,cust){
+        var e1=pick(r,EMPLOYEES), e2=pick(r,EMPLOYEES.filter(function(x){return x!==e1;})), withDecoy=r()<0.5;
+        return { type:'file',
+          subject:pick(r,['IR_staffing_roster.xlsx (exported text)','overtime_approvals_incident.xlsx (exported text)','emergency_contact_update.csv (exported text)','credit_monitoring_staff_signup.xlsx (exported text)']),
+          from:'', to:'', cc:'',
+          body:'Incident staffing extract (HR CONFIDENTIAL)\n\n1. '+e1+(withDecoy?' — ⟦DECOY|'+pick(r,['Systems Analyst','Help Desk Lead','Security Engineer'])+'⟧':'')+' — SSN ⟦PII|'+ssn(r)+'⟧ — ⟦PII|'+pick(r,STREETS)+'⟧\n2. '+e2+' — SSN ⟦PII|'+ssn(r)+'⟧ — overtime '+money(r,2,18)+',000 approved\n\nPrepared by HR Shared Services. Distribution: HR + Finance only.',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'redact', conf:'confidential', issues:[] },
+          explanation:'Responsive HR record tied to the incident response staffing — not privileged. Employee SSNs and home addresses are PII requiring redaction before production; job titles are not protected and should be left visible.' };
+      }},
+    // Exec SBI — redact, HC-AEO (w:7)
+    { w:7, cust:['cust-ceo','cust-fin'], make:function(r,cust){
+        var rcv = cust==='cust-ceo' ? 'cust-fin' : 'cust-ceo';
+        var second=r()<0.5;
+        return { type:'email',
+          subject:pick(r,['Incident cost tracking — week update','Financial exposure summary','Insurance recovery strategy','Budget impact — March incident']),
+          from:person(cust), to:person(rcv), cc:'',
+          body:'Team,\n\nCurrent all-in incident cost estimate stands at ⟦SBI|'+money(r,8,32)+' million⟧ including forensics, notification, and credit monitoring.'
+            + (second ? ' Reminder that our cyber policy retention and the ⟦SBI|'+pick(r,['remaining coverage tower','$40M aggregate coverage cap','excess layer negotiation position'])+'⟧ are not to be discussed outside this group.' : '')
+            + '\n\n'+pick(r,['Board wants weekly updates.','Finance to reconcile against the incident cost center.','Will revise after the vendor invoices land.']),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'redact', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Internal financial-exposure discussion — responsive to Incident Response (Issue 3), not privileged. The cost estimates and insurance posture are sensitive business information (SBI): redact them and produce as Highly Confidential – AEO.' };
+      }},
+    // Pre-breach IT warning — produce (w:9)
+    { w:9, cust:['cust-it','cust-ciso'], make:function(r,cust){
+        var rcv = cust==='cust-it' ? 'cust-ciso' : 'cust-it';
+        return { type:'email',
+          subject:pick(r,['Patch backlog — monthly review','Vulnerability scan results','VPN firmware — still pending','Phishing simulation results — poor','MFA rollout stalled']),
+          from:person(cust), to:person(rcv), cc:'',
+          body:pick(r,[
+            'Monthly patch review: 37 criticals open, oldest is the VPN concentrator authentication bypass — still waiting on a change window. Clinical systems team will not approve downtime this quarter.',
+            'Quarterly vulnerability scan attached. Same top finding as last quarter: perimeter VPN firmware is over a year behind. Risk accepted by ops pending budget.',
+            'Phishing simulation results: 31% click rate in the billing group. Recommending mandatory retraining; last request was declined as too disruptive.',
+            'MFA rollout remains stalled at 40% of clinical staff. Project is unfunded for the remainder of the fiscal year.']),
+          issues:['issue1'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue1'] },
+          explanation:'Ordinary-course security correspondence documenting known, unremediated weaknesses before the breach — squarely responsive to Security Failures (Issue 1). No counsel involvement, so no privilege. Produce as Confidential.' };
+      }},
+    // Forensics at direction of counsel — privileged withhold (w:6)
+    { w:6, cust:['cust-gc'], make:function(r,cust){
+        return { type:'memo',
+          subject:'PRIVILEGED — '+pick(r,['forensic status update','attack-path analysis interim','exfiltration scoping update','containment assessment'])+' (at direction of counsel)',
+          from:'Sentinel Forensics <ir-team@sentinelforensics.com>', to:'Sarah Lindqvist <s.lindqvist@whitmoregray.com>', cc:person(cust),
+          body:'Counsel,\n\nPursuant to our engagement by Whitmore & Gray LLP at the direction of counsel and in anticipation of litigation, this update summarizes '+pick(r,['host triage progress across the EHR cluster','our review of exfiltration staging directories','firewall log reconstruction for the intrusion window','credential-abuse timeline analysis'])+'. Detailed findings are reserved for the privileged report.\n\nAttorney work product — distribution restricted to counsel.\n\nSentinel IR Team',
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'privileged', action:'withhold', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Forensic work performed at the direction of outside counsel in anticipation of litigation is protected work product. Responsive to Incident Response (Issue 3) but withheld in full and logged on the privilege log.' };
+      }},
+    // Routine forensic/IR status — produce (w:7)
+    { w:7, cust:['cust-ciso','cust-it'], make:function(r,cust){
+        var rcv = cust==='cust-ciso' ? 'cust-it' : 'cust-ciso';
+        return { type:'email',
+          subject:pick(r,['Containment status — daily standup notes','EHR cluster restoration progress','Endpoint reimaging count','Backup restore validation']),
+          from:person(cust), to:person(rcv), cc:'',
+          body:pick(r,[
+            'Standup notes: domain controllers rebuilt, EHR read-only mirror is live, remaining reimaging queue is 212 endpoints. No new detections in 48 hours.',
+            'Restoration progress: 60% of clinical workstations back online. Pharmacy systems remain on downtime procedures through the weekend.',
+            'Backup validation: March 10 snapshot verified clean; restoring departmental shares in priority order.',
+            'Reimaging count at 1,480 of 1,900 endpoints. On track for full clinical restoration next week.']),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue3'] },
+          explanation:'Ordinary-course operational incident-response status between IT and security — responsive to Incident Response (Issue 3) and producible. No counsel, no privilege, nothing to redact.' };
+      }},
+    // Notification logistics chatter — produce (w:8)
+    { w:8, cust:['cust-privacy','cust-gc','cust-ceo'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Notification mailing — vendor logistics','Call center scripts v2','Credit monitoring enrollment codes','Notification list deduplication','Regulator submission logistics']),
+          from:person(cust), to:'Patient Privacy Office <privacy@staurelius.org>', cc:'',
+          body:pick(r,[
+            'Mailing vendor confirms capacity for 2.1M letters across three print runs. First tray needs final address file by Friday.',
+            'Attached are the revised call-center scripts. Please route substantive legal questions to the escalation queue rather than ad-libbing.',
+            'Credit monitoring vendor issued the enrollment code block. Codes go in the second paragraph of the letter template.',
+            'Deduplication pass complete: 2,148,309 unique affected individuals. State-by-state counts attached for the regulator submissions.',
+            'OCR portal submission drafted; state AG submissions queued behind the final affected-count sign-off.']),
+          issues:['issue2'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue2'] },
+          explanation:'Operational notification logistics — responsive to Timeline & Notification (Issue 2). Coordinating mailings and scripts is business activity, not legal advice, even when counsel is nearby. Produce as Confidential.' };
+      }},
+    // Press/comms drafts — produce (w:5)
+    { w:5, cust:['cust-ceo'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Holding statement v'+(2+Math.floor(r()*6)),'Media inquiry — response draft','Employee town hall talking points','Website FAQ update']),
+          from:'Corporate Communications <comms@staurelius.org>', to:person(cust), cc:'',
+          body:pick(r,[
+            'Draft holding statement attached. We acknowledge a network security incident, note that systems are being restored, and point to the incident webpage for updates.',
+            'A reporter from the local NBC affiliate is asking about ambulance diversions during the outage. Draft response attached for your review.',
+            'Talking points for the employee town hall: what happened, what we are doing, and where staff questions should go.',
+            'Website FAQ refresh: adds credit-monitoring enrollment steps and clarifies which services were affected.']),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue3'] },
+          explanation:'Communications material prepared for business/PR purposes — responsive to Incident Response (Issue 3) and not privileged. Drafts are still discoverable documents. Produce as Confidential.' };
+      }},
+    // Vendor invoices — produce (w:5)
+    { w:5, cust:['cust-gc','cust-fin'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['Sentinel Forensics — Invoice #SF-2025-0'+(300+Math.floor(r()*400)),'GuardWell Credit Monitoring — Invoice #GW-'+(1000+Math.floor(r()*9000)),'RapidPrint Mailing Services — Invoice #RP-'+(500+Math.floor(r()*4000)),'CyberCounsel PR — Invoice #CC-'+(100+Math.floor(r()*900))]),
+          from:'', to:'', cc:'',
+          body:'INVOICE\n\nBill to: St. Aurelius Health System\nServices: '+pick(r,['incident response professional services','credit monitoring enrollment block','notification letter printing and mailing','crisis communications retainer'])+'\nAmount due: '+money(r,40,900)+',00 net 30.\n\nRemit to accounts receivable.',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:[] },
+          explanation:'Routine vendor invoice evidencing breach-response services — responsive but not privileged; billing records are not legal advice even for counsel-retained vendors. Produce as Confidential with no substantive issue tags.' };
+      }},
+    // Personal / junk noise — withhold (w:5)
+    { w:5, cust:['cust-ceo','cust-hr','cust-it','cust-fin'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Healthcare IT Weekly — newsletter','Your conference registration is confirmed','Cafeteria menu — next week','Fantasy league — week results','Dentist appointment reminder']),
+          from:pick(r,['HIT Weekly <news@hitweekly.com>','Events <events@healthconf.com>','Dining Services <cafeteria@staurelius.org>','League Bot <noreply@fantasyhub.com>','Smile Dental <appointments@smiledental.com>']),
+          to:person(cust), cc:'',
+          body:pick(r,[
+            'This week in healthcare IT: interoperability news, a vendor roundup, and upcoming webinars. Unsubscribe below.',
+            'Your registration for the Midwest Healthcare Leadership Summit is confirmed. See you in September.',
+            'Next week\'s cafeteria menu: Monday tacos, Wednesday pasta bar, Friday fish fry.',
+            'Week 9 results: your team lost by 4. Set your lineup for next week.',
+            'Reminder: your dental cleaning is scheduled for next Tuesday at 2:30 PM.']),
+          issues:[],
+          answer:{ responsive:'non-responsive', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'Bulk newsletter / personal noise with no connection to the breach or any discovery request. Not responsive; withhold. Teaches quick disposal of obvious junk without over-coding.' };
+      }},
+    // Encrypted / failed processing — technical (w:3)
+    { w:3, cust:['cust-it'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['dept_share_archive.enc (unreadable)','imaging_backup_0'+(1+Math.floor(r()*9))+'.enc (unreadable)','fileserver_snapshot.vhdx (no text extracted)','legacy_pacs_export.dat (corrupted)']),
+          from:'', to:'', cc:'',
+          body:'[This file could not be rendered for review. The container appears to be encrypted by the ransomware payload or corrupted, and no text could be extracted. Flag to the technical/processing team for re-collection or decryption.]',
+          issues:[],
+          answer:{ responsive:'technical', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'The file failed processing and cannot be reviewed. Code Responsiveness as Technical Issue and route for re-collection — never guess substantive coding for an unreadable file.' };
+      }}
+  ];
+
+  var POOL=[];
+  A.forEach(function(a,i){ for(var k=0;k<a.w;k++) POOL.push(i); });
+
+  for (var n=16; n<=400; n++){
+    var r = rngFor(n*2246822519 + 91);
+    var arch = A[POOL[Math.floor(r()*POOL.length)]];
+    var cust = pick(r, arch.cust);
+    var d = arch.make(r, cust);
+    var id = 'SAH-' + ('000'+n).slice(-4);
+    SAH_DOCS.push({
+      id:id, type:d.type, custodian:cust, tags:d.issues.slice(),
+      from:d.from, to:d.to, cc:d.cc,
+      date:(d.type==='file' ? fileDate(r) : dateStr(r)),
+      subject:d.subject, body:d.body,
+      answer:d.answer, explanation:d.explanation
+    });
+  }
+})();
+
 CP_CASES.breach = {
   id: 'breach',
   crumb: '<b>Doe v. St. Aurelius Health</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; Breach Litigation',
