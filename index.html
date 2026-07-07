@@ -3578,7 +3578,7 @@ async function doSignup(){
   clearAuthMessages();if(!name||!email||!pass){showErr('Please fill in all fields.');return;}if(pass.length<6){showErr('Password must be at least 6 characters.');return;}
   var btn=document.querySelector('#view-signup .btn-gold');btn.disabled=true;btn.innerHTML='<span class="spinner"></span>Creating account...';
   var r=await SB.signUp(email,pass,name);btn.disabled=false;btn.innerHTML='Create Account';
-  if(r.error){showErr(r.error);return;}showOk('✅ Account created! Check your email to confirm, then log in.');setTimeout(function(){showView('login');},3000);
+  if(r.error){showErr(r.error);return;}showOk('✅ Account created! You can log in now.');setTimeout(function(){showView('login');},3000);
 }
 async function doForgot(){
   var email=document.getElementById('inp-email-f').value.trim();clearAuthMessages();if(!email){showErr('Please enter your email address.');return;}
@@ -4157,7 +4157,7 @@ async function lwDoSignup(){
   var r=await SB.signUp(email,pass,name);
   btn.disabled=false;btn.innerHTML='Create Account';
   if(r.error){lwErr(r.error);return;}
-  lwOk('✅ Account created! Check your email to confirm, then log in.');
+  lwOk('✅ Account created! You can log in now.');
   setTimeout(function(){lwShowView('login');},3000);
 }
 async function lwDoForgot(){
