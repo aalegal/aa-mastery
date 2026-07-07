@@ -6370,6 +6370,9 @@ function buildProgressData() {
     rel_answered: relAnswered,
     ev_coding: evCoding,
     ev_answered: evAnswered,
+    cp_coding: cpCoding,
+    cp_answered: cpAnswered,
+    cp_redactions: cpRedactions,
     active_case: ACTIVE_CASE,
     active_batch_rel: batchState.rel,
     active_batch_ev: batchState.ev,
@@ -6385,6 +6388,10 @@ function applyProgressData(d) {
   if (d.rel_answered) relAnswered = d.rel_answered;
   if (d.ev_coding) evCoding = d.ev_coding;
   if (d.ev_answered) evAnswered = d.ev_answered;
+  if (d.cp_coding) cpCoding = d.cp_coding;
+  if (d.cp_answered) cpAnswered = d.cp_answered;
+  if (d.cp_redactions) cpRedactions = d.cp_redactions;
+  cpMigrateFlatState();
   if (d.active_case) ACTIVE_CASE = d.active_case;
   if (d.active_batch_rel) batchState.rel = d.active_batch_rel;
   if (d.active_batch_ev) batchState.ev = d.active_batch_ev;
@@ -6424,6 +6431,9 @@ async function saveProgressRemote() {
     data.rel_answered = JSON.stringify(data.rel_answered);
     data.ev_coding = JSON.stringify(data.ev_coding);
     data.ev_answered = JSON.stringify(data.ev_answered);
+    data.cp_coding = JSON.stringify(data.cp_coding);
+    data.cp_answered = JSON.stringify(data.cp_answered);
+    data.cp_redactions = JSON.stringify(data.cp_redactions);
     data.updated_at = new Date().toISOString();
     await axios({
       method: 'POST',
@@ -6460,6 +6470,9 @@ async function loadProgressRemote() {
       rel_answered: typeof d.rel_answered === 'string' ? JSON.parse(d.rel_answered) : (d.rel_answered || {}),
       ev_coding:    typeof d.ev_coding    === 'string' ? JSON.parse(d.ev_coding)    : (d.ev_coding    || {}),
       ev_answered:  typeof d.ev_answered  === 'string' ? JSON.parse(d.ev_answered)  : (d.ev_answered  || {}),
+      cp_coding:     typeof d.cp_coding     === 'string' ? JSON.parse(d.cp_coding)     : (d.cp_coding     || {}),
+      cp_answered:   typeof d.cp_answered   === 'string' ? JSON.parse(d.cp_answered)   : (d.cp_answered   || {}),
+      cp_redactions: typeof d.cp_redactions === 'string' ? JSON.parse(d.cp_redactions) : (d.cp_redactions || {}),
       active_case:      d.active_case,
       active_batch_rel: d.active_batch_rel,
       active_batch_ev:  d.active_batch_ev,
@@ -6497,6 +6510,7 @@ async function loadProgress() {
   updateLandingStats();
   evUpdateProgress();
   evUpdateLanding();
+  cpUpdateLanding();
   showProgressToast('✅ Progress restored — welcome back!');
   return data;
 }
@@ -6541,6 +6555,7 @@ onLogin = function() {
     updateLandingStats();
     evUpdateProgress();
     evUpdateLanding();
+    cpUpdateLanding();
     showProgressToast('✅ Progress restored — welcome back!');
   }
   // Then: check Supabase for more recent data (async)
