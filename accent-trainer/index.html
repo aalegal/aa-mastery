@@ -1,0 +1,1378 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accent Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b12; --bg2:#0f1120; --panel:#12142440; --panel2:#171a2e;
+    --line:rgba(255,255,255,0.09); --line2:rgba(255,255,255,0.06);
+    --text:#eef0f7; --muted:#8b93ab; --dim:#5b6379;
+    --violet:#8b7cff; --violet2:#6d5bf0; --teal:#12d3b0; --cyan:#33c9ff; --amber:#f6b23a; --rose:#f2506e; --green:#37d99a;
+    --grad:linear-gradient(135deg,#8b7cff,#12d3b0);
+    --grad2:linear-gradient(135deg,#6d5bf0 0%,#33c9ff 100%);
+    --radius:18px; --radius-sm:12px;
+    --shadow:0 10px 40px -12px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+    background-image:radial-gradient(1200px 600px at 80% -10%,rgba(139,124,255,0.16),transparent 60%),radial-gradient(1000px 500px at -10% 10%,rgba(18,211,176,0.12),transparent 55%);background-attachment:fixed}
+  button{font-family:inherit;cursor:pointer;color:inherit}
+  a{color:var(--cyan);text-decoration:none}
+  ::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.13);border-radius:9px}::-webkit-scrollbar-track{background:transparent}
+
+  /* Header + nav */
+  .topbar{position:sticky;top:0;z-index:60;backdrop-filter:blur(18px);background:rgba(10,11,18,0.72);border-bottom:1px solid var(--line)}
+  .topbar-inner{max-width:1080px;margin:0 auto;padding:16px 20px 0;display:flex;flex-direction:column;align-items:center}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand-logo{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 18px -6px rgba(139,124,255,0.7)}
+  .brand-name{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.3px}
+  .brand-name .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .brand-sub{font-size:11px;color:var(--muted);margin-top:2px;text-align:center}
+  .nav{display:flex;gap:4px;margin-top:14px;overflow-x:auto;max-width:100%;padding-bottom:2px}
+  .nav-btn{border:none;background:none;padding:11px 15px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .nav-btn:hover{color:var(--text)}
+  .nav-btn.active{color:#fff;border-bottom-color:var(--violet)}
+  .nav-btn .em{font-size:14px}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 20px 80px}
+  .hidden{display:none!important}
+
+  .hero{border-radius:var(--radius);padding:22px 24px;margin-bottom:22px;position:relative;overflow:hidden;border:1px solid var(--line);
+    background:linear-gradient(120deg,rgba(139,124,255,0.14),rgba(18,211,176,0.07))}
+  .hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:var(--grad);opacity:.15;filter:blur(20px)}
+  .hero h1{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;position:relative}
+  .hero p{font-size:13px;color:var(--muted);line-height:1.65;max-width:640px;position:relative}
+
+  .card{background:rgba(255,255,255,0.035);border:1px solid var(--line2);border-radius:var(--radius);backdrop-filter:blur(6px);box-shadow:var(--shadow)}
+  .card-pad{padding:20px}
+  .card-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:5px}
+  .card-hint{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  .mb{margin-bottom:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .divider{height:1px;background:var(--line2);margin:16px 0}
+  .field-label{font-size:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+
+  input[type=text],input[type=url],textarea,select{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);font-size:13.5px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit}
+  textarea{resize:vertical;min-height:64px;line-height:1.5}
+  input:focus,textarea:focus,select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,124,255,0.15)}
+  .btn{border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);border-radius:var(--radius-sm);padding:11px 17px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;transition:all .18s;white-space:nowrap}
+  .btn:hover{border-color:var(--violet);transform:translateY(-1px)}
+  .btn.primary{background:var(--grad2);border:none;color:#fff;box-shadow:0 8px 20px -8px rgba(109,91,240,0.8)}
+  .btn.teal{background:linear-gradient(135deg,#0c5,#12d3b0);border:none;color:#042}
+  .btn.rec{background:var(--rose);border:none;color:#fff}
+  .btn.ghost{background:none}
+  .btn.sm{padding:8px 12px;font-size:11.5px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .chip-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:18px}
+  .chip{padding:8px 15px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,0.03);color:var(--muted);font-size:12px;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all .15s}
+  .chip:hover{color:var(--text)}
+  .chip.active{background:var(--violet);color:#fff;border-color:var(--violet)}
+  .pill-group{display:flex;gap:6px;flex-wrap:wrap}
+  .pill{padding:8px 14px;border-radius:22px;border:1px solid var(--line);background:rgba(255,255,255,0.03);color:var(--muted);font-size:12px;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:all .15s}
+  .pill.active{background:var(--violet);color:#fff;border-color:var(--violet)}
+  .empty{text-align:center;padding:34px 20px;color:var(--muted);font-size:13px;line-height:1.7;border:1px dashed var(--line);border-radius:var(--radius)}
+
+  .banner{border-radius:var(--radius-sm);padding:13px 16px;font-size:12.5px;line-height:1.6;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;background:rgba(246,178,58,0.08);border:1px solid rgba(246,178,58,0.25)}
+  .banner b{color:var(--amber)} .banner code{background:rgba(255,255,255,0.09);border-radius:5px;padding:1px 6px}
+
+  /* ===== LEARN feed ===== */
+  .learn-stats{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px}
+  .lstat{background:rgba(255,255,255,0.04);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:10px 14px}
+  .lstat b{font-family:'Space Grotesk',sans-serif;font-size:17px;display:block;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lstat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+  .feed{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:16px}
+  .vcard{border-radius:var(--radius);overflow:hidden;border:1px solid var(--line2);background:var(--panel2);transition:transform .18s,border-color .18s;position:relative}
+  .vcard:hover{transform:translateY(-3px);border-color:rgba(139,124,255,0.5)}
+  .vthumb{position:relative;width:100%;aspect-ratio:16/10;background:#000;cursor:pointer;overflow:hidden}
+  .vthumb img{width:100%;height:100%;object-fit:cover;display:block}
+  .vthumb .fallback{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;background:var(--grad2);opacity:.9}
+  .play-badge{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+  .play-badge span{width:52px;height:52px;border-radius:50%;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);display:flex;align-items:center;justify-content:center;font-size:20px;color:#fff;border:1.5px solid rgba(255,255,255,0.6);transition:transform .15s}
+  .vcard:hover .play-badge span{transform:scale(1.12)}
+  .vsrc-tag{position:absolute;top:8px;left:8px;font-size:9.5px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:.4px;text-transform:uppercase;padding:3px 8px;border-radius:20px;color:#fff}
+  .tag-yt{background:rgba(242,80,110,0.9)} .tag-pl{background:rgba(139,124,255,0.92)} .tag-ig{background:linear-gradient(135deg,#f09433,#dc2743,#bc1888)} .tag-tt{background:linear-gradient(135deg,#00f2ea,#ff0050);color:#000}
+  .vthumb.tall{aspect-ratio:9/13}
+  .vthumb iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  .vmeta{padding:11px 13px}
+  .vtitle{font-size:12.5px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:34px}
+  .vch{font-size:10.5px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:5px}
+  .vlib{position:absolute;bottom:8px;right:8px;font-size:10px;font-weight:700;font-family:'Space Grotesk',sans-serif;background:rgba(0,0,0,0.6);color:#fff;padding:3px 8px;border-radius:20px}
+
+  /* clip list */
+  .clip-item{display:flex;gap:12px;align-items:center;padding:12px 14px;border:1px solid var(--line2);border-radius:var(--radius-sm);margin-bottom:9px;background:rgba(255,255,255,0.03)}
+  .clip-thumb{width:66px;height:44px;border-radius:8px;background:var(--panel2);object-fit:cover;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:18px}
+  .clip-meta{flex:1;min-width:0}.clip-name{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .clip-type{font-size:10px;color:var(--muted);font-family:'Space Grotesk',sans-serif;font-weight:600;letter-spacing:.5px;text-transform:uppercase;margin-top:3px}
+  .clip-type .dot{display:inline-block;width:6px;height:6px;border-radius:50%;margin-right:5px;vertical-align:middle}
+  .dot.yt{background:var(--rose)}.dot.up{background:var(--teal)}.dot.pre{background:var(--violet)}
+
+  /* Shadow */
+  #ytHost{position:relative;width:100%;aspect-ratio:16/9;border-radius:var(--radius-sm);overflow:hidden;background:#000;margin-bottom:14px}
+  #ytHost iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
+  audio{width:100%;margin-bottom:12px}
+  .loop-readout{font-size:11px;color:var(--muted);font-family:'Space Grotesk',sans-serif}
+  .loop-readout b{color:var(--teal)}
+  .rec-status{font-size:12px;color:var(--muted);margin-top:4px}.rec-status.live{color:var(--rose)}
+
+  /* Analyze */
+  .canvas-block{margin-bottom:16px}.canvas-block h4{font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+  canvas{width:100%;height:120px;border-radius:var(--radius-sm);background:rgba(0,0,0,0.28);border:1px solid var(--line2);display:block}
+  .legend{display:flex;gap:16px;font-size:11px;color:var(--muted);margin-bottom:12px}
+  .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}.legend .his{background:var(--teal)}.legend .you{background:var(--violet)}
+  .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:10px}
+  .stat{background:rgba(255,255,255,0.03);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:13px;text-align:center}
+  .stat-val{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700}.stat-lab{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:3px}
+
+  /* Drills */
+  .custom-card{border:1px solid rgba(139,124,255,0.4);background:linear-gradient(150deg,rgba(139,124,255,0.11),rgba(18,211,176,0.05))}
+  .score-ring{display:flex;align-items:center;gap:18px;margin:14px 0;flex-wrap:wrap}
+  .ring{position:relative;width:96px;height:96px;flex-shrink:0}.ring svg{transform:rotate(-90deg)}
+  .ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;font-family:'Space Grotesk',sans-serif}
+  .ring .num b{font-size:24px;font-weight:700}.ring .num small{font-size:9px;color:var(--muted);letter-spacing:1px;text-transform:uppercase}
+  .score-meta{flex:1;min-width:180px}
+  .diff{font-size:16px;line-height:1.9;font-family:'Space Grotesk',sans-serif}
+  .w-ok{color:var(--green)}.w-bad{color:var(--amber);border-bottom:2px solid rgba(246,178,58,0.5)}.w-extra{color:var(--rose);text-decoration:line-through;opacity:.7;font-size:13px}
+  .transcript{font-size:12px;color:var(--muted);margin-top:8px;font-style:italic}
+  .fb-list{margin-top:12px;display:flex;flex-direction:column;gap:7px}
+  .fb-item{font-size:12.5px;line-height:1.55;background:rgba(255,255,255,0.03);border:1px solid var(--line2);border-left:3px solid var(--amber);border-radius:8px;padding:9px 12px}.fb-item.good{border-left-color:var(--green)}
+  .mini-stats{display:flex;gap:10px;flex-wrap:wrap;margin-top:6px}
+  .mini-stat{background:rgba(255,255,255,0.04);border:1px solid var(--line2);border-radius:9px;padding:7px 11px;font-size:11px}.mini-stat b{font-family:'Space Grotesk',sans-serif;font-size:14px;display:block}
+  .drill-tabs{display:flex;gap:6px;overflow-x:auto;margin-bottom:16px;padding-bottom:4px}
+  .drill-tab{border:1px solid var(--line2);background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);padding:9px 13px;font-family:'Space Grotesk',sans-serif;font-size:11.5px;font-weight:600;color:var(--muted);white-space:nowrap;transition:all .15s}
+  .drill-tab.active{background:var(--panel2);color:#fff;border-color:rgba(255,255,255,0.2)}.drill-tab .ct{opacity:.55;font-weight:500}
+  .prog-wrap{margin-bottom:18px}.prog-bar{height:7px;background:rgba(255,255,255,0.07);border-radius:20px;overflow:hidden}
+  .prog-fill{height:100%;background:var(--grad);border-radius:20px;transition:width .4s;width:0}
+  .prog-txt{font-size:11px;color:var(--muted);margin-top:6px;font-family:'Space Grotesk',sans-serif}
+  .drill-item{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:15px 16px;margin-bottom:10px;background:rgba(255,255,255,0.03)}.drill-item.done{border-color:rgba(55,217,154,0.4)}
+  .drill-target{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:600;margin-bottom:3px}
+  .drill-ipa{font-size:12px;color:var(--teal);margin-bottom:8px}.drill-tip{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:12px}
+  .drill-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .drill-feedback{font-size:12px;margin-top:10px;line-height:1.5}.drill-feedback.ok{color:var(--green)}.drill-feedback.bad{color:var(--amber)}
+  .check{width:24px;height:24px;border-radius:7px;border:1.5px solid var(--line);display:inline-flex;align-items:center;justify-content:center;font-size:13px;color:transparent;transition:all .15s;background:none;margin-left:auto}.check.on{background:var(--teal);border-color:var(--teal);color:#042}
+
+  .vm-note{font-size:11.5px;color:var(--muted);background:rgba(255,255,255,0.03);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:13px 15px;line-height:1.6;margin-top:14px}
+  .free-badge{display:inline-block;font-family:'Space Grotesk',sans-serif;font-size:10px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--green);background:rgba(55,217,154,0.12);border:1px solid rgba(55,217,154,0.3);border-radius:20px;padding:3px 10px;margin-left:8px;vertical-align:middle}
+  .footer{text-align:center;font-size:11px;color:var(--dim);margin-top:34px;line-height:1.7}
+
+  /* ===== HOME dashboard ===== */
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  .wrap>section{animation:fadeUp .32s ease both}
+  .home-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:18px}
+  .hstat{background:rgba(255,255,255,0.035);border:1px solid var(--line2);border-radius:var(--radius);padding:16px;position:relative;overflow:hidden}
+  .hstat b{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;display:block}
+  .hstat span{font-size:10.5px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .hstat .em{position:absolute;right:10px;top:10px;font-size:20px;opacity:.85}
+  .hstat.flame{border-color:rgba(246,178,58,0.35);background:linear-gradient(140deg,rgba(246,178,58,0.12),rgba(242,80,110,0.06))}
+  .hstat.flame b{color:var(--amber)}
+  .home-cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  @media(max-width:760px){.home-cols{grid-template-columns:1fr}}
+  .plan-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line2);border-radius:var(--radius-sm);margin-bottom:9px;background:rgba(255,255,255,0.025);cursor:pointer;transition:border-color .15s}
+  .plan-item:hover{border-color:rgba(139,124,255,0.4)}
+  .plan-item.done{opacity:.55}
+  .plan-item.done .plan-txt{text-decoration:line-through}
+  .plan-check{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--line);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;color:transparent}
+  .plan-item.done .plan-check{background:var(--teal);border-color:var(--teal);color:#042}
+  .plan-txt{font-size:13px;flex:1}
+  .plan-go{font-size:11px;color:var(--cyan);font-family:'Space Grotesk',sans-serif;font-weight:600}
+  .spark-wrap{position:relative}
+  #sparkCanvas{height:76px;background:transparent;border:none}
+  .mastery-row{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+  .mastery-name{font-size:11.5px;width:150px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--muted)}
+  .mastery-track{flex:1;height:7px;background:rgba(255,255,255,0.06);border-radius:20px;overflow:hidden}
+  .mastery-fill{height:100%;border-radius:20px;background:var(--grad)}
+  .mastery-pct{font-size:11px;font-family:'Space Grotesk',sans-serif;width:58px;text-align:right;color:var(--muted)}
+  .insight{border-left:3px solid var(--violet);background:rgba(139,124,255,0.08);border-radius:10px;padding:12px 14px;font-size:12.5px;line-height:1.6;margin-top:4px}
+  .qa-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+  .qa{border:1px solid var(--line2);background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);padding:14px 12px;text-align:center;transition:all .16s;cursor:pointer}
+  .qa:hover{border-color:rgba(139,124,255,0.5);transform:translateY(-2px)}
+  .qa .em{font-size:20px;display:block;margin-bottom:6px}
+  .qa b{font-size:12px;font-family:'Space Grotesk',sans-serif;font-weight:600}
+
+  /* ===== CURRICULUM PATH ===== */
+  .course-bar{display:flex;align-items:center;gap:14px;margin-bottom:18px;flex-wrap:wrap}
+  .course-ring{position:relative;width:66px;height:66px;flex-shrink:0}
+  .course-ring .num{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px}
+  .course-bar .meta{flex:1;min-width:160px}
+  .course-bar .meta b{font-family:'Space Grotesk',sans-serif;font-size:15px}
+  .course-bar .meta span{font-size:12px;color:var(--muted);display:block;margin-top:2px}
+  .continue-card{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:var(--radius);border:1px solid rgba(139,124,255,0.4);background:linear-gradient(120deg,rgba(139,124,255,0.14),rgba(18,211,176,0.06));margin-bottom:22px;cursor:pointer;transition:transform .16s}
+  .continue-card:hover{transform:translateY(-2px)}
+  .continue-card .cc-em{font-size:26px}
+  .continue-card .cc-t{flex:1}
+  .continue-card .cc-t small{font-size:10.5px;letter-spacing:1px;text-transform:uppercase;color:var(--violet);font-family:'Space Grotesk',sans-serif;font-weight:700}
+  .continue-card .cc-t b{display:block;font-family:'Space Grotesk',sans-serif;font-size:15px;margin-top:2px}
+  .level{margin-bottom:24px}
+  .level-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .level-badge{width:28px;height:28px;border-radius:9px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#fff;flex-shrink:0}
+  .level-head h3{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700}
+  .level-head .lvl-sub{font-size:11.5px;color:var(--muted)}
+  .level-line{flex:1;height:1px;background:var(--line2)}
+  .lesson{display:flex;align-items:center;gap:13px;padding:14px 16px;border:1px solid var(--line2);border-radius:var(--radius-sm);margin-bottom:9px;background:rgba(255,255,255,0.03);transition:border-color .15s,transform .15s;cursor:pointer}
+  .lesson:hover{border-color:rgba(139,124,255,0.5);transform:translateX(2px)}
+  .lesson.locked{opacity:.5;cursor:not-allowed}
+  .lesson.locked:hover{transform:none;border-color:var(--line2)}
+  .lesson.done{border-color:rgba(55,217,154,0.35)}
+  .lesson-ico{width:40px;height:40px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:19px;background:rgba(255,255,255,0.05);border:1px solid var(--line2)}
+  .lesson.done .lesson-ico{background:rgba(55,217,154,0.15);border-color:transparent}
+  .lesson.current .lesson-ico{background:var(--grad);border-color:transparent}
+  .lesson-body{flex:1;min-width:0}
+  .lesson-title{font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:600}
+  .lesson-goal{font-size:11.5px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .lesson-status{font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:700;flex-shrink:0}
+  .ls-done{color:var(--green)} .ls-lock{color:var(--dim)} .ls-go{color:var(--cyan)}
+
+  /* lesson detail view */
+  .lesson-step{margin-bottom:20px}
+  .step-tag{display:inline-flex;align-items:center;gap:7px;font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;letter-spacing:.6px;text-transform:uppercase;color:var(--violet);margin-bottom:10px}
+  .step-tag .n{width:20px;height:20px;border-radius:6px;background:var(--violet);color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px}
+  .lesson-watch{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px}
+  .learn-box{background:rgba(255,255,255,0.03);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:14px 16px;font-size:13px;line-height:1.7}
+  .learn-box b{color:var(--teal)}
+  .lp-item{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:13px 15px;margin-bottom:9px;background:rgba(255,255,255,0.025)}
+  .lp-item.passed{border-color:rgba(55,217,154,0.4);background:rgba(55,217,154,0.06)}
+  .lp-target{font-family:'Space Grotesk',sans-serif;font-size:15px;font-weight:600;margin-bottom:3px}
+  .lp-tip{font-size:12px;color:var(--muted);margin-bottom:10px;line-height:1.5}
+  .lp-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .lp-fb{font-size:12px;margin-top:9px;line-height:1.5;font-weight:600}.lp-fb.ok{color:var(--green)}.lp-fb.bad{color:var(--amber)}
+  /* passage (paragraph) practice */
+  .passage-full{background:rgba(255,255,255,0.03);border:1px solid var(--line2);border-left:3px solid var(--teal);border-radius:var(--radius-sm);padding:16px 18px;font-size:14.5px;line-height:1.9;margin-bottom:16px;font-family:Georgia,'Times New Roman',serif;color:var(--text)}
+  .passage-full .focus{display:block;font-family:'Space Grotesk',sans-serif;font-size:10.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+  .ps-sent{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:12px 15px;margin-bottom:8px;background:rgba(255,255,255,0.025)}
+  .ps-sent.passed{border-color:rgba(55,217,154,0.4);background:rgba(55,217,154,0.06)}
+  .ps-txt{font-size:13.5px;line-height:1.6;margin-bottom:9px}
+  .ps-n{display:inline-flex;width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,0.07);align-items:center;justify-content:center;font-size:11px;font-family:'Space Grotesk',sans-serif;font-weight:700;color:var(--muted);margin-right:8px;flex-shrink:0}
+  .ps-sent.passed .ps-n{background:var(--teal);color:#042}
+  .lesson-done-banner{text-align:center;padding:26px 18px;border-radius:var(--radius);border:1px solid rgba(55,217,154,0.4);background:rgba(55,217,154,0.08);margin-top:18px}
+  .lesson-done-banner .big{font-family:'Space Grotesk',sans-serif;font-size:30px;font-weight:700;color:var(--green)}
+  .back-link{display:inline-flex;align-items:center;gap:6px;font-family:'Space Grotesk',sans-serif;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:14px;cursor:pointer;border:none;background:none}
+  .back-link:hover{color:var(--text)}
+
+  /* ===== EAR training ===== */
+  .ear-stage{text-align:center;padding:26px 18px}
+  .ear-q{font-size:13px;color:var(--muted);margin-bottom:16px}
+  .pair-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-bottom:16px}
+  .pair-btn{min-width:150px;padding:20px 24px;border-radius:var(--radius);border:1px solid var(--line);background:rgba(255,255,255,0.04);font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;transition:all .15s}
+  .pair-btn:hover{border-color:var(--violet);transform:translateY(-2px)}
+  .pair-btn.hit{background:rgba(55,217,154,0.18);border-color:var(--green)}
+  .pair-btn.miss{background:rgba(242,80,110,0.16);border-color:var(--rose)}
+  .ear-progress{font-size:11.5px;color:var(--muted);font-family:'Space Grotesk',sans-serif;letter-spacing:.4px;margin-top:6px}
+  .ear-fb{font-size:13px;margin-top:10px;min-height:20px;font-weight:600}
+  .ear-fb.ok{color:var(--green)}.ear-fb.bad{color:var(--rose)}
+  @media(max-width:560px){.feed{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px}.hero h1{font-size:19px}}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-logo">🎙️</div>
+      <div><div class="brand-name"><span class="g">Accent</span> Trainer</div>
+      <div class="brand-sub">Master the American accent · learn, drill, shadow &amp; score</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-btn active" data-tab="home" onclick="switchTab('home')"><span class="em">🎓</span>Course</button>
+      <button class="nav-btn" data-tab="drills" onclick="switchTab('drills')"><span class="em">🎯</span>Practice</button>
+      <button class="nav-btn" data-tab="learn" onclick="switchTab('learn')"><span class="em">🎬</span>Browse</button>
+      <button class="nav-btn" data-tab="ear" onclick="switchTab('ear')"><span class="em">👂</span>Ear</button>
+      <button class="nav-btn" data-tab="shadow" onclick="switchTab('shadow')"><span class="em">🗣️</span>Shadow</button>
+      <button class="nav-btn" data-tab="analyze" onclick="switchTab('analyze')"><span class="em">📈</span>Analyze</button>
+      <button class="nav-btn" data-tab="voice" onclick="switchTab('voice')"><span class="em">✨</span>Voice Match</button>
+      <button class="nav-btn" data-tab="clips" onclick="switchTab('clips')"><span class="em">🎬</span>Clips</button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+  <div id="insecureBanner" class="banner hidden"><span>⚠️</span><div><b>Running from a file?</b> Mic &amp; scoring need a local server: <code>python3 -m http.server 8000</code> then open <code>http://localhost:8000</code>. Everything still displays.</div></div>
+  <div id="srBanner" class="banner hidden"><span>🎙️</span><div><b>Speech scoring uses your browser's recognition</b> — best in <b>Chrome / Edge</b> with internet. Elsewhere you can still watch, record &amp; hear targets.</div></div>
+
+  <!-- ===================== COURSE PATH (home) ===================== -->
+  <section id="tab-home">
+    <div class="hero">
+      <h1 id="homeGreeting">🎓 Your American Accent Course</h1>
+      <p>A step-by-step path from the foundations up — just like school. Each lesson gives you videos to watch and drills to pass before the next unlocks. Work top to bottom.</p>
+    </div>
+
+    <div class="course-bar">
+      <div class="course-ring"><svg width="66" height="66"><circle cx="33" cy="33" r="28" stroke="rgba(255,255,255,0.08)" stroke-width="6" fill="none"></circle><circle id="courseRingFill" cx="33" cy="33" r="28" stroke="#8b7cff" stroke-width="6" fill="none" stroke-linecap="round" transform="rotate(-90 33 33)"></circle></svg><div class="num" id="courseRingPct">0%</div></div>
+      <div class="meta"><b id="courseProgTxt">0 of 0 lessons complete</b><span id="courseStreak">🔥 Start today to begin your streak</span></div>
+    </div>
+
+    <div class="continue-card" id="continueCard" onclick="continueCourse()">
+      <div class="cc-em">▶️</div>
+      <div class="cc-t"><small id="ccLabel">Start here</small><b id="ccTitle">Lesson 1</b></div>
+      <div class="ls-go" style="font-family:'Space Grotesk';font-weight:700">Go →</div>
+    </div>
+
+    <div id="courseLevels"></div>
+
+    <div class="card" style="margin-top:8px"><div class="card-pad">
+      <div class="card-title">⚡ Free practice (any time)</div>
+      <div class="card-hint">The course is the main path — but you can jump into open practice whenever you want.</div>
+      <div class="qa-grid">
+        <div class="qa" onclick="switchTab('drills')"><span class="em">🎯</span><b>Drill &amp; score</b></div>
+        <div class="qa" onclick="switchTab('ear')"><span class="em">👂</span><b>Ear training</b></div>
+        <div class="qa" onclick="switchTab('learn')"><span class="em">🎬</span><b>Browse videos</b></div>
+        <div class="qa" onclick="switchTab('shadow')"><span class="em">🗣️</span><b>Shadow a clip</b></div>
+      </div>
+    </div></div>
+  </section>
+
+  <!-- ===================== LESSON DETAIL (opened from the path) ===================== -->
+  <section id="tab-lesson" class="hidden">
+    <button class="back-link" onclick="switchTab('home')">← Back to course</button>
+    <div class="hero"><h1 id="lessonTitle">Lesson</h1><p id="lessonGoal"></p></div>
+    <div id="lessonBody"></div>
+  </section>
+
+  <!-- ===================== EAR TRAINING ===================== -->
+  <section id="tab-ear" class="hidden">
+    <div class="hero"><h1>👂 Ear training — minimal pairs</h1><p>You can't say a sound you can't hear. The tool speaks one word from a confusable pair — click what you heard. Ten per round; your listening accuracy is tracked like any other score.</p></div>
+    <div class="card"><div class="ear-stage" id="earStage"></div></div>
+  </section>
+
+  <!-- ===================== LEARN ===================== -->
+  <section id="tab-learn" class="hidden">
+    <div class="hero">
+      <h1>🎬 Learn the accent — watch &amp; shadow</h1>
+      <p>A feed of short American-accent lessons that play right here. Tap any card to watch inline. Channel libraries stream hundreds of real videos each — and you can paste any YouTube, TikTok, or Instagram link to grow your feed.</p>
+    </div>
+    <div class="learn-stats" id="learnStats"></div>
+    <div class="row mb">
+      <input type="text" id="learnSearch" maxlength="80" placeholder="🔎 Search lessons — sounds, reductions, intonation…" oninput="renderFeed()">
+    </div>
+    <div class="chip-row" id="learnChips"></div>
+
+    <div class="card mb"><div class="card-pad">
+      <div class="card-title">➕ Add to your feed</div>
+      <div class="card-hint">Paste YouTube, TikTok, or Instagram links — many at once (one per line) for bulk import. TikTok &amp; YouTube play inline; Instagram plays inline where Instagram allows it, otherwise preview + open link.</div>
+      <textarea id="addLinks" placeholder="https://www.youtube.com/watch?v=…&#10;https://www.tiktok.com/@user/video/…&#10;https://www.instagram.com/reel/…"></textarea>
+      <div class="row" style="margin-top:10px"><button class="btn primary" onclick="addLinks()">Add to feed</button><span class="rec-status" id="addStatus"></span></div>
+    </div></div>
+
+    <div id="feed" class="feed"></div>
+  </section>
+
+  <!-- ===================== DRILLS ===================== -->
+  <section id="tab-drills" class="hidden">
+    <div class="hero"><h1>🎯 Drills &amp; live scoring</h1><p>Speak any word or sentence and get an instant accuracy score, a word-by-word breakdown, and feedback on the exact American sounds to fix. Start with Custom Practice, or drill a category below.</p></div>
+    <div class="card custom-card mb"><div class="card-pad">
+      <div class="card-title">✏️ Custom Practice — speak &amp; get corrected instantly</div>
+      <div class="card-hint">Type anything (or pull a random line / legal term), hear the American target, then record yourself — you'll get a score the moment you stop.</div>
+      <textarea id="customText" maxlength="400" placeholder="Type a sentence to practice… e.g. Please add this document to the privilege log."></textarea>
+      <div class="row" style="margin-top:10px">
+        <button class="btn sm" onclick="randomLine('sentence')">🎲 Random sentence</button>
+        <button class="btn sm" onclick="randomLine('word')">🎲 Random word</button>
+        <button class="btn sm" onclick="randomLine('legal')">⚖️ Random legal term</button>
+      </div>
+      <div class="divider"></div>
+      <div class="row">
+        <button class="btn teal" onclick="hearText(document.getElementById('customText').value)">🔊 Hear target</button>
+        <button class="btn rec" id="customRecBtn" onclick="customRecord()">🎤 Record &amp; score</button>
+        <button class="btn" id="customPlayBtn" onclick="playLastRec()" disabled>▶ Play mine</button>
+        <span class="rec-status" id="customStatus">Type or pick a line, then record.</span>
+      </div>
+      <div id="customResult" class="hidden" style="margin-top:16px"></div>
+    </div></div>
+    <div class="prog-wrap"><div class="prog-bar"><div class="prog-fill" id="progFill"></div></div><div class="prog-txt" id="progTxt">0 / 0 drills complete</div></div>
+    <div class="drill-tabs" id="drillTabs"></div>
+    <div id="drillList"></div>
+  </section>
+
+  <!-- ===================== SHADOW ===================== -->
+  <section id="tab-shadow" class="hidden">
+    <div class="hero"><h1>🗣️ Shadow the reference</h1><p>Loop a phrase, slow it down, then record yourself saying it back. Compare the reference and your take back-to-back.</p></div>
+    <div class="card mb"><div class="card-pad"><div class="field-label">Pick a clip</div><div class="row"><select id="clipSelect"></select></div></div></div>
+    <div id="shadowPlayer" class="card hidden"><div class="card-pad">
+      <div id="ytHost"></div>
+      <audio id="audioEl" controls class="hidden"></audio>
+      <div class="field-label">Playback speed</div>
+      <div class="pill-group mb" id="speedPills">
+        <button class="pill" onclick="setSpeed(0.5)" data-s="0.5">0.5×</button>
+        <button class="pill" onclick="setSpeed(0.65)" data-s="0.65">0.65×</button>
+        <button class="pill" onclick="setSpeed(0.8)" data-s="0.8">0.8×</button>
+        <button class="pill active" onclick="setSpeed(1)" data-s="1">1×</button>
+      </div>
+      <div class="field-label">A → B loop</div>
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn sm" onclick="setLoopPoint('a')">⏱ Set A</button>
+        <button class="btn sm" onclick="setLoopPoint('b')">⏱ Set B</button>
+        <button class="btn sm ghost" onclick="clearLoop()">Clear</button>
+        <span class="loop-readout" id="loopReadout">No loop set</span>
+      </div>
+      <div class="divider"></div>
+      <div class="field-label">Record yourself</div>
+      <div class="row"><button class="btn rec" id="recBtn" onclick="toggleRecord()">● Record</button><button class="btn" id="playMineBtn" onclick="playMine()" disabled>▶ Play mine</button></div>
+      <div class="rec-status" id="recStatus">Click record, say the phrase, click stop.</div>
+    </div></div>
+    <div id="shadowEmpty" class="empty hidden">No clips yet. Add one in the <b>Clips</b> tab.</div>
+  </section>
+
+  <!-- ===================== ANALYZE ===================== -->
+  <section id="tab-analyze" class="hidden">
+    <div class="hero"><h1>📈 See the gap</h1><p>Compare a reference clip's waveform and pitch to your last recording. A rough visual guide, not a precise score.</p></div>
+    <div class="card"><div class="card-pad">
+      <div class="field-label">Reference clip (audio only)</div>
+      <div class="row mb"><select id="analyzeSelect"></select><button class="btn primary" onclick="runAnalysis()">Analyze</button></div>
+      <div class="legend"><span><i class="his"></i>Reference</span><span><i class="you"></i>Your recording</span></div>
+      <div class="canvas-block"><h4>Waveform</h4><canvas id="waveCanvas" width="900" height="120"></canvas></div>
+      <div class="canvas-block"><h4>Pitch contour (Hz)</h4><canvas id="pitchCanvas" width="900" height="120"></canvas></div>
+      <div class="stat-grid">
+        <div class="stat"><div class="stat-val" id="statPitch">—</div><div class="stat-lab">Pitch match</div></div>
+        <div class="stat"><div class="stat-val" id="statRefHz">—</div><div class="stat-lab">Ref pitch</div></div>
+        <div class="stat"><div class="stat-val" id="statYouHz">—</div><div class="stat-lab">Your pitch</div></div>
+        <div class="stat"><div class="stat-val" id="statRate">—</div><div class="stat-lab">Rate ratio</div></div>
+        <div class="stat"><div class="stat-val" id="statLen">—</div><div class="stat-lab">Length ratio</div></div>
+      </div>
+      <p class="card-hint" id="analyzeNote" style="margin:14px 0 0">Pick a reference clip and Analyze. Needs a recording made in the Shadow tab for the same clip.</p>
+    </div></div>
+  </section>
+
+  <!-- ===================== VOICE MATCH ===================== -->
+  <section id="tab-voice" class="hidden">
+    <div class="hero"><h1>✨ Voice Match <span class="free-badge">Free · in-browser</span></h1><p>Speak a phrase and hear your own words played back in a clean General American voice — your live target to match. No signup, nothing uploaded.</p></div>
+    <div class="card"><div class="card-pad">
+      <div class="field-label">American voice</div>
+      <div class="row mb"><select id="vmVoice"></select><span class="loop-readout">Speed</span>
+        <div class="pill-group" id="vmRate"><button class="pill" onclick="setVmRate(0.8)" data-r="0.8">0.8×</button><button class="pill active" onclick="setVmRate(1)" data-r="1">1×</button><button class="pill" onclick="setVmRate(1.15)" data-r="1.15">1.15×</button></div>
+      </div>
+      <div class="divider"></div>
+      <div class="field-label">Option 1 · Speak, then hear it American</div>
+      <div class="row"><button class="btn rec" id="vmRecBtn" onclick="vmRecord()">🎤 Speak</button><span class="rec-status" id="vmStatus">Tap Speak and say anything — we'll play it back American.</span></div>
+      <div id="vmHeard" class="transcript hidden"></div>
+      <div class="divider"></div>
+      <div class="field-label">Option 2 · Type &amp; hear</div>
+      <div class="row"><input type="text" id="vmText" maxlength="300" placeholder="Type a phrase to hear in an American voice…"><button class="btn teal" onclick="hearText(document.getElementById('vmText').value,true)">🔊 Speak it</button></div>
+      <div class="vm-note"><b>How this works (honest limit):</b> your browser's built-in text-to-speech renders your words in a <b>model</b> General American voice — free and offline-capable. It is <b>not</b> a clone of a specific person; cloning one real individual's voice needs their consent plus a paid model.</div>
+    </div></div>
+  </section>
+
+  <!-- ===================== CLIPS ===================== -->
+  <section id="tab-clips" class="hidden">
+    <div class="hero"><h1>🎬 Reference clips</h1><p>Pre-loaded reference audio &amp; videos for shadowing and analysis. Add your own any time.</p></div>
+    <div class="card mb"><div class="card-pad"><div class="card-title">Add a YouTube clip</div><div class="card-hint">Paste any link. Loop &amp; slow it in Shadow.</div><div class="row"><input type="url" id="ytUrl" maxlength="300" placeholder="https://www.youtube.com/watch?v=..."><button class="btn primary" onclick="addYouTube()">Add</button></div></div></div>
+    <div class="card mb"><div class="card-pad"><div class="card-title">Upload an audio clip</div><div class="card-hint">MP3 / WAV / m4a — stored only in your browser, analyzable against your recordings.</div><div class="row"><input type="file" id="audioFile" accept="audio/*" style="font-size:12px;color:var(--muted)"></div></div></div>
+    <div class="field-label">Your clips</div>
+    <div id="clipList"></div>
+  </section>
+
+  <div class="footer">Accent Trainer · standalone practice tool · all recordings stored locally in your browser<br>Target accent: General American · videos stream from their original platforms</div>
+</div>
+
+<script src="https://www.youtube.com/iframe_api"></script>
+<script>
+/* ================= Learn catalog — REAL, verified sources ================= */
+/* Individual videos (verified real) + channel/course playlists that stream 1000+ real videos. */
+const CATALOG=[
+  {t:'yt',id:'iKv4oc2zbeA',title:'Detailed Analysis of American Speech',ch:"Rachel's English",tag:'Sounds'},
+  {t:'yt',id:'zash7H0eMQ4',title:"Welcome to Rachel's English — American Pronunciation",ch:"Rachel's English",tag:'Intro'},
+  {t:'yt',id:'XiVPKp09L0U',title:"Welcome to the Accent's Way",ch:'Hadar Shemesh',tag:'Intro'},
+  {t:'yt',id:'T9WeYEA5mwY',title:'How to Fuel Self Development',ch:'Reference speaker',tag:'Reference'},
+  {t:'yt',id:'8a6UypgMDo4',title:'Lessons from 100 Books',ch:'Reference speaker',tag:'Reference'},
+  {t:'yt',id:'gALG1r0Jp0s',title:'Coaching Secrets to Success',ch:'Reference speaker',tag:'Reference'},
+  {t:'pl',id:'PLebQp5j7re4lZQdBQmKHVftSI7VAX1xrG',title:'American Pronunciation — full course',ch:"Rachel's English",tag:'Course',approx:'80+'},
+  {t:'pl',id:'UUvn_XCl_mgQmt3sD753zdJA',title:"Rachel's English — entire library",ch:"Rachel's English",tag:'Library',approx:'700+'},
+  {t:'pl',id:'UUlPyOwXLnSMejFdLvJXjA5A',title:"Accent's Way — entire library",ch:'Hadar Shemesh',tag:'Library',approx:'300+'},
+  /* TikTok — every ID verified real via TikTok oembed before shipping */
+  {t:'tt',id:'7351132227855551786',u:'your_fav_english_teacher',title:'American Accent in 60 Seconds',ch:'Amy Joy',tag:'TikTok'},
+  {t:'tt',id:'7385595969347407110',u:'zenfluentmaria',title:'American accent in 90 seconds',ch:'Zenfluent Maria',tag:'TikTok'},
+  {t:'tt',id:'7451944745355496711',u:'englishevolution',title:'Flap T — American English',ch:'English Evolution',tag:'TikTok'},
+  {t:'tt',id:'7540755859123490079',u:'boldvoiceapp',title:'Accent coaching quick fix',ch:'BoldVoice',tag:'TikTok'},
+  {t:'tt',id:'7434191865282366763',u:'boldvoiceapp',title:'Pronunciation practice',ch:'BoldVoice',tag:'TikTok'},
+  {t:'tt',id:'7391286372780526854',u:'learnenglishwithjess',title:'Pronunciation & accent reduction',ch:'Jessie · Learn English',tag:'TikTok'},
+  {t:'tt',id:'7215606721484459307',u:'rachels_english',title:'How to say “THE” like an American',ch:"Rachel's English",tag:'TikTok'},
+  {t:'tt',id:'7368818468692610350',u:'rachels_english',title:'Turn any TV clip into an accent lesson',ch:"Rachel's English",tag:'TikTok'},
+  {t:'tt',id:'7564491618313571598',u:'rachels_english',title:'The BR consonant cluster',ch:"Rachel's English",tag:'TikTok'},
+  {t:'tt',id:'7025542147952725249',u:'mryang_english',title:'How to sound American (6)',ch:'The Real MrYang',tag:'TikTok'},
+  {t:'tt',id:'7024327112328858882',u:'mryang_english',title:'How to speak like an American (5)',ch:'The Real MrYang',tag:'TikTok'},
+  {t:'tt',id:'7255340172756225323',u:'your_fav_english_teacher',title:'Do you sound American? — challenge',ch:'Amy Joy',tag:'TikTok'},
+  {t:'tt',id:'7333481275333840135',u:'englishevolution',title:'American pronunciation audio course',ch:'English Evolution',tag:'TikTok'},
+  {t:'tt',id:'7167011365784210731',u:'americanspeechcoach',title:'Vowel practice: the /æ/ sound (man vs men)',ch:'Diandra · Speech Coach',tag:'TikTok'},
+  {t:'tt',id:'7426492886700576046',u:'boldvoiceapp',title:'Learn the American accent the easy way',ch:'BoldVoice',tag:'TikTok'},
+  {t:'tt',id:'7597500481543376150',u:'wannaspeakbyveroniq',title:'Why shadowing works so fast',ch:'Weronika',tag:'TikTok'},
+  {t:'tt',id:'7494753038226246942',u:'myfluentlyjourney',title:'IELTS vs basic American vocab',ch:'Basya',tag:'TikTok'},
+  {t:'tt',id:'7579281559467937054',u:'englishfluencyteacher',title:'Shadowing daily English sentences',ch:'English Fluency Teacher',tag:'TikTok'},
+];
+const LEARN_CHIPS=['All','Intro','Sounds','Course','Library','Reference','TikTok','Instagram','Saved'];
+let learnFilter='All';
+
+/* ================= State ================= */
+let currentTab='home', db=null;
+let ytPlayer=null, ytReady=false, pendingYT=null;
+let activeClip=null, speed=1, loopA=null, loopB=null, loopTimer=null;
+let mediaRecorder=null, recChunks=[], recBlob=null, recording=false, recObjectUrl=null, micBusy=false;
+let lastCustomBlob=null, lastCustomUrl=null, clipObjUrl=null;
+let vmRate=1, vmVoice=null;
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+
+const PRESET_YT=[{videoId:'T9WeYEA5mwY',title:'Reference video 1'},{videoId:'8a6UypgMDo4',title:'Reference video 2'},{videoId:'gALG1r0Jp0s',title:'Reference video 3'}];
+const PRESET_AUDIO=[{id:'preset_A',src:'clips/ref-A.mp3',title:'Reference clip 1'},{id:'preset_B',src:'clips/ref-B.mp3',title:'Reference clip 2'},{id:'preset_C',src:'clips/ref-C.mp3',title:'Reference clip 3'}];
+
+/* ================= IndexedDB (null-safe) ================= */
+function openDB(){return new Promise((res,rej)=>{const r=indexedDB.open('accentTrainer',1);
+  r.onupgradeneeded=e=>{const d=e.target.result;if(!d.objectStoreNames.contains('clips'))d.createObjectStore('clips',{keyPath:'id'});if(!d.objectStoreNames.contains('recordings'))d.createObjectStore('recordings',{keyPath:'clipId'});};
+  r.onsuccess=e=>res(e.target.result);r.onerror=e=>rej(e);});}
+function idbPut(s,v){if(!db)return Promise.resolve();return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).put(v);t.oncomplete=res;t.onerror=rej;});}
+function idbGet(s,k){if(!db)return Promise.resolve(undefined);return new Promise((res,rej)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).get(k);q.onsuccess=()=>res(q.result);q.onerror=rej;});}
+function idbAll(s){if(!db)return Promise.resolve([]);return new Promise((res,rej)=>{const t=db.transaction(s,'readonly');const q=t.objectStore(s).getAll();q.onsuccess=()=>res(q.result||[]);q.onerror=rej;});}
+function idbDel(s,k){if(!db)return Promise.resolve();return new Promise((res,rej)=>{const t=db.transaction(s,'readwrite');t.objectStore(s).delete(k);t.oncomplete=res;t.onerror=rej;});}
+
+/* ================= localStorage (parse-safe) ================= */
+function lsGet(key,fb){try{const v=localStorage.getItem(key);return v==null?fb:(JSON.parse(v)??fb);}catch(e){return fb;}}
+function lsSet(key,val){try{localStorage.setItem(key,JSON.stringify(val));}catch(e){}}
+const LS={
+  ytClips:()=>{const v=lsGet('at_youtubeClips',[]);return Array.isArray(v)?v:[];}, setYt:v=>lsSet('at_youtubeClips',v),
+  progress:()=>{const v=lsGet('at_drillProgress',{});return (v&&typeof v==='object')?v:{};}, setProgress:v=>lsSet('at_drillProgress',v),
+  learn:()=>{const v=lsGet('at_learn',[]);return Array.isArray(v)?v:[];}, setLearn:v=>lsSet('at_learn',v),
+  scores:()=>{const v=lsGet('at_scores',[]);return Array.isArray(v)?v:[];}, setScores:v=>lsSet('at_scores',v),
+  activity:()=>{const v=lsGet('at_activity',{});return (v&&typeof v==='object')?v:{};}, setActivity:v=>lsSet('at_activity',v),
+  plan:()=>{const v=lsGet('at_plan',null);return (v&&typeof v==='object')?v:null;}, setPlan:v=>lsSet('at_plan',v),
+  course:()=>{const v=lsGet('at_course',{});return (v&&typeof v==='object')?v:{};}, setCourse:v=>lsSet('at_course',v),
+};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ================= Tabs ================= */
+function switchTab(tab){currentTab=tab;
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['home','lesson','learn','drills','ear','shadow','analyze','voice','clips'].forEach(t=>document.getElementById('tab-'+t).classList.toggle('hidden',t!==tab));
+  document.querySelectorAll('.nav-btn').forEach(b=>{if(b.dataset.tab==='home')b.classList.toggle('active',tab==='home'||tab==='lesson');});
+  if(tab==='home')renderHome();
+  if(tab==='learn')renderLearn();
+  if(tab==='ear')renderEar();
+  if(tab==='clips')renderClips();
+  if(tab==='shadow')refreshClipSelect();
+  if(tab==='analyze')refreshAnalyzeSelect();
+  if(tab==='voice')populateVoices();
+  window.scrollTo(0,0);
+}
+
+/* ================= Progress engine: scores, streaks, plan ================= */
+function dayKey(d){d=d||new Date();const p=n=>String(n).padStart(2,'0');return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate());}
+function logScore(cat,pct){
+  const s=LS.scores();s.push({t:Date.now(),cat,pct});
+  if(s.length>500)s.splice(0,s.length-500);
+  LS.setScores(s);
+  const a=LS.activity(),k=dayKey();a[k]=(a[k]||0)+1;LS.setActivity(a);
+  if(currentTab==='home')renderHome();
+}
+function streaks(){
+  const a=LS.activity();let cur=0;
+  const d=new Date();
+  if(!a[dayKey(d)])d.setDate(d.getDate()-1); // today not practiced yet — streak survives until midnight
+  while(a[dayKey(d)]){cur++;d.setDate(d.getDate()-1);}
+  let best=cur;
+  Object.keys(a).sort().reduce((run,k,i,keys)=>{
+    if(i>0){const prev=new Date(keys[i-1]),now=new Date(k);run=((now-prev)/86400000===1)?run+1:1;}else run=1;
+    if(run>best)best=run;return run;},0);
+  return {cur,best};
+}
+function catStats(){
+  const s=LS.scores(),m={};
+  s.forEach(r=>{if(!m[r.cat])m[r.cat]={sum:0,n:0};m[r.cat].sum+=r.pct;m[r.cat].n++;});
+  return Object.entries(m).map(([cat,v])=>({cat,avg:Math.round(v.sum/v.n),n:v.n})).sort((a,b)=>b.n-a.n);
+}
+function weakestCat(){const cs=catStats().filter(c=>c.n>=3);if(!cs.length)return null;return cs.sort((a,b)=>a.avg-b.avg)[0];}
+function getPlan(){
+  const k=dayKey();let p=LS.plan();
+  if(!p||p.date!==k){
+    const w=weakestCat();
+    p={date:k,done:[false,false,false],tasks:[
+      {txt:w?`Score 5 reps in “${w.cat}” (your weakest: ${w.avg}%)`:'Score 5 reps in any drill category',go:'drills'},
+      {txt:'One round of Ear Training (10 pairs)',go:'ear'},
+      {txt:'Shadow a reference clip for 5 minutes',go:'shadow'},
+    ]};
+    LS.setPlan(p);
+  }
+  return p;
+}
+function togglePlan(i){const p=getPlan();p.done[i]=!p.done[i];LS.setPlan(p);renderPlan();}
+function renderPlan(){
+  const p=getPlan();
+  document.getElementById('planList').innerHTML=p.tasks.map((t,i)=>
+    `<div class="plan-item ${p.done[i]?'done':''}" onclick="togglePlan(${i})">
+       <div class="plan-check">✓</div><div class="plan-txt">${esc(t.txt)}</div>
+       <span class="plan-go" onclick="event.stopPropagation();switchTab('${t.go}')">Go →</span></div>`).join('');
+}
+/* ================= CURRICULUM (school-style path) ================= */
+/* Each lesson: watch = verified video refs {t,id,u} · practice = index into drillData · pass = # items ≥80% to complete */
+const PASSAGES={
+  ep1:{title:"Morning Coffee Run",focus:"Flap every T between vowels: little, butter, latte, better sound like quick D taps; keep the R strong in corner and order.",sentences:[
+    "Every Saturday morning I walk over to the little coffee shop on the corner.",
+    "The barista already knows my order, so I just nod and grab a table.",
+    "I'm gonna sit by the window and watch the whole neighborhood wake up slowly.",
+    "A little butter on warm toast and a hot latte make it a better morning."
+  ]},
+  ep2:{title:"Fixing Up the Bathroom",focus:"Tongue between teeth for every TH - brother, thought, then, that, underneath; flap the T in got it and pretty.",sentences:[
+    "My brother and I spent the whole afternoon fixing up the back bathroom.",
+    "We thought the leaky faucet would take an hour, but it fought us the whole time.",
+    "Then we found another problem underneath the sink, and I'm gonna need a plumber.",
+    "Still, we got it together in the end, and that feels pretty good."
+  ]},
+  ep3:{title:"Cooking Dinner Together",focus:"Contrast the vowels: flat A in smash and catch, open AH in chop and garlic, short UH in onion, come, done, and love.",sentences:[
+    "After work I'm gonna throw together a quick pasta with whatever's in the fridge.",
+    "I chop up an onion, smash some garlic, and let the sauce come alive.",
+    "My roommate wanders in, lifts the lid, and asks if it's almost done.",
+    "We carry our bowls to the couch and catch up on a show we love."
+  ]},
+  ep4:{title:"The Monday Case Review",focus:"Reduce to, of, and the to a light schwa; punch the stress in liti-GA-tion, at-TOR-ney, cus-TO-dians; fall at every period.",sentences:[
+    "Every Monday our litigation team gathers to review the status of active document productions.",
+    "The senior attorney summarizes the priorities, and each reviewer reports on assigned custodians.",
+    "We flag any privileged material carefully, because a single mistake could compromise the entire matter.",
+    "By the end of the meeting, everyone understands exactly what the deadline requires."
+  ]},
+  ep5:{title:"Presenting to the Client",focus:"Curl the R hard in discovery, search, terms, partner, record, and formal; land every statement on a firm falling tone.",sentences:[
+    "This afternoon I am presenting our discovery findings to the client for the first time.",
+    "I open with a clear summary, then walk through the search terms we negotiated.",
+    "When a partner raises a concern, I answer directly and support every point with the record.",
+    "The room feels formal, but my voice stays steady, measured, and firmly under control."
+  ]},
+  ep6:{title:"Training the New Reviewers",focus:"Link across word boundaries - explain each, ask an, offers an answer, connect it back; stress ob-JEC-tive and in-STRUC-tor.",sentences:[
+    "On Thursday I am training a new group of reviewers on our coding protocol.",
+    "I explain each objective slowly, then ask an open question to check their understanding.",
+    "When someone offers an answer, I acknowledge it and connect it back to the standard.",
+    "A good instructor guides the discussion, and a great one invites everyone into it."
+  ]},
+  mp1:{title:"Opening Statement: The Weight of the Evidence",focus:"Drive falling intonation on each assertion; hit the rhotic R in record, warnings, direction; stress content words hard.",sentences:[
+    "Members of the jury, the evidence in this matter will tell a story of broken promises and careless record keeping.",
+    "Over the coming days, you will hear testimony that the defendant ignored repeated warnings and buried the documents that mattered most.",
+    "The record will show a pattern, not an accident, and that pattern points in only one direction.",
+    "When the testimony concludes, we will ask you to hold this company accountable for the harm it chose to overlook.",
+    "Listen carefully, weigh the evidence honestly, and let the facts, rather than sympathy or speculation, guide your verdict."
+  ]},
+  mp2:{title:"Meet and Confer: Narrowing the Dispute",focus:"Rising pitch on offers, falling pitch on firm lines; flap the T in writing; reduce unstressed vowels in custodians to schwa.",sentences:[
+    "Counsel, I appreciate you making time today, because I believe we can narrow this dispute without burdening the court.",
+    "Our position on the search terms remains firm, but we are open to a reasonable compromise on the date range.",
+    "If your side agrees to limit the custodians, we will withdraw our objection to the broader collection you proposed.",
+    "What I cannot do is agree to a schedule that leaves my client scrambling to review material over a holiday weekend.",
+    "Let us put the agreed items in writing today and reserve the remaining questions for a short call on Friday."
+  ]},
+  mp3:{title:"Briefing: Privilege Review Status",focus:"Flap both Ts in metadata; stress PRIV-i-lege on the first syllable and cus-TO-di-an on the second; schwa every unstressed vowel.",sentences:[
+    "Good morning, team; here is where the privilege review stands as of the close of business yesterday.",
+    "The first level reviewers have finished the documents from our three priority custodians, and the results look encouraging.",
+    "Roughly a fifth of the flagged material involves outside counsel, so those entries will move straight onto the privilege log.",
+    "Please double check the metadata on every borderline document, because a single misjudged email could force an awkward clawback request later.",
+    "If anything looks questionable, escalate it to the senior team rather than guessing, and note your reasoning in the comments field."
+  ]},
+  mp4:{title:"Briefing: Production Readiness",focus:"Keep the R full in before, vendor, appear, correct; link stamped, logged, and staged smoothly; let pitch fall at each list's end.",sentences:[
+    "Before Friday's deadline, we need every reviewed document stamped, logged, and staged for the outgoing production set.",
+    "The vendor will apply Bates numbers tonight, so confirm that the confidential designations are correct before the stamping begins.",
+    "Anything withheld for privilege must appear on the log with the custodian, the date, and a defensible description.",
+    "Remember that opposing counsel will scrutinize our metadata fields, so the load file has to match the images exactly.",
+    "If a privileged document slips through, we will rely on the clawback agreement, but let us not test that safety net."
+  ]},
+  mp5:{title:"Lecture: Why Clarity Persuades",focus:"Place the tongue between the teeth for than, their, that; reduce to and of to schwa; end each assertion with falling intonation.",sentences:[
+    "Today I want to challenge the assumption that persuasion depends on eloquence rather than on disciplined, deliberate clarity.",
+    "An audience forgives a plain sentence far more readily than it forgives a beautiful sentence it cannot follow.",
+    "The most effective communicators structure their arguments around what the listener already believes, then move one careful step beyond it.",
+    "Notice how often misunderstanding arises not from difficult ideas but from speakers who never define their terms.",
+    "As you draft this week's assignment, ask whether every paragraph earns its place in the mind of a busy reader."
+  ]},
+  mp6:{title:"Lecture: Law in the Age of Algorithms",focus:"Flap the T in metadata and data; strong R in research, court, rigorously; open /\u0251/ in logs versus /\u028c/ in judgment.",sentences:[
+    "Consider how quietly technology has rewritten the practice of law, from legal research to the review of evidence itself.",
+    "A generation ago, discovery meant warehouses of paper; today it means terabytes of email, chat logs, and hidden metadata.",
+    "The lawyers who thrive will be those who question an algorithm's output as rigorously as they question a witness.",
+    "Automation can sort a million documents overnight, yet it cannot decide which omission would mislead a court.",
+    "Your task, as future counsel, is to remain the judgment inside the machine, not merely the hand that operates it."
+  ]},
+  mp7:{title:"Lecture: The Discipline of Doubt",focus:"Tongue between teeth for the, their, without; flap the T in waiting and evaluate a; rise on list items, fall firmly at the end.",sentences:[
+    "Critical thinking begins the moment you treat your own conclusions with the same suspicion you reserve for your opponents.",
+    "A confident argument built on an unexamined assumption is simply an error waiting patiently for its audience.",
+    "When you evaluate a claim, separate what the evidence actually shows from what the speaker merely wants it to show.",
+    "The strongest reasoners I know change their minds slowly, publicly, and without the slightest embarrassment.",
+    "Before our next seminar, choose one belief you hold firmly and write the strongest honest case against it."
+  ]},
+};
+const CURRICULUM=[
+ {lvl:1,name:'Foundations · The Core Sounds',sub:'The building blocks every American sound sits on',lessons:[
+   {id:'f1',ico:'🇺🇸',title:'Orientation: what makes it "American"',goal:'Get your ear on the target: rhythm, the R, and the relaxed mouth.',
+     learn:'American English is <b>rhotic</b> (every R is pronounced), <b>stress-timed</b> (some syllables long, others crushed), and uses a <b>flap T</b> (water → "wader"). This orientation just tunes your ear — no pass needed, watch and repeat a few words.',
+     watch:[{t:'tt',id:'7351132227855551786',u:'your_fav_english_teacher'},{t:'yt',id:'zash7H0eMQ4'}],practice:8,pass:2},
+   {id:'f2',ico:'🅁',title:'The American R',goal:'The single biggest marker — pronounce every R, even after vowels.',
+     learn:'Curl the tongue tip up and back without touching the roof; the sound comes from the <b>bunched/retroflex</b> tongue. Say the R at the <b>end</b> of words too: car, hard, water, order.',
+     watch:[{t:'tt',id:'7025542147952725249',u:'mryang_english'},{t:'tt',id:'7215606721484459307',u:'rachels_english'}],practice:2,pass:3},
+   {id:'f3',ico:'🅰',title:'Key vowels: æ / ɑ / ʌ',goal:'Nail cat, hot, and cup — the vowels that mark you as non-native fastest.',
+     learn:'<b>/æ/</b> (cat, man) — jaw drops, bright and front. <b>/ɑ/</b> (hot, lot) — open and back. <b>/ʌ/</b> (cup, but) — short, central, relaxed. Mixing these changes the word.',
+     watch:[{t:'tt',id:'7167011365784210731',u:'americanspeechcoach'}],practice:5,pass:3},
+   {id:'f4',ico:'ð',title:'The TH sounds',goal:'Voiced (this) and voiceless (think) — tongue tip between the teeth.',
+     learn:'Put the tongue tip lightly <b>between the teeth</b> and push air. Voiceless in <i>think, three</i>; voiced (add your voice) in <i>this, the, brother</i>. Never swap for t/d/f/s.',
+     watch:[{t:'tt',id:'7215606721484459307',u:'rachels_english'}],practice:3,pass:3},
+   {id:'f5',ico:'🆃',title:'The Flap T',goal:'Between vowels, T becomes a quick soft D: water → "wader".',
+     learn:'When T sits <b>between two vowel sounds</b> (and the second is unstressed), Americans tap it like a soft D: water, better, city, "get it". This one instantly softens your accent.',
+     watch:[{t:'tt',id:'7451944745355496711',u:'englishevolution'}],practice:4,pass:3}]},
+ {lvl:2,name:'Words · Simple to Advanced',sub:'Climb the word ladder: everyday → academic & legal vocabulary',lessons:[
+   {id:'w1',ico:'🔊',title:'Word stress & the schwa',goal:'Stress one syllable hard; reduce the rest to a lazy "uh".',
+     learn:'Every multi-syllable word has <b>one strong syllable</b>; the unstressed ones collapse to the <b>schwa /ə/</b> ("uh"). baNAna, PHOtograph → phoTOGraphy. Getting stress right matters more than perfect vowels.',
+     watch:[{t:'tt',id:'7255340172756225323',u:'your_fav_english_teacher'}],practice:6,pass:3},
+   {id:'w3',ico:'📖',title:'Everyday high-frequency words',goal:'Lock in the words you say all day: schedule, comfortable, probably.',
+     learn:'High-frequency words carry your accent most. Drill the American forms: <i>SKED-jool, KUMF-ter-bul, PROB-ly</i>.',
+     watch:[{t:'tt',id:'7494753038226246942',u:'myfluentlyjourney'}],practice:8,pass:3},
+   {id:'w2',ico:'🧩',title:'Consonant clusters',goal:'Blend tricky clusters (BR, STR, -sts) without inserting vowels.',
+     learn:'Don\'t add a vowel between cluster consonants (not "buh-rown" → "brown"). Practice BR, STR, and word-final clusters like <i>texts, asked</i>.',
+     watch:[{t:'tt',id:'7564491618313571598',u:'rachels_english'}],practice:10,pass:2},
+   {id:'w4',ico:'🎓',title:'Advanced & academic words',goal:'Attorney/professor vocabulary with perfect stress: adjudication, epistemology, fiduciary.',
+     learn:'Long words are won at the <b>stressed syllable</b> — hit it hard and let the rest reduce to schwa. Legal and academic words follow reliable stress patterns: <i>-ation</i> words stress AY (adjudi-CA-tion), <i>-ology</i> words stress OL (epistem-OL-ogy), <i>-ical</i> words stress the syllable before (theo-RET-ical).',
+     watch:[{t:'tt',id:'7426492886700576046',u:'boldvoiceapp'},{t:'tt',id:'7494753038226246942',u:'myfluentlyjourney'}],practice:11,pass:4}]},
+ {lvl:3,name:'Sentences · Everyday Speech',sub:'From single words to natural flowing sentences',lessons:[
+   {id:'c1',ico:'🌊',title:'Reductions: gonna, wanna, gotta',goal:'Crush function words the way natives actually do.',
+     learn:'Casual American English <b>reduces</b>: going to → "gonna", want to → "wanna", got to → "gotta", what do you → "whaddya". This is correct, not lazy.',
+     watch:[{t:'tt',id:'7391286372780526854',u:'learnenglishwithjess'}],practice:7,pass:3},
+   {id:'c2',ico:'🔗',title:'Linking words together',goal:'Connect the end of one word to the start of the next.',
+     learn:'Natives link: consonant→vowel ("an apple" → "a-napple"), and glide between vowels. Speech becomes one smooth stream, not chopped words.',
+     watch:[{t:'tt',id:'7579281559467937054',u:'englishfluencyteacher'}],practice:7,pass:3},
+   {id:'r2',ico:'💬',title:'Everyday conversation sentences',goal:'Sound natural in the sentences you use daily.',
+     learn:'Combine reductions, linking, and the flap T in real sentences. Aim for smooth flow over perfection.',
+     watch:[{t:'yt',id:'iKv4oc2zbeA'}],practice:9,pass:3}]},
+ {lvl:4,name:'Sentences · Professional & Academic',sub:'Meeting-room and argument sentences with real melody',lessons:[
+   {id:'m1',ico:'🎵',title:'Sentence stress & rhythm',goal:'Punch content words; swallow the little ones.',
+     learn:'Stress <b>content words</b> (nouns, verbs, adjectives) and reduce <b>function words</b> (the, of, to, a). This creates the characteristic da-da-DA-da rhythm of English.',
+     watch:[{t:'tt',id:'7368818468692610350',u:'rachels_english'}],practice:6,pass:3},
+   {id:'m2',ico:'📈',title:'Intonation & pitch',goal:'Ride the melody: falls for statements, rises for yes/no questions.',
+     learn:'Statements and wh-questions <b>fall</b> at the end; yes/no questions <b>rise</b>. Pitch also highlights the most important word. Flat pitch sounds robotic to Americans.',
+     watch:[{t:'tt',id:'7597500481543376150',u:'wannaspeakbyveroniq'}],practice:9,pass:3},
+   {id:'s4',ico:'💼',title:'Professional & argument sentences',goal:'Deliver meeting-room and courtroom-style sentences with confident melody.',
+     learn:'Professional speech runs on <b>contrastive stress</b> — punch the words that carry your point ("not what the parties INTENDED, but what a reasonable READER would understand") and let everything else reduce. End statements with a firm <b>falling</b> pitch: it signals confidence.',
+     watch:[{t:'tt',id:'7540755859123490079',u:'boldvoiceapp'},{t:'tt',id:'7368818468692610350',u:'rachels_english'}],practice:12,pass:4}]},
+ {lvl:5,name:'Paragraphs · Fluent Reading',sub:'Hold the accent across whole paragraphs, sentence by sentence',lessons:[
+   {id:'r1',ico:'🗣️',title:'Shadowing: your paragraph warm-up',goal:'Copy a native in real time — the fastest fluency builder.',
+     learn:'Play a reference clip, then <b>speak along a beat behind</b>, mirroring rhythm and melody. Use the Shadow tab with any reference clip, then come back and read the paragraphs in this level.',
+     watch:[{t:'tt',id:'7597500481543376150',u:'wannaspeakbyveroniq'},{t:'tt',id:'7579281559467937054',u:'englishfluencyteacher'}],practice:9,pass:3},
+   {id:'ep1',ico:'☕',title:'Reading: Morning Coffee Run',goal:'Flap T marathon across a whole paragraph.',passage:'ep1',pass:0,
+     learn:'Paragraph reading builds <b>stamina</b> — keeping the accent alive past the first sentence. Listen to the whole passage, then pass every sentence at 75%+. Focus here: every T between vowels taps like a soft D.',
+     watch:[{t:'tt',id:'7451944745355496711',u:'englishevolution'}]},
+   {id:'ep2',ico:'🛠️',title:'Reading: Fixing Up the Bathroom',goal:'A TH workout — tongue between the teeth all the way through.',passage:'ep2',pass:0,
+     learn:'Hold the <b>TH discipline</b> across four sentences: tongue between the teeth for every <i>the, that, then, thought</i>. If you feel it slipping to d/t, slow down — accuracy first, speed later.',
+     watch:[{t:'tt',id:'7215606721484459307',u:'rachels_english'}],},
+   {id:'ep3',ico:'🍳',title:'Reading: Cooking Dinner Together',goal:'Vowel contrast under pressure: æ vs ɑ vs ʌ.',passage:'ep3',pass:0,
+     learn:'This passage alternates the three key vowels. Exaggerate the contrast: jaw <b>drops wide</b> for /æ/ (smash, catch), <b>open back</b> for /ɑ/ (chop), <b>relaxed center</b> for /ʌ/ (cup). Listen first, then read.',
+     watch:[{t:'tt',id:'7167011365784210731',u:'americanspeechcoach'}]},
+   {id:'ep4',ico:'🗂️',title:'Reading: The Monday Case Review',goal:'Schwa reduction + stress in your real work context.',passage:'ep4',pass:0,
+     learn:'Work speech lives on <b>rhythm</b>: reduce <i>to, of, the</i> to schwa and punch the content words. This one mirrors your actual Monday meetings — read it like you own the room.',
+     watch:[{t:'tt',id:'7579281559467937054',u:'englishfluencyteacher'}]},
+   {id:'ep5',ico:'📊',title:'Reading: Presenting to the Client',goal:'Hard American R sustained through professional speech.',passage:'ep5',pass:0,
+     learn:'Every R sounds: <i>discoveRy, seaRch, paRtneR, recoRd</i>. Curl the tongue and hold it — dropping R\'s in a presentation is the fastest giveaway. Falling pitch on each closing statement.',
+     watch:[{t:'tt',id:'7025542147952725249',u:'mryang_english'}]},
+   {id:'ep6',ico:'🧑‍🏫',title:'Reading: Training the New Reviewers',goal:'Linking across word boundaries for one smooth stream.',passage:'ep6',pass:0,
+     learn:'Link consonant→vowel across every word boundary: <i>explain each → explai-neach</i>, <i>offers an answer → offer-za-nanswer</i>. The paragraph should feel like one connected ribbon of sound.',
+     watch:[{t:'tt',id:'7579281559467937054',u:'englishfluencyteacher'}]}]},
+ {lvl:6,name:'Mastery · Attorney & Professor',sub:'Formal argument, briefings, and lectures — the summit',lessons:[
+   {id:'r3',ico:'⚖️',title:'Legal vocabulary in context',goal:'Carry the accent into work vocabulary: privilege, deposition, metadata.',
+     learn:'Apply your sounds to domain words that trip people up: <i>subpoena (suh-PEE-nuh), deposition, custodian, metadata (MED-uh-dad-uh)</i>. Clear R\'s and flap T\'s throughout.',
+     watch:[{t:'yt',id:'XiVPKp09L0U'}],practice:0,pass:3},
+   {id:'mp1',ico:'⚖️',title:'Courtroom: Opening Statement',goal:'Command the room: falling assertions, rhotic authority.',passage:'mp1',pass:0,
+     learn:'An opening statement is <b>architecture in sound</b>: each assertion lands with a firm falling pitch, each R fully curled. Read it like the jury is watching. Listen to fluent professional speech in the reference videos first.',
+     watch:[{t:'yt',id:'T9WeYEA5mwY'},{t:'tt',id:'7368818468692610350',u:'rachels_english'}]},
+   {id:'mp2',ico:'🤝',title:'Courtroom: Meet and Confer',goal:'Negotiate: rising offers, falling firm lines.',passage:'mp2',pass:0,
+     learn:'Negotiation melody: <b>rise</b> on offers and concessions (it invites), <b>fall</b> on firm positions (it closes). Flap the T where it sits between vowels and keep the pace deliberate.',
+     watch:[{t:'yt',id:'gALG1r0Jp0s'}]},
+   {id:'mp3',ico:'🗂️',title:'Briefing: Privilege Review Status',goal:'Your daily eDiscovery language, flawless and fluent.',passage:'mp3',pass:0,
+     learn:'This is your home turf — <i>privilege log, custodian, metadata</i> — delivered at briefing speed. Stress PRIV-i-lege on the first syllable, flap both T\'s in metadata, and keep the rhythm even.',
+     watch:[{t:'yt',id:'8a6UypgMDo4'}]},
+   {id:'mp4',ico:'📦',title:'Briefing: Production Readiness',goal:'Status-report delivery with full R\'s and clean linking.',passage:'mp4',pass:0,
+     learn:'Production briefings are dense with R-heavy words: <i>befoRe, vendoR, appeaR, coRRect</i>. Keep each one full, link the past-tense endings (<i>stamped, logged</i>) cleanly into the next word.',
+     watch:[{t:'yt',id:'T9WeYEA5mwY'}]},
+   {id:'mp5',ico:'🎓',title:'Lecture: Why Clarity Persuades',goal:'Professor mode: measured pace, perfect TH, deliberate stress.',passage:'mp5',pass:0,
+     learn:'Lecture delivery is <b>slower and more deliberate</b> than conversation — every TH lands (tongue between teeth), every stressed syllable gets room to breathe. Imagine a hall of students taking notes.',
+     watch:[{t:'yt',id:'8a6UypgMDo4'}]},
+   {id:'mp6',ico:'🤖',title:'Lecture: Law in the Age of Algorithms',goal:'Complex academic argument at full fluency.',passage:'mp6',pass:0,
+     learn:'The hardest test: long clauses, technical terms, and the accent all at once. Flap the T in <i>metadata</i>, keep R\'s strong in <i>reseaRch, couRt</i>, and let the sentence melody carry the logic.',
+     watch:[{t:'yt',id:'gALG1r0Jp0s'}]},
+   {id:'mp7',ico:'🧠',title:'Lecture: The Discipline of Doubt',goal:'The summit — sustained scholarly speech.',passage:'mp7',pass:0,
+     learn:'Your graduation passage. Sustained TH discipline, flap T\'s, full R\'s, and a professor\'s falling cadence — all held for five long sentences. Pass this and you\'ve completed the course.',
+     watch:[{t:'yt',id:'T9WeYEA5mwY'},{t:'yt',id:'8a6UypgMDo4'}]}]},
+];
+function courseLessons(){return CURRICULUM.flatMap(l=>l.lessons);}
+function lessonById(id){return courseLessons().find(l=>l.id===id);}
+function lessonStatus(id){
+  const c=LS.course(),order=courseLessons();
+  const idx=order.findIndex(l=>l.id===id);
+  if(c[id]&&c[id].done)return 'done';
+  if(idx===0)return 'current';
+  return (c[order[idx-1].id]&&c[order[idx-1].id].done)?'current':'locked';
+}
+function firstIncomplete(){const order=courseLessons();return order.find(l=>lessonStatus(l.id)!=='done')||order[order.length-1];}
+
+function renderHome(){
+  const order=courseLessons(),c=LS.course();
+  const done=order.filter(l=>c[l.id]&&c[l.id].done).length,total=order.length;
+  const pct=Math.round(done/total*100);
+  const circ=2*Math.PI*28;
+  document.getElementById('homeGreeting').textContent='🎓 Your American Accent Course';
+  document.getElementById('courseRingFill').setAttribute('stroke-dasharray',circ);
+  document.getElementById('courseRingFill').setAttribute('stroke-dashoffset',circ*(1-done/total));
+  document.getElementById('courseRingPct').textContent=pct+'%';
+  document.getElementById('courseProgTxt').textContent=`${done} of ${total} lessons complete`;
+  const {cur}=streaks();
+  document.getElementById('courseStreak').textContent=cur>0?`🔥 ${cur}-day streak — keep it alive`:'🔥 Practice today to start a streak';
+  const next=firstIncomplete();
+  document.getElementById('ccLabel').textContent=done===0?'Start here':done===total?'Course complete — review':'Continue where you left off';
+  document.getElementById('ccTitle').textContent=next.title;
+  document.getElementById('courseLevels').innerHTML=CURRICULUM.map(L=>{
+    const rows=L.lessons.map(les=>{
+      const st=lessonStatus(les.id);
+      const stTxt=st==='done'?'<span class="lesson-status ls-done">✓ Done</span>':st==='locked'?'<span class="lesson-status ls-lock">🔒 Locked</span>':'<span class="lesson-status ls-go">Start →</span>';
+      const click=st==='locked'?'':`onclick="openLesson('${les.id}')"`;
+      return `<div class="lesson ${st}" ${click}><div class="lesson-ico">${les.ico}</div>
+        <div class="lesson-body"><div class="lesson-title">${esc(les.title)}</div><div class="lesson-goal">${esc(les.goal)}</div></div>${stTxt}</div>`;
+    }).join('');
+    return `<div class="level"><div class="level-head"><div class="level-badge">${L.lvl}</div><div><h3>${esc(L.name)}</h3><div class="lvl-sub">${esc(L.sub)}</div></div><div class="level-line"></div></div>${rows}</div>`;
+  }).join('');
+}
+function continueCourse(){openLesson(firstIncomplete().id);}
+
+/* ---- Lesson detail: Watch → Learn → Practice → complete ---- */
+let lessonPass={};
+let lessonNeed=0;
+function openLesson(id){
+  const les=lessonById(id);if(!les)return;if(lessonStatus(id)==='locked')return;
+  lessonPass={};
+  document.getElementById('lessonTitle').textContent=les.ico+'  '+les.title;
+  document.getElementById('lessonGoal').textContent=les.goal;
+  const watchCards=les.watch.map(v=>{
+    if(v.t==='tt')return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'tt','${v.id}','${v.u}')"><span class="vsrc-tag tag-tt">TikTok</span><div class="fallback" style="background:linear-gradient(135deg,#111,#2a2a35)">🎵</div><div class="play-badge"><span>▶</span></div></div></div>`;
+    return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'yt','${v.id}')"><span class="vsrc-tag tag-yt">YouTube</span><img loading="lazy" src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" onerror="this.style.display='none'"><div class="play-badge"><span>▶</span></div></div></div>`;
+  }).join('');
+  let practiceHtml='',stepLabel='';
+  if(les.passage){
+    const pg=PASSAGES[les.passage];
+    const full=pg.sentences.join(' ');
+    lessonNeed=pg.sentences.length; // pass every sentence of the passage
+    stepLabel=`Read the passage — pass all ${pg.sentences.length} sentences`;
+    practiceHtml=`
+      <div class="passage-full"><span class="focus">🎯 ${esc(pg.focus)}</span>${esc(full)}</div>
+      <div class="row" style="margin-bottom:14px"><button class="btn teal sm" onclick="hearText(${JSON.stringify(full).replace(/"/g,'&quot;')})">🔊 Hear the whole passage</button></div>
+      ${pg.sentences.map((s,i)=>`
+        <div class="ps-sent" id="lp_${i}"><div class="ps-txt"><span class="ps-n">${i+1}</span>${esc(s)}</div>
+          <div class="lp-actions"><button class="btn sm teal" onclick="hearText(${JSON.stringify(s).replace(/"/g,'&quot;')})">🔊 Hear</button>
+          <button class="btn sm" onclick="lessonSay('${id}',${i},${JSON.stringify(s).replace(/"/g,'&quot;')},75)">🎤 Say &amp; score</button></div>
+          <div class="lp-fb" id="lpfb_${i}"></div></div>`).join('')}`;
+  }else{
+    const items=drillData[les.practice].items.slice(0,6);
+    lessonNeed=Math.min(les.pass,items.length);
+    stepLabel=`Practice — pass ${lessonNeed} to complete`;
+    practiceHtml=items.map((it,i)=>
+      `<div class="lp-item" id="lp_${i}"><div class="lp-target">${esc(it.target)}</div>${it.tip?`<div class="lp-tip">${esc(it.tip)}</div>`:''}
+        <div class="lp-actions"><button class="btn sm teal" onclick="hearText(${JSON.stringify(it.target).replace(/"/g,'&quot;')})">🔊 Hear it</button>
+        <button class="btn sm" onclick="lessonSay('${id}',${i},${JSON.stringify(it.target).replace(/"/g,'&quot;')},80)">🎤 Say &amp; score</button></div>
+        <div class="lp-fb" id="lpfb_${i}"></div></div>`).join('');
+  }
+  document.getElementById('lessonBody').innerHTML=`
+    <div class="lesson-step"><div class="step-tag"><span class="n">1</span>Watch</div><div class="lesson-watch">${watchCards}</div></div>
+    <div class="lesson-step"><div class="step-tag"><span class="n">2</span>Learn</div><div class="learn-box">${les.learn}</div></div>
+    <div class="lesson-step"><div class="step-tag"><span class="n">3</span>${stepLabel}</div>
+      <div class="card-hint" style="margin-bottom:12px">Speak each line and hit the target score. Green means passed. ${SR?'':'<b>Live scoring needs Chrome/Edge + internet</b> — you can still Hear &amp; repeat, then mark complete.'}</div>
+      ${practiceHtml}
+      <div id="lessonComplete"></div>
+      <div class="row" style="margin-top:14px"><button class="btn ghost sm" onclick="completeLesson('${id}',true)">Mark complete manually</button></div>
+    </div>`;
+  switchTab('lesson');
+  updateLessonProgress(id);
+}
+function lessonSay(id,i,target,threshold){
+  threshold=threshold||80;
+  const fb=document.getElementById('lpfb_'+i);
+  if(!SR){fb.className='lp-fb bad';fb.textContent='Live scoring needs Chrome/Edge + internet. Use “Hear it” and repeat aloud, then Mark complete.';return;}
+  fb.className='lp-fb';fb.textContent='Listening… say it now.';
+  recognizeOnce(t=>{
+    const mark=lcsMark(norm(target),norm(t)),pct=Math.round(mark.acc*100);
+    logScore(lessonById(id).ico+' '+lessonById(id).title,pct);
+    if(pct>=threshold){fb.className='lp-fb ok';fb.innerHTML=`✓ ${pct}% — nice.`;lessonPass[i]=true;document.getElementById('lp_'+i).classList.add('passed');}
+    else{fb.className='lp-fb bad';const miss=mark.T.filter((w,k)=>!mark.tOk[k]).slice(0,3).join(', ');fb.innerHTML=`${pct}% — heard “${esc(t)}”. Focus on: <b>${esc(miss)||'over-articulate'}</b>. Try again.`;}
+    updateLessonProgress(id);
+  },err=>{fb.className='lp-fb bad';fb.textContent='Recognition: '+err;});
+}
+function updateLessonProgress(id){
+  const got=Object.values(lessonPass).filter(Boolean).length;
+  const box=document.getElementById('lessonComplete');if(!box)return;
+  if(got>=lessonNeed&&lessonStatus(id)!=='done'){completeLesson(id,false);}
+}
+function completeLesson(id,manual){
+  const c=LS.course();if(!c[id]||!c[id].done){c[id]={done:true,at:Date.now()};LS.setCourse(c);}
+  const order=courseLessons(),idx=order.findIndex(l=>l.id===id),nxt=order[idx+1];
+  const box=document.getElementById('lessonComplete');
+  if(box)box.innerHTML=`<div class="lesson-done-banner"><div class="big">✓ Lesson complete!</div>
+    <p style="color:var(--muted);font-size:13px;margin-top:8px">${nxt?'Next unlocked: <b>'+esc(nxt.title)+'</b>':'🎉 You finished the whole course!'}</p>
+    <div class="row" style="justify-content:center;margin-top:14px">${nxt?`<button class="btn primary" onclick="openLesson('${nxt.id}')">Next lesson →</button>`:''}<button class="btn" onclick="switchTab('home')">Back to course</button></div></div>`;
+  if(box)box.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function drawSpark(){
+  const c=document.getElementById('sparkCanvas'),x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);
+  const s=LS.scores().slice(-40);
+  document.getElementById('sparkHint').textContent=s.length?`Your last ${s.length} scored reps, oldest → newest.`:'No scores yet — do a drill or a custom rep and your trend appears here.';
+  if(s.length<2)return;
+  const W=c.width,H=c.height,pad=6;
+  const pt=i=>[pad+i/(s.length-1)*(W-2*pad), H-pad-(s[i].pct/100)*(H-2*pad)];
+  x.beginPath();x.moveTo(...pt(0));for(let i=1;i<s.length;i++)x.lineTo(...pt(i));
+  x.strokeStyle='#8b7cff';x.lineWidth=2;x.stroke();
+  x.lineTo(W-pad,H);x.lineTo(pad,H);x.closePath();
+  const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(139,124,255,0.30)');g.addColorStop(1,'rgba(139,124,255,0)');x.fillStyle=g;x.fill();
+  const [lx,ly]=pt(s.length-1);x.beginPath();x.arc(lx,ly,3.5,0,7);x.fillStyle='#12d3b0';x.fill();
+}
+function renderMastery(){
+  const cs=catStats().slice(0,6),host=document.getElementById('masteryList'),box=document.getElementById('insightBox');
+  host.innerHTML=cs.length?cs.map(c=>
+    `<div class="mastery-row"><div class="mastery-name">${esc(c.cat)}</div>
+      <div class="mastery-track"><div class="mastery-fill" style="width:${c.avg}%"></div></div>
+      <div class="mastery-pct">${c.avg}% · ${c.n}</div></div>`).join('')
+    :'<div class="card-hint" style="margin:0">Score a few reps and your per-category mastery shows here.</div>';
+  const w=weakestCat();
+  box.innerHTML=w?`<div class="insight">💡 <b>Focus area:</b> ${esc(w.cat)} — averaging ${w.avg}% over ${w.n} reps. Five slow, over-articulated reps a day moves this fastest.</div>`:'';
+}
+
+/* ================= EAR training (minimal pairs) ================= */
+const MINIMAL_PAIRS=[
+  ['ship','sheep'],['bit','beat'],['live','leave'],['sit','seat'],['full','fool'],['pull','pool'],
+  ['bat','but'],['cat','cut'],['fan','fun'],['ankle','uncle'],['bag','bug'],
+  ['not','nut'],['lock','luck'],['shot','shut'],['cop','cup'],
+  ['walk','work'],['law','low'],['caught','coat'],['bought','boat'],['taught','tote'],
+  ['first','fast'],['hurt','heart'],['bird','bard'],['firm','farm'],['curt','cart'],
+];
+let ear={on:false,round:0,correct:0,pair:null,target:null,answered:false};
+function renderEar(){
+  const st=document.getElementById('earStage');
+  if(!window.speechSynthesis){st.innerHTML='<div class="empty">Ear training needs text-to-speech, which this browser doesn\'t offer.</div>';return;}
+  if(!ear.on){
+    st.innerHTML=`<div class="ear-q">Ten pairs per round. Listen, then click the word you heard.</div>
+      <button class="btn primary" onclick="startEar()">▶ Start a round</button>
+      <div class="ear-progress" id="earProg"></div>`;
+    return;
+  }
+  const [a,b]=ear.pair;
+  st.innerHTML=`<div class="ear-q">Pair ${ear.round}/10 — which word did you hear?</div>
+    <div class="pair-row">
+      <button class="pair-btn" id="pairA" onclick="answerEar(0)">${esc(a)}</button>
+      <button class="pair-btn" id="pairB" onclick="answerEar(1)">${esc(b)}</button>
+    </div>
+    <button class="btn sm" onclick="speakEar()">🔊 Hear it again</button>
+    <div class="ear-fb" id="earFb"></div>
+    <div class="ear-progress">${ear.correct} correct so far</div>`;
+}
+function startEar(){ear={on:true,round:0,correct:0,pair:null,target:null,answered:false};nextEar();}
+function nextEar(){
+  ear.round++;ear.answered=false;
+  if(ear.round>10){finishEar();return;}
+  ear.pair=MINIMAL_PAIRS[Math.floor(rnd()*MINIMAL_PAIRS.length)];
+  ear.target=Math.floor(rnd()*2);
+  renderEar();setTimeout(speakEar,350);
+}
+function speakEar(){if(!ear.pair)return;const u=new SpeechSynthesisUtterance(ear.pair[ear.target]);u.lang='en-US';u.rate=0.92;const v=pickUSVoices()[0];if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u);}
+function answerEar(i){
+  if(ear.answered)return;ear.answered=true;
+  const right=i===ear.target,fb=document.getElementById('earFb');
+  document.getElementById(i===0?'pairA':'pairB').classList.add(right?'hit':'miss');
+  if(!right)document.getElementById(ear.target===0?'pairA':'pairB').classList.add('hit');
+  if(right)ear.correct++;
+  fb.className='ear-fb '+(right?'ok':'bad');
+  fb.textContent=right?'✓ Correct':`✗ It was “${ear.pair[ear.target]}”`;
+  setTimeout(nextEar,950);
+}
+function finishEar(){
+  const pct=Math.round(ear.correct/10*100);
+  logScore('👂 Ear (listening)',pct);
+  ear.on=false;
+  document.getElementById('earStage').innerHTML=
+    `<div class="ear-q">Round complete</div>
+     <div style="font-family:'Space Grotesk',sans-serif;font-size:38px;font-weight:700;color:${pct>=80?'var(--green)':pct>=60?'var(--amber)':'var(--rose)'}">${pct}%</div>
+     <div class="ear-progress">${ear.correct}/10 pairs heard correctly — logged to your score history</div>
+     <div class="row" style="justify-content:center;margin-top:16px"><button class="btn primary" onclick="startEar()">▶ Another round</button><button class="btn" onclick="switchTab('home')">🏠 Home</button></div>`;
+}
+
+/* ================= LEARN feed ================= */
+function ytId(url){if(/^[\w-]{11}$/.test(url))return url;const m=String(url).match(/(?:youtu\.be\/|v=|\/shorts\/|\/embed\/)([\w-]{11})/);return m?m[1]:null;}
+function igCode(url){const m=String(url).match(/instagram\.com\/(?:reel|p|tv)\/([\w-]+)/);return m?m[1]:null;}
+function ttParse(url){const m=String(url).match(/tiktok\.com\/@([\w.-]+)\/video\/(\d+)/);return m?{u:m[1],id:m[2]}:null;}
+function allLearn(){return [...CATALOG,...LS.learn()];}
+function renderLearn(){renderLearnStats();renderChips();renderFeed();}
+function renderLearnStats(){
+  const items=allLearn();
+  const libs=items.filter(i=>i.t==='pl').length, vids=items.filter(i=>i.t==='yt').length, igs=items.filter(i=>i.t==='ig').length, tts=items.filter(i=>i.t==='tt').length;
+  document.getElementById('learnStats').innerHTML=
+    `<div class="lstat"><b>1000+</b><span>real videos in-tool</span></div>
+     <div class="lstat"><b>${libs}</b><span>channel libraries</span></div>
+     <div class="lstat"><b>${vids}</b><span>single clips</span></div>
+     <div class="lstat"><b>${tts}</b><span>tiktoks</span></div>
+     <div class="lstat"><b>${igs}</b><span>instagram reels</span></div>`;
+}
+function renderChips(){document.getElementById('learnChips').innerHTML=LEARN_CHIPS.map(c=>`<button class="chip ${c===learnFilter?'active':''}" onclick="setLearnFilter('${c}')">${c}</button>`).join('');}
+function setLearnFilter(c){learnFilter=c;renderChips();renderFeed();}
+function renderFeed(){
+  const q=(document.getElementById('learnSearch').value||'').toLowerCase().trim();
+  let items=allLearn();
+  if(learnFilter==='Saved')items=items.filter(i=>i.saved);
+  else if(learnFilter==='Instagram')items=items.filter(i=>i.t==='ig');
+  else if(learnFilter==='TikTok')items=items.filter(i=>i.t==='tt');
+  else if(learnFilter!=='All')items=items.filter(i=>i.tag===learnFilter);
+  if(q)items=items.filter(i=>(i.title+' '+(i.ch||'')+' '+(i.tag||'')).toLowerCase().includes(q));
+  const host=document.getElementById('feed');
+  if(!items.length){host.innerHTML='<div class="empty" style="grid-column:1/-1">No lessons match. Try another filter, or paste a link above.</div>';return;}
+  host.innerHTML=items.map((i,idx)=>card(i,idx)).join('');
+}
+function card(i,idx){
+  const key=i.t+'|'+i.id;
+  if(i.t==='yt'){
+    return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'yt','${esc(i.id)}')">
+        <span class="vsrc-tag tag-yt">YouTube</span>
+        <img loading="lazy" src="https://i.ytimg.com/vi/${esc(i.id)}/hqdefault.jpg" alt="" onerror="this.style.display='none'">
+        <div class="play-badge"><span>▶</span></div></div>
+      <div class="vmeta"><div class="vtitle">${esc(i.title)}</div><div class="vch">📺 ${esc(i.ch||'')}</div></div></div>`;
+  }
+  if(i.t==='pl'){
+    return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'pl','${esc(i.id)}')">
+        <span class="vsrc-tag tag-pl">Library</span>
+        <div class="fallback">📚</div><div class="play-badge"><span>▶</span></div>
+        ${i.approx?`<div class="vlib">${esc(i.approx)} videos</div>`:''}</div>
+      <div class="vmeta"><div class="vtitle">${esc(i.title)}</div><div class="vch">📺 ${esc(i.ch||'')}</div></div></div>`;
+  }
+  if(i.t==='tt'){
+    return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'tt','${esc(i.id)}','${esc(i.u||'')}')">
+        <span class="vsrc-tag tag-tt">TikTok</span>
+        <div class="fallback" style="background:linear-gradient(135deg,#111,#2a2a35)">🎵</div><div class="play-badge"><span>▶</span></div></div>
+      <div class="vmeta"><div class="vtitle">${esc(i.title||'TikTok lesson')}</div><div class="vch">🎵 ${esc(i.ch||('@'+(i.u||'tiktok')))}</div></div></div>`;
+  }
+  // instagram
+  return `<div class="vcard"><div class="vthumb" onclick="playFeed(this,'ig','${esc(i.id)}')">
+      <span class="vsrc-tag tag-ig">Instagram</span>
+      <div class="fallback">📸</div><div class="play-badge"><span>▶</span></div></div>
+    <div class="vmeta"><div class="vtitle">${esc(i.title||'Instagram reel')}</div><div class="vch">↗ opens inline where allowed</div></div></div>`;
+}
+function playFeed(thumb,type,id,user){
+  let src;
+  if(type==='yt')src=`https://www.youtube.com/embed/${id}?rel=0&modestbranding=1&playsinline=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+  else if(type==='pl')src=`https://www.youtube.com/embed/videoseries?list=${id}&rel=0&modestbranding=1&playsinline=1&autoplay=1&origin=${encodeURIComponent(location.origin)}`;
+  else if(type==='tt')src=`https://www.tiktok.com/embed/v2/${id}`;
+  else src=`https://www.instagram.com/reel/${id}/embed/`;
+  const f=document.createElement('iframe');
+  f.src=src;f.allow='accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture;web-share';f.allowFullscreen=true;f.setAttribute('scrolling','no');
+  thumb.innerHTML='';thumb.appendChild(f);
+  if(type==='tt'||type==='ig')thumb.classList.add('tall'); // vertical video — grow the frame
+  const ext=type==='tt'?{href:`https://www.tiktok.com/@${user||''}/video/${id}`,label:'Open on TikTok ↗'}
+          :type==='ig'?{href:`https://www.instagram.com/reel/${id}/`,label:'Open on Instagram ↗'}:null;
+  if(ext){const a=document.createElement('a');a.href=ext.href;a.target='_blank';a.rel='noopener';a.textContent=ext.label;a.style.cssText='position:absolute;bottom:6px;right:8px;font-size:10px;background:rgba(0,0,0,0.6);padding:3px 8px;border-radius:20px;color:#fff;z-index:2';thumb.appendChild(a);}
+}
+function addLinks(){
+  const raw=document.getElementById('addLinks').value.split('\n').map(s=>s.trim().slice(0,500)).filter(Boolean).slice(0,100); // cap: 100 links/batch, 500 chars/line
+  if(!raw.length){document.getElementById('addStatus').textContent='Paste at least one link.';return;}
+  const cur=LS.learn();let added=0,bad=0;
+  raw.forEach(line=>{
+    const tt=ttParse(line);
+    if(tt){if(!cur.some(c=>c.t==='tt'&&c.id===tt.id)){cur.push({t:'tt',id:tt.id,u:tt.u,title:'TikTok lesson',ch:'@'+tt.u,tag:'TikTok',saved:true});added++;}return;}
+    const ig=igCode(line);
+    if(/instagram\.com/.test(line)&&ig){if(!cur.some(c=>c.t==='ig'&&c.id===ig)){cur.push({t:'ig',id:ig,title:'Instagram reel',tag:'Instagram',saved:true});added++;}return;}
+    const y=ytId(line);
+    if(y){if(!cur.some(c=>c.t==='yt'&&c.id===y)){cur.push({t:'yt',id:y,title:'Added video',ch:'Your link',tag:'Saved',saved:true});added++;}return;}
+    bad++;
+  });
+  LS.setLearn(cur);document.getElementById('addLinks').value='';
+  document.getElementById('addStatus').textContent=`Added ${added}${bad?`, ${bad} unrecognized`:''}.`;
+  renderLearn();
+}
+
+/* ================= Speech scoring ================= */
+function norm(s){return s.toLowerCase().replace(/[^a-z0-9' ]/g,' ').replace(/\s+/g,' ').trim();}
+function lcsMark(target,said){
+  const T=target.split(' ').filter(Boolean),S=said.split(' ').filter(Boolean);
+  const n=T.length,m=S.length,dp=Array.from({length:n+1},()=>new Array(m+1).fill(0));
+  for(let i=1;i<=n;i++)for(let j=1;j<=m;j++)dp[i][j]=T[i-1]===S[j-1]?dp[i-1][j-1]+1:Math.max(dp[i-1][j],dp[i][j-1]);
+  const tOk=new Array(n).fill(false),sUsed=new Array(m).fill(false);let i=n,j=m;
+  while(i>0&&j>0){if(T[i-1]===S[j-1]){tOk[i-1]=true;sUsed[j-1]=true;i--;j--;}else if(dp[i-1][j]>=dp[i][j-1])i--;else j--;}
+  const extra=S.filter((w,k)=>!sUsed[k]),matched=tOk.filter(Boolean).length;
+  return {T,tOk,extra,matched,acc:n?matched/n:0};
+}
+const SOUND_RULES=[
+  {test:w=>/[aeiou]r|r[^aeiou]|r$/.test(w),label:'the American R',tip:'pronounce every R, even after vowels (car → "carr").'},
+  {test:w=>/th/.test(w),label:'the TH sound',tip:'tongue tip between the teeth — not t/d/f.'},
+  {test:w=>/[aeiou]t[aeiou]/.test(w),label:'the flap T',tip:'a T between vowels taps like a soft D (water → "wader").'},
+  {test:w=>/ed$/.test(w),label:'the -ed ending',tip:'keep endings crisp: walked, asked, reviewed.'},
+  {test:w=>/(tion|sion)/.test(w),label:'the -tion ending',tip:'say "-shun" smoothly.'},
+];
+function buildFeedback(mark){const fb=[],missed=mark.T.filter((w,k)=>!mark.tOk[k]);
+  if(mark.acc>=0.95)fb.push({good:true,text:'Excellent — that came through clearly. Try it faster, or a harder line.'});
+  else if(mark.acc>=0.75)fb.push({good:true,text:'Solid. A few words slipped — focus on the highlighted ones below.'});
+  else fb.push({good:false,text:'Some words didn\'t register. Slow down, over-articulate, and try again.'});
+  const seen=new Set();missed.forEach(w=>{SOUND_RULES.forEach(r=>{if(r.test(w)&&!seen.has(r.label)){seen.add(r.label);fb.push({good:false,text:`Watch ${r.label} in "${esc(w)}" — ${r.tip}`});}});});
+  if(mark.extra.length)fb.push({good:false,text:`Extra/garbled words heard: ${esc(mark.extra.slice(0,4).join(', '))}. Aim only for the target line.`});
+  return fb.slice(0,5);
+}
+function recognizeOnce(onResult,onErr,onStart){if(!SR){onErr&&onErr('no-sr');return null;}
+  const r=new SR();r.lang='en-US';r.interimResults=false;r.maxAlternatives=1;
+  r.onstart=()=>onStart&&onStart();r.onresult=e=>onResult(e.results[0][0].transcript);r.onerror=e=>onErr&&onErr(e.error);r.start();return r;}
+
+/* ================= Custom practice ================= */
+let customRecognizer=null, customT0=0, customActive=false;
+async function customRecord(){
+  const btn=document.getElementById('customRecBtn'),status=document.getElementById('customStatus');
+  if(customActive){if(customRecognizer)customRecognizer.stop();if(mediaRecorder&&recording)mediaRecorder.stop();return;}
+  const target=document.getElementById('customText').value.trim();
+  if(!target){alert('Type a line (or pick a random one) to practice first.');return;}
+  if(micBusy)return; micBusy=true;
+  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);recChunks=[];
+    mediaRecorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data);};
+    mediaRecorder.onstop=()=>{lastCustomBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'audio/webm'});stream.getTracks().forEach(t=>t.stop());document.getElementById('customPlayBtn').disabled=false;};
+    mediaRecorder.start();recording=true;
+  }catch(e){micBusy=false;status.textContent='Mic blocked: '+e.message;return;}
+  micBusy=false;customActive=true;customT0=Date.now();
+  btn.textContent='■ Stop';status.textContent='Listening… say it now.';status.classList.add('live');
+  customRecognizer=recognizeOnce(t=>finishCustom(target,t),
+    err=>{customActive=false;recording&&mediaRecorder.stop();btn.textContent='🎤 Record & score';status.classList.remove('live');
+      status.textContent=err==='no-sr'?'Live scoring needs Chrome/Edge + internet. Recording saved — play it back.':'Recognition: '+err+'. Try again.';},()=>{});
+}
+function finishCustom(target,transcript){customActive=false;if(recording&&mediaRecorder)mediaRecorder.stop();
+  const btn=document.getElementById('customRecBtn'),status=document.getElementById('customStatus');
+  btn.textContent='🎤 Record & score';status.classList.remove('live');status.textContent='Done — see your score below.';
+  const secs=Math.max(0.5,(Date.now()-customT0)/1000),mark=lcsMark(norm(target),norm(transcript)),wpm=Math.round(norm(transcript).split(' ').filter(Boolean).length/secs*60);
+  logScore('✏️ Custom',Math.round(mark.acc*100));
+  renderScore(document.getElementById('customResult'),mark,transcript,wpm);}
+function renderScore(host,mark,transcript,wpm){
+  const pct=Math.round(mark.acc*100),color=pct>=85?'var(--green)':pct>=60?'var(--amber)':'var(--rose)',circ=2*Math.PI*42,off=circ*(1-mark.acc);
+  const diffHtml=mark.T.map((w,k)=>`<span class="${mark.tOk[k]?'w-ok':'w-bad'}">${w}</span>`).join(' ')+(mark.extra.length?' '+mark.extra.map(w=>`<span class="w-extra">${w}</span>`).join(' '):'');
+  const fb=buildFeedback(mark);host.classList.remove('hidden');
+  host.innerHTML=`<div class="score-ring"><div class="ring"><svg width="96" height="96">
+      <circle cx="48" cy="48" r="42" stroke="rgba(255,255,255,0.08)" stroke-width="8" fill="none"></circle>
+      <circle cx="48" cy="48" r="42" stroke="${color}" stroke-width="8" fill="none" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${off}"></circle>
+    </svg><div class="num"><b style="color:${color}">${pct}%</b><small>match</small></div></div>
+    <div class="score-meta"><div class="diff">${diffHtml}</div><div class="transcript">Heard: "${esc(transcript)}"</div>
+      <div class="mini-stats"><div class="mini-stat"><b>${mark.matched}/${mark.T.length}</b>words hit</div><div class="mini-stat"><b>${wpm}</b>words/min</div><div class="mini-stat"><b>${mark.extra.length}</b>extra heard</div></div>
+    </div></div><div class="fb-list">${fb.map(f=>`<div class="fb-item ${f.good?'good':''}">${f.text}</div>`).join('')}</div>`;}
+function playLastRec(){if(!lastCustomBlob)return;if(lastCustomUrl)URL.revokeObjectURL(lastCustomUrl);lastCustomUrl=URL.createObjectURL(lastCustomBlob);new Audio(lastCustomUrl).play();}
+
+/* ================= TTS ================= */
+function pickUSVoices(){return speechSynthesis.getVoices().filter(v=>v.lang&&v.lang.toLowerCase().startsWith('en-us'));}
+function hearText(txt,useVm){txt=(txt||'').trim().slice(0,900);if(!txt){alert('Nothing to speak.');return;}
+  if(!window.speechSynthesis){alert('Text-to-speech not available.');return;}
+  const u=new SpeechSynthesisUtterance(txt);u.lang='en-US';u.rate=useVm?vmRate:0.92;
+  const v=useVm&&vmVoice?vmVoice:(pickUSVoices()[0]||null);if(v)u.voice=v;speechSynthesis.cancel();speechSynthesis.speak(u);}
+function populateVoices(){const sel=document.getElementById('vmVoice');if(!sel)return;const vs=pickUSVoices();
+  if(!vs.length){sel.innerHTML='<option>No American voice found — your OS may add more</option>';return;}
+  sel.innerHTML=vs.map((v,i)=>`<option value="${i}">${esc(v.name)}</option>`).join('');vmVoice=vs[0];sel.onchange=()=>{vmVoice=vs[sel.value];};}
+function setVmRate(r){vmRate=r;document.querySelectorAll('#vmRate .pill').forEach(p=>p.classList.toggle('active',+p.dataset.r===r));}
+let vmActive=false,vmRec=null;
+function vmRecord(){const btn=document.getElementById('vmRecBtn'),status=document.getElementById('vmStatus'),heard=document.getElementById('vmHeard');
+  if(vmActive){if(vmRec)vmRec.stop();return;}
+  vmActive=true;btn.textContent='■ Stop';status.textContent='Listening…';status.classList.add('live');
+  vmRec=recognizeOnce(t=>{vmActive=false;btn.textContent='🎤 Speak';status.classList.remove('live');status.textContent='Playing it back American…';heard.classList.remove('hidden');heard.textContent='You said: "'+t+'"';hearText(t,true);},
+    err=>{vmActive=false;btn.textContent='🎤 Speak';status.classList.remove('live');status.textContent=err==='no-sr'?'Needs Chrome/Edge + internet. Use Option 2 instead.':'Recognition: '+err;});}
+
+/* ================= Clips ================= */
+function addYouTube(){const url=document.getElementById('ytUrl').value.trim(),id=ytId(url);
+  if(!id){alert('Could not read a video ID from that link.');return;}
+  const clips=LS.ytClips();if(clips.some(c=>c.videoId===id)||PRESET_YT.some(c=>c.videoId===id)){alert('Already added.');return;}
+  clips.push({id:'yt_'+id,videoId:id,url,title:'My clip '+(clips.length+1),addedAt:Date.now()});LS.setYt(clips);document.getElementById('ytUrl').value='';renderClips();}
+async function uploadAudio(file){if(!file)return;
+  if(!/^audio\//.test(file.type)){alert('That file isn\'t audio (got: '+(file.type||'unknown')+'). Upload MP3 / WAV / m4a.');return;}
+  if(file.size>50*1024*1024){alert('File too large ('+Math.round(file.size/1048576)+' MB). Max 50 MB — trim the clip first.');return;}
+  const name=String(file.name||'clip').slice(0,120);
+  await idbPut('clips',{id:'up_'+Date.now(),name,type:file.type,blob:file,addedAt:Date.now()});renderClips();}
+async function removeClip(id,kind){if(kind==='yt'){LS.setYt(LS.ytClips().filter(c=>c.id!==id));}else{await idbDel('clips',id);await idbDel('recordings',id);}renderClips();}
+let presetAudioOK=true; // flipped off at init when the local-only reference MP3s aren't deployed with the app
+async function getAllClips(){
+  const preAudio=presetAudioOK?PRESET_AUDIO.map(c=>({id:c.id,title:c.title,kind:'preset',src:c.src,preset:true})):[];
+  const pre=[...preAudio,...PRESET_YT.map(c=>({id:'pyt_'+c.videoId,videoId:c.videoId,title:c.title,kind:'yt',preset:true}))];
+  const yt=LS.ytClips().map(c=>({...c,kind:'yt'})),up=(await idbAll('clips')).map(c=>({id:c.id,title:c.name,kind:'upload',blob:c.blob}));
+  return [...pre,...yt,...up];}
+async function renderClips(){const clips=await getAllClips(),host=document.getElementById('clipList');
+  host.innerHTML=clips.map(c=>{const isYt=c.kind==='yt',dot=c.preset?'pre':(isYt?'yt':'up');
+    const thumb=isYt?`<img class="clip-thumb" src="https://i.ytimg.com/vi/${esc(c.videoId)}/default.jpg" alt="">`:`<div class="clip-thumb">🎧</div>`;
+    const sub=c.preset?(isYt?'Reference video · listen & loop':'Reference audio · loop & analyze'):(isYt?'YouTube · listen & loop':'Uploaded · loop & analyze');
+    const rm=c.preset?'':`<button class="btn sm ghost" onclick="removeClip('${esc(c.id)}','${esc(c.kind)}')">✕</button>`;
+    return `<div class="clip-item">${thumb}<div class="clip-meta"><div class="clip-name">${esc(c.title)}</div><div class="clip-type"><span class="dot ${dot}"></span>${sub}</div></div><button class="btn sm" onclick="practiceClip('${esc(c.id)}')">Practice</button>${rm}</div>`;}).join('');}
+function practiceClip(id){switchTab('shadow');setTimeout(()=>{const s=document.getElementById('clipSelect');s.value=id;loadClip(id);},60);}
+
+/* ================= Shadow ================= */
+async function refreshClipSelect(){const clips=await getAllClips(),sel=document.getElementById('clipSelect');
+  document.getElementById('shadowEmpty').classList.toggle('hidden',clips.length>0);document.getElementById('shadowPlayer').classList.toggle('hidden',clips.length===0);
+  if(!clips.length)return;
+  sel.innerHTML=clips.map(c=>`<option value="${esc(c.id)}">${c.kind==='yt'?'▶ ':'🎧 '}${esc(c.title)}</option>`).join('');
+  sel.onchange=()=>loadClip(sel.value);if(!activeClip)loadClip(clips[0].id);}
+async function loadClip(id){clearLoop();const clip=(await getAllClips()).find(c=>c.id===id);if(!clip)return;activeClip=clip;
+  const ytHost=document.getElementById('ytHost'),audioEl=document.getElementById('audioEl');
+  if(clip.kind==='yt'){audioEl.classList.add('hidden');audioEl.pause();ytHost.classList.remove('hidden');loadYouTube(clip.videoId);}
+  else{ytHost.classList.add('hidden');if(ytPlayer&&ytPlayer.stopVideo)ytPlayer.stopVideo();audioEl.classList.remove('hidden');
+    if(clipObjUrl){URL.revokeObjectURL(clipObjUrl);clipObjUrl=null;}
+    if(clip.kind==='preset'){audioEl.src=clip.src;}else{clipObjUrl=URL.createObjectURL(clip.blob);audioEl.src=clipObjUrl;}audioEl.playbackRate=speed;}}
+function onYouTubeIframeAPIReady(){ytReady=true;if(pendingYT){loadYouTube(pendingYT);pendingYT=null;}}
+function loadYouTube(videoId){if(!ytReady){pendingYT=videoId;return;}
+  if(ytPlayer&&ytPlayer.destroy){try{ytPlayer.destroy();}catch(e){}}ytPlayer=null;
+  document.getElementById('ytHost').innerHTML='<div id="ytFrame"></div>';
+  ytPlayer=new YT.Player('ytFrame',{videoId,host:'https://www.youtube.com',playerVars:{rel:0,modestbranding:1,playsinline:1,enablejsapi:1,origin:location.origin},events:{onReady:e=>e.target.setPlaybackRate(speed),onError:onYtError}});}
+function onYtError(e){const id=(activeClip&&activeClip.videoId)||'',url='https://www.youtube.com/watch?v='+id;
+  const msg=(e&&(e.data===101||e.data===150))?'This video can\'t be embedded by its owner.':'The video player hit a configuration error (code '+(e&&e.data)+').';
+  document.getElementById('ytHost').innerHTML=`<div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;color:var(--muted);font-size:13px;line-height:1.6"><div>⚠️ ${msg}</div><div>Use the matching <b>reference audio clip</b>, or <a href="${url}" target="_blank" rel="noopener">open it on YouTube</a>.</div></div>`;}
+function setSpeed(s){speed=s;document.querySelectorAll('#speedPills .pill').forEach(p=>p.classList.toggle('active',+p.dataset.s===s));
+  if(activeClip&&activeClip.kind==='yt'){if(ytPlayer&&ytPlayer.setPlaybackRate)ytPlayer.setPlaybackRate(s);}else{document.getElementById('audioEl').playbackRate=s;}}
+function curTime(){if(activeClip&&activeClip.kind==='yt')return ytPlayer&&ytPlayer.getCurrentTime?ytPlayer.getCurrentTime():0;return document.getElementById('audioEl').currentTime;}
+function seekTo(t){if(activeClip&&activeClip.kind==='yt'){if(ytPlayer&&ytPlayer.seekTo)ytPlayer.seekTo(t,true);}else{document.getElementById('audioEl').currentTime=t;}}
+function setLoopPoint(w){const t=curTime();if(w==='a')loopA=t;else loopB=t;if(loopA!=null&&loopB!=null&&loopA>loopB){const x=loopA;loopA=loopB;loopB=x;}updateLoopReadout();if(loopA!=null&&loopB!=null)startLoopTimer();}
+function updateLoopReadout(){const f=t=>t==null?'—':t.toFixed(1)+'s';document.getElementById('loopReadout').innerHTML=(loopA==null&&loopB==null)?'No loop set':`Loop <b>${f(loopA)}</b> → <b>${f(loopB)}</b>`;}
+function startLoopTimer(){clearInterval(loopTimer);loopTimer=setInterval(()=>{if(loopA==null||loopB==null)return;if(curTime()>=loopB)seekTo(loopA);},200);}
+function clearLoop(){loopA=loopB=null;clearInterval(loopTimer);loopTimer=null;updateLoopReadout();}
+async function toggleRecord(){if(recording){mediaRecorder.stop();return;}
+  if(!navigator.mediaDevices||!window.MediaRecorder){setRecStatus('Recording not supported here.',false);return;}
+  if(micBusy)return; micBusy=true;
+  try{const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);recChunks=[];
+    mediaRecorder.ondataavailable=e=>{if(e.data.size)recChunks.push(e.data);};
+    mediaRecorder.onstop=async()=>{recBlob=new Blob(recChunks,{type:mediaRecorder.mimeType||'audio/webm'});stream.getTracks().forEach(t=>t.stop());recording=false;
+      document.getElementById('recBtn').textContent='● Record';document.getElementById('playMineBtn').disabled=false;setRecStatus('Saved. Play it back, or compare in Analyze.',false);
+      if(activeClip)await idbPut('recordings',{clipId:activeClip.id,blob:recBlob,createdAt:Date.now()});};
+    mediaRecorder.start();recording=true;micBusy=false;document.getElementById('recBtn').textContent='■ Stop';setRecStatus('Recording… speak now.',true);
+  }catch(err){micBusy=false;setRecStatus('Microphone blocked: '+err.message,false);}}
+function setRecStatus(m,live){const el=document.getElementById('recStatus');el.textContent=m;el.classList.toggle('live',!!live);}
+function playMine(){if(!recBlob)return;if(recObjectUrl)URL.revokeObjectURL(recObjectUrl);recObjectUrl=URL.createObjectURL(recBlob);new Audio(recObjectUrl).play();}
+
+/* ================= Analyze ================= */
+const ANALYZE_SECS=20;
+async function getAudioClips(){return (await getAllClips()).filter(c=>c.kind==='preset'||c.kind==='upload');}
+async function refreshAnalyzeSelect(){const cs=await getAudioClips(),sel=document.getElementById('analyzeSelect');sel.innerHTML=cs.length?cs.map(c=>`<option value="${esc(c.id)}">${esc(c.title)}</option>`).join(''):'<option>No audio clips</option>';}
+async function clipBlob(c){if(c.kind==='upload')return c.blob;const r=await fetch(c.src);if(!r.ok)throw new Error('fetch '+r.status);return await r.blob();}
+async function decodeBlob(blob){const Ctx=window.AudioContext||window.webkitAudioContext,ctx=new Ctx();try{return await ctx.decodeAudioData(await blob.arrayBuffer());}finally{if(ctx.close)ctx.close();}}
+function capData(buf){const d=buf.getChannelData(0),n=Math.min(d.length,Math.floor(buf.sampleRate*ANALYZE_SECS));return d.subarray(0,n);}
+function drawWave(ctx,W,H,data,color){const step=Math.floor(data.length/W)||1;ctx.strokeStyle=color;ctx.lineWidth=1;ctx.beginPath();for(let x=0;x<W;x++){let mn=1,mx=-1;for(let i=0;i<step;i++){const v=data[x*step+i]||0;if(v<mn)mn=v;if(v>mx)mx=v;}ctx.moveTo(x,(1-mx)*H/2);ctx.lineTo(x,(1-mn)*H/2);}ctx.stroke();}
+function pitchTrack(data,sr){const win=1024,hop=512,out=[];for(let s=0;s+win<data.length;s+=hop)out.push(autocorr(data.subarray(s,s+win),sr));return out;}
+function autocorr(buf,sr){let rms=0;for(let i=0;i<buf.length;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/buf.length);if(rms<0.01)return 0;let best=-1,off=-1,mn=Math.floor(sr/350),mx=Math.floor(sr/70);for(let o=mn;o<=mx;o++){let c=0;for(let i=0;i<buf.length-o;i++)c+=buf[i]*buf[i+o];if(c>best){best=c;off=o;}}return off>0?sr/off:0;}
+function drawPitch(ctx,W,H,arr,color){if(!arr.length)return;const lo=70,hi=350;ctx.strokeStyle=color;ctx.lineWidth=2;ctx.beginPath();let st=false;arr.forEach((f,i)=>{const x=i/arr.length*W;if(f<=0){st=false;return;}const y=H-((f-lo)/(hi-lo))*H;if(!st){ctx.moveTo(x,y);st=true;}else ctx.lineTo(x,y);});ctx.stroke();}
+function med(a){if(!a.length)return 0;const s=[...a].sort((x,y)=>x-y);return s[Math.floor(s.length/2)];}
+async function runAnalysis(){const sel=document.getElementById('analyzeSelect'),clip=(await getAudioClips()).find(c=>c.id===sel.value);
+  if(!clip){alert('No reference audio clip selected.');return;}
+  const rec=await idbGet('recordings',clip.id);let hisBuf,youBuf;
+  try{hisBuf=await decodeBlob(await clipBlob(clip));}catch(e){alert('Could not decode that clip.');return;}
+  if(rec){try{youBuf=await decodeBlob(rec.blob);}catch(e){youBuf=null;}}
+  const hisData=capData(hisBuf),youData=youBuf?capData(youBuf):null;
+  const wc=document.getElementById('waveCanvas'),wx=wc.getContext('2d');wx.clearRect(0,0,wc.width,wc.height);
+  drawWave(wx,wc.width,wc.height,hisData,'#12d3b0');if(youData)drawWave(wx,wc.width,wc.height,youData,'rgba(139,124,255,0.7)');
+  const hisP=pitchTrack(hisData,hisBuf.sampleRate),youP=youData?pitchTrack(youData,youBuf.sampleRate):[];
+  const pc=document.getElementById('pitchCanvas'),px=pc.getContext('2d');px.clearRect(0,0,pc.width,pc.height);
+  drawPitch(px,pc.width,pc.height,hisP,'#12d3b0');if(youP.length)drawPitch(px,pc.width,pc.height,youP,'#8b7cff');
+  const hv=hisP.filter(v=>v>0),yv=youP.filter(v=>v>0),mh=med(hv),my=med(yv);
+  document.getElementById('statRefHz').textContent=mh?Math.round(mh)+' Hz':'—';
+  document.getElementById('statYouHz').textContent=my?Math.round(my)+' Hz':'—';
+  document.getElementById('statPitch').textContent=(mh&&my)?Math.max(0,Math.round((1-Math.abs(mh-my)/((mh+my)/2))*100))+'%':'—';
+  document.getElementById('statRate').textContent=(hisP.length&&youP.length)?(youP.length/hisP.length).toFixed(2)+'×':'—';
+  document.getElementById('statLen').textContent=youBuf?(youBuf.duration/hisBuf.duration).toFixed(2)+'×':'—';
+  document.getElementById('analyzeNote').innerHTML=youBuf?`Teal = reference, violet = you. Match the pitch shape and length, not the exact height. <em>(first ${ANALYZE_SECS}s analyzed)</em>`:'No recording for this clip yet. Go to <b>Shadow</b>, pick this clip, record yourself — then analyze.';}
+
+/* ================= Drills library ================= */
+const drillData=[
+  {cat:'⚖️ Legal & eDiscovery',items:[
+    {target:'privilege',ipa:'/ˈprɪv.lɪdʒ/',tip:'Stress the first syllable: PRIV-uh-lij.'},{target:'privileged',tip:'Add a soft "-jd": PRIV-uh-lijd.'},
+    {target:'attorney-client privilege',tip:'Clear R, flap T: "uh-TUR-nee".'},{target:'work product',tip:'Both R\'s sound: woRk pRoduct.'},
+    {target:'subpoena',ipa:'/səˈpiːnə/',tip:'B is silent: "suh-PEE-nuh".'},{target:'deposition',ipa:'/ˌdɛpəˈzɪʃən/',tip:'Stress 3rd syllable: dep-uh-ZISH-un.'},
+    {target:'custodian',tip:'kuh-STOH-dee-un.'},{target:'litigation hold',tip:'Flap T: "lid-uh-GAY-shun".'},{target:'redaction',tip:'ree-DAK-shun.'},
+    {target:'Bates number',tip:'Long A: "BAYTS".'},{target:'responsive',tip:'ree-SPON-siv — keep the V.'},{target:'non-responsive',tip:'Stress shifts to "non".'},
+    {target:'metadata',ipa:'/ˈmɛtəˌdætə/',tip:'Flap: "MED-uh-dad-uh".'},{target:'clawback',tip:'"klaw-bak".'},{target:'meet and confer',tip:'Clear R: "con-FUR".'},
+    {target:'protective order',tip:'Flap T + clear R.'},{target:'electronically stored information',tip:'Keep the rhythm even.'},{target:'spoliation',ipa:'/ˌspoʊliˈeɪʃən/',tip:'spoh-lee-AY-shun.'},
+    {target:'in camera review',tip:'"KAM-ruh"; clear R.'},{target:'technology-assisted review',tip:'"tek-NOL-uh-jee".'},{target:'predictive coding',tip:'pruh-DIK-tiv.'},
+    {target:'chain of custody',tip:'Flap: "KUS-tuh-dee".'},{target:'proportionality',tip:'Stress "-NAL-".'},{target:'interrogatory',tip:'in-TER-uh-guh-tor-ee.'},
+  ]},
+  {cat:'📄 Doc Review (sentences)',items:[
+    {target:'Please mark this document as privileged and add it to the privilege log.',tip:'Flap the T in "document".'},
+    {target:'The custodian\'s emails were collected under a litigation hold.',tip:'Link "under a".'},
+    {target:'We need to redact the confidential information before production.',tip:'Clear R\'s throughout.'},
+    {target:'This document is responsive but partially privileged.',tip:'TH in "this".'},
+    {target:'The metadata shows the file was modified after the preservation date.',tip:'Flap T\'s.'},
+    {target:'Let\'s run the search terms across the entire data set.',tip:'Clear R; flap "data".'},
+    {target:'I coded these documents as non-responsive during first-level review.',tip:'TH in these.'},
+    {target:'The production set includes Bates-stamped images and a load file.',tip:'Long A in Bates.'},
+    {target:'Counsel agreed to a clawback for any inadvertently produced material.',tip:'Flap T in inadvertently.'},
+    {target:'Please verify the hash values to confirm the chain of custody.',tip:'Clear R in verify/confirm.'},
+    {target:'The protective order limits who can access the confidential records.',tip:'Clear R in order/records.'},
+    {target:'Thread these emails together with their attachments.',tip:'TH four times.'},
+    {target:'Quality control flagged a few mis-coded documents.',tip:'Flap T in quality.'},
+    {target:'The reviewer tagged the email as responsive and relevant.',tip:'Clear R\'s.'},
+  ]},
+  {cat:'R · Rhoticity',items:[{target:'car',ipa:'/kɑːr/',tip:'Pronounce the R: "carr".'},{target:'hard work',tip:'Both R\'s.'},{target:'water',ipa:'/ˈwɔːtər/',tip:'Clear final R.'},{target:'four corners',tip:'Round the lips.'},{target:'farther and farther',tip:'Sustain the R.'},{target:'remember the order',tip:'Three R\'s.'},{target:'professional career',tip:'kuh-REER.'}]},
+  {cat:'TH',items:[{target:'think',ipa:'/θɪŋk/',tip:'Voiceless TH.'},{target:'this and that',ipa:'/ðɪs/',tip:'Voiced TH.'},{target:'three thousand',tip:'Not "tree tousand".'},{target:'the other brother',tip:'Tongue forward.'},{target:'birthday',ipa:'/ˈbɜːrθdeɪ/',tip:'"birth-day".'},{target:'they thought through this',tip:'Mix voiced+voiceless.'}]},
+  {cat:'Flap T',items:[{target:'water',ipa:'/ˈwɑːɾər/',tip:'"wah-der".'},{target:'better',tip:'"bedder".'},{target:'city',tip:'"siddy".'},{target:'little bit of butter',tip:'"liddle bid of budder".'},{target:'get it later',tip:'"ged id lader".'},{target:'matter of fact',tip:'"madder of fact".'}]},
+  {cat:'Vowels',items:[{target:'cat / trap',ipa:'/æ/',tip:'Bright front vowel.'},{target:'hot / lot',ipa:'/ɑ/',tip:'"haht".'},{target:'thought / law',ipa:'/ɔ/',tip:'Rounded.'},{target:'bird / word',ipa:'/ɝ/',tip:'R-colored vowel.'},{target:"can't",ipa:'/kænt/',tip:'"cant", not "cahnt".'},{target:'coffee or water',tip:'"aw" + flap T.'}]},
+  {cat:'Stress & Melody',items:[{target:"I didn't say SHE took it",tip:'Stress shifts meaning.'},{target:"That's a great IDEA",tip:'Stress content words.'},{target:'Are you KIDDING me?',tip:'Rise then fall.'},{target:'photograph, photography, photographic',tip:'Watch the stress shift.'},{target:'Let me think about it',tip:'Smooth and connected.'},{target:'REcord vs reCORD',tip:'Stress changes word class.'}]},
+  {cat:'Reductions & Linking',items:[{target:'gonna',tip:'"going to".'},{target:'wanna',tip:'"want to".'},{target:'whaddya',tip:'"what do you".'},{target:'lemme',tip:'"let me".'},{target:'kinda',tip:'"kind of".'},{target:'I gotta go right now',tip:'"gotta" + clear R.'}]},
+  {cat:'Everyday Words',items:[{target:'schedule',tip:'"SKED-jool".'},{target:'probably',tip:'"PROB-lee".'},{target:'comfortable',tip:'"KUMF-ter-bul".'},{target:'particular',tip:'clear R\'s.'},{target:'opportunity',tip:'flap final T.'},{target:'available',tip:'uh-VAY-luh-bul.'},{target:'definitely',tip:'DEF-uh-nit-lee.'},{target:'February',tip:'"FEB-yoo-air-ee".'}]},
+  {cat:'Everyday Sentences',items:[{target:'What time is the meeting tomorrow?',tip:'Flap "what time".'},{target:'Can you send me the report by Friday?',tip:'Clear R in report.'},{target:'I really appreciate your help with this.',tip:'Clear R\'s; TH.'},{target:'Let me get back to you on that.',tip:'Reduce "to you".'},{target:'No worries, take your time.',tip:'Link "take your".'},{target:'Sounds good, talk to you later.',tip:'"lader".'}]},
+  {cat:'Tongue Twisters',items:[{target:'red leather yellow leather',tip:'Alternate R and L.'},{target:'the thirty-three thieves thought',tip:'TH overload.'},{target:'better butter makes a batter better',tip:'Flap T marathon.'},{target:'rural juror',tip:'Notorious R\'s.'},{target:'which witch is which',tip:'W and TH/CH.'}]},
+  {cat:'🎓 Advanced & Academic Words',items:[
+    {target:"adjudication",ipa:"/\u0259\u02ccd\u0292u\u02d0d\u026a\u02c8ke\u026a\u0283\u0259n/",tip:"Stress KAY: uh-joo-dih-KAY-shun. Open with a light schwa, not 'ad'. End '-tion' as 'shun' with a schwa."},
+    {target:"interlocutory",ipa:"/\u02cc\u026ant\u0259r\u02c8l\u0251kj\u0259\u02cct\u0254ri/",tip:"Stress LOCK with open /\u0251/: in-ner-LOCK-yuh-tor-ee. Flap the T in 'inter'; hard rhotic R in the '-tory' tail."},
+    {target:"exculpatory",ipa:"/\u026ak\u02c8sk\u028clp\u0259\u02cct\u0254ri/",tip:"Stress SKULL with /\u028c/: ik-SKULL-puh-tor-ee. Reduce 'puh' to schwa; strong rhotic R in '-tory'."},
+    {target:"fiduciary",ipa:"/f\u026a\u02c8du\u0283i\u02cc\u025bri/",tip:"Stress DOO: fih-DOO-shee-air-ee. Not 'fye'. Keep 'shee' light and land a clear American R in 'air-ee'."},
+    {target:"evidentiary",ipa:"/\u02cc\u025bv\u0259\u02c8d\u025bn\u0283\u0259ri/",tip:"Stress DEN: eh-vuh-DEN-shuh-ree. Schwa in 'vuh' and 'shuh'; finish with a firm rhotic R."},
+    {target:"preponderance",ipa:"/pr\u026a\u02c8p\u0251nd\u0259r\u0259ns/",tip:"Stress PON with open /\u0251/: prih-PON-der-ence. Rhotic R in 'der'; both outer syllables reduce to schwa."},
+    {target:"spoliation",ipa:"/\u02ccspo\u028ali\u02c8e\u026a\u0283\u0259n/",tip:"Stress AY: spo-lee-AY-shun. Say 'spo', never 'spoil'. Link 'lee' into 'AY' smoothly; schwa on '-tion'."},
+    {target:"interrogatories",ipa:"/\u02cc\u026ant\u0259\u02c8r\u0251\u0261\u0259\u02cct\u0254riz/",tip:"Stress ROG with /\u0251/: in-ter-ROG-uh-tor-eez. Flap the T in 'inter'; schwa on 'uh'; rhotic R in 'tor'."},
+    {target:"hypothesis",ipa:"/ha\u026a\u02c8p\u0251\u03b8\u0259s\u026as/",tip:"Stress POTH with open /\u0251/: hy-POTH-uh-sis. Tongue between teeth for TH; reduce 'uh' to schwa."},
+    {target:"theoretical",ipa:"/\u02cc\u03b8i\u0259\u02c8r\u025bt\u026ak\u0259l/",tip:"Stress RET and flap the T: thee-uh-REH-dih-kul. Start with TH, tongue between teeth; end on a schwa plus L."},
+    {target:"empirical",ipa:"/\u026am\u02c8p\u026ar\u026ak\u0259l/",tip:"Stress PEER: em-PEER-ih-kul. Curl the tongue for a strong mid-word rhotic R; final syllable is a schwa."},
+    {target:"paradigmatic",ipa:"/\u02ccp\u00e6r\u0259d\u026a\u0261\u02c8m\u00e6t\u026ak/",tip:"Stress MAT with wide /\u00e6/: pair-uh-dig-MAT-ik. Flap the T so '-matic' sounds like 'MAD-ik'."},
+    {target:"epistemology",ipa:"/\u026a\u02ccp\u026ast\u0259\u02c8m\u0251l\u0259d\u0292i/",tip:"Stress MOL with open /\u0251/: ih-pis-tuh-MOL-uh-jee. Both 'uh' syllables reduce to schwa; keep the rhythm even."},
+    {target:"dissertation",ipa:"/\u02ccd\u026as\u0259r\u02c8te\u026a\u0283\u0259n/",tip:"Stress TAY: dis-er-TAY-shun. Rhotic R in 'er'; first and last vowels reduce toward schwa."},
+    {target:"pedagogical",ipa:"/\u02ccp\u025bd\u0259\u02c8\u0261\u0251d\u0292\u026ak\u0259l/",tip:"Stress GOJ with open /\u0251/: ped-uh-GOJ-ih-kul. Schwa on 'uh'; end in a soft schwa-plus-L syllable."},
+    {target:"methodological",ipa:"/\u02ccm\u025b\u03b8\u0259d\u0259\u02c8l\u0251d\u0292\u026ak\u0259l/",tip:"Stress LOJ with /\u0251/: meth-uh-duh-LOJ-ih-kul. TH tongue between teeth; two schwas before the stress."},
+    {target:"authoritative",ipa:"/\u0259\u02c8\u03b8\u0254r\u0259\u02ccte\u026at\u026av/",tip:"Stress THOR: uh-THOR-uh-tay-div. TH between teeth, hard rhotic R, and flap the last T: 'tay-div'."},
+    {target:"accountability",ipa:"/\u0259\u02ccka\u028ant\u0259\u02c8b\u026al\u0259ti/",tip:"Stress BIL: uh-count-uh-BIL-uh-dee. Flap both Ts ('coun-duh', 'uh-dee'); open with a light schwa."},
+    {target:"deliverable",ipa:"/d\u026a\u02c8l\u026av\u0259r\u0259b\u0259l/",tip:"Stress LIV: duh-LIV-er-uh-bul. Strong rhotic R in 'er', then three light schwas; never stress the tail."},
+    {target:"entrepreneurial",ipa:"/\u02cc\u0251ntr\u0259pr\u0259\u02c8n\u028ari\u0259l/",tip:"Stress NUR with a hard rhotic R: on-truh-pruh-NUR-ee-ul. Open /\u0251/ in 'on'; both middle vowels are schwas."},
+    {target:"remuneration",ipa:"/r\u026a\u02ccmjun\u0259\u02c8re\u026a\u0283\u0259n/",tip:"Stress RAY: rih-myoo-nuh-RAY-shun. Keep 'myoo' before 'nuh' - not 'renumeration'. Rhotic R opens the word."},
+    {target:"prioritize",ipa:"/pra\u026a\u02c8\u0254r\u0259\u02ccta\u026az/",tip:"Stress OR: pry-OR-ih-tize. Two strong American Rs; glide 'pry' into 'OR' with no break, schwa on 'ih'."},
+  ]},
+  {cat:'💼 Professional Sentences',items:[
+    {target:"Before we move forward, I want to flag a risk that surfaced during yesterday's data review.",ipa:"data /\u02c8de\u026a.\u027e\u0259/",tip:"Punch FLAG, RISK, DATA; fall at the end. Flap T in 'data' (day-da); reduce 'to' and 'a' to schwa."},
+    {target:"The numbers look better than we expected, but I would rather wait until the audit team signs off.",ipa:"better /\u02c8b\u025b.\u027e\u025a/",tip:"Rise on 'expected,' fall on SIGNS OFF. Flap T in 'better' (bedder); punch BETTER, WAIT, SIGNS OFF."},
+    {target:"I hear your concern, but the current timeline leaves no room for another round of vendor review.",ipa:"concern /k\u0259n\u02c8s\u025dn/",tip:"Curl every R: heaR, conceRn, cuRRent, vendoR. Punch CONCERN, NO ROOM, VENDOR REVIEW; fall at the end."},
+    {target:"Let me walk you through the workflow first, and then we can talk about the budget together.",ipa:"through /\u03b8\u0279u/",tip:"Tongue between teeth: THROUGH, THEN, togeTHer. Punch WALK, WORKFLOW, BUDGET; reduce 'can' to /k\u0259n/."},
+    {target:"If we push the deadline a little, the quality of the deliverable improves, and the client stays happy.",ipa:"little /\u02c8l\u026a.\u027e\u0259l/",tip:"Flap T in 'little' and 'quality' (liddle, kwah-liddy). Small rise after 'little,' fall on HAPPY. Punch DEADLINE, QUALITY."},
+    {target:"That is a fair point, though I would frame the tradeoff differently when we present it to leadership.",ipa:"present (verb) /p\u0279\u026a\u02c8z\u025bnt/",tip:"Punch FAIR POINT, DIFFERENTLY, LEADERSHIP; verb stress preSENT. Link 'present it to' smoothly with one flapped T."},
+    {target:"Our team hit every milestone this quarter, so I am asking for two more editors on the project.",ipa:"asking /\u02c8\u00e6s.k\u026a\u014b/",tip:"Punch EVERY MILESTONE, TWO MORE EDITORS. Hard R in 'quarter,' 'more,' 'editors'; open /\u00e6/ in 'asking.'"},
+    {target:"Before we commit to that number, let us confirm what the licensing actually covers under the current contract.",ipa:"contract (noun) /\u02c8k\u0251n.t\u0279\u00e6kt/",tip:"Stress comMIT, conFIRM; noun stress CONtract. Reduce 'to,' 'us,' 'the' to schwa; steady fall on 'contract.'"},
+    {target:"Although the witness remembered the meeting clearly, her account conflicts with the written record in three important ways.",ipa:"although /\u0254l\u02c8\u00f0o\u028a/",tip:"Rise gently after 'clearly,' fall on WAYS. Tongue between teeth: alTHough, THree, wiTH. Punch CONFLICTS, RECORD."},
+    {target:"If the data were collected after the deadline, then the entire argument for admissibility begins to fall apart.",ipa:"admissibility /\u00e6d\u02ccm\u026as.\u0259\u02c8b\u026al.\u0259.\u027ei/",tip:"Flap T in 'data' and 'admissibility' (bili-dee). Rise after 'deadline,' fall on APART. Punch DATA, DEADLINE, FALL APART."},
+    {target:"What matters here is not what the parties intended, but what a reasonable reader would understand the clause to mean.",ipa:"matters /\u02c8m\u00e6.\u027e\u025az/",tip:"Contrastive stress: NOT and INTENDED versus READER and MEAN. Flap T in 'matters' (madders); reduce 'to' to /t\u0259/; fall on MEAN."},
+    {target:"Because the precedent rests on narrow facts, we should hesitate before applying it to a broader class of disputes.",ipa:"facts /f\u00e6kts/",tip:"Open /\u00e6/ in FACTS and CLASS. Punch NARROW FACTS, HESITATE, BROADER. Link 'applying it to' with one flapped T."},
+    {target:"The theory sounds elegant until you notice that it cannot explain why the earlier rulings went the other way.",ipa:"theory /\u02c8\u03b8\u026a\u0279.i/, other /\u02c8\u028c.\u00f0\u025a/",tip:"Voiceless TH in 'theory,' voiced TH in 'other.' Punch ELEGANT, CANNOT EXPLAIN, OTHER WAY; drop pitch firmly on WAY."},
+    {target:"When the evidence is thin, careful attorneys build their argument on procedure rather than on the merits alone.",ipa:"thin /\u03b8\u026an/, rather /\u02c8\u0279\u00e6.\u00f0\u025a/",tip:"Tongue between teeth: THin, THeir, raTHer THan. Rise slightly after 'thin,' fall on ALONE. Punch THIN, PROCEDURE, MERITS."},
+    {target:"Whatever the committee decides, the burden remains on the party that wants to withhold the documents from review.",ipa:"whatever /w\u028c\u02c8\u027e\u025b.v\u025a/, party /\u02c8p\u0251\u0279.\u027ei/",tip:"Flap T: whaDever, commiDDee, parDy. Punch BURDEN, PARTY, WITHHOLD; reduce 'to' and 'from' to schwa; fall on REVIEW."},
+    {target:"Even if we grant that assumption, the conclusion does not follow, because the sample excludes the very cases that matter.",ipa:"grant /\u0261\u0279\u00e6nt/, matter /\u02c8m\u00e6.\u027e\u025a/",tip:"Punch GRANT, NOT FOLLOW, VERY CASES. Open /\u00e6/ in 'grant' and 'sample'; flap 'matter' (madder); hard fall at the end."},
+  ]},
+];
+let activeDrillCat=0;
+function drillId(c,i){return 'd_'+c+'_'+i;}
+function renderDrillTabs(){document.getElementById('drillTabs').innerHTML=drillData.map((d,i)=>`<button class="drill-tab ${i===activeDrillCat?'active':''}" onclick="selectDrillCat(${i})">${d.cat} <span class="ct">${d.items.length}</span></button>`).join('');}
+function selectDrillCat(i){activeDrillCat=i;renderDrillTabs();renderDrillList();}
+function hearDrill(c,i){const it=drillData[c]&&drillData[c].items[i];if(it)hearText(it.target);}
+function renderDrillList(){const prog=LS.progress(),cat=drillData[activeDrillCat];
+  document.getElementById('drillList').innerHTML=cat.items.map((it,i)=>{const id=drillId(activeDrillCat,i),done=!!prog[id];
+    return `<div class="drill-item ${done?'done':''}" id="di_${id}"><div class="drill-target">${esc(it.target)}</div>${it.ipa?`<div class="drill-ipa">${esc(it.ipa)}</div>`:''}${it.tip?`<div class="drill-tip">${esc(it.tip)}</div>`:''}
+      <div class="drill-actions"><button class="btn sm teal" onclick="hearDrill(${activeDrillCat},${i})">🔊 Hear it</button><button class="btn sm" onclick="drillSay('${id}')">🎤 Say &amp; score</button><button class="check ${done?'on':''}" onclick="toggleDrill('${id}')" title="Mark complete">✓</button></div>
+      <div class="drill-feedback" id="fb_${id}"></div></div>`;}).join('');}
+function drillSay(id){const it=drillData[activeDrillCat].items[+id.split('_')[2]],fb=document.getElementById('fb_'+id);
+  if(!SR){fb.className='drill-feedback bad';fb.textContent='Auto-scoring needs Chrome/Edge + internet. Press "Hear it" and say it aloud.';return;}
+  fb.className='drill-feedback';fb.textContent='Listening… say it now.';
+  recognizeOnce(t=>{const mark=lcsMark(norm(it.target),norm(t)),pct=Math.round(mark.acc*100);
+    logScore(drillData[activeDrillCat].cat,pct);
+    if(pct>=80){fb.className='drill-feedback ok';fb.innerHTML=`✓ ${pct}% — "${esc(t)}". Nice.`;if(pct>=90){const p=LS.progress();p[id]=true;LS.setProgress(p);renderDrillList();updateProgress();}}
+    else{fb.className='drill-feedback bad';const miss=mark.T.filter((w,k)=>!mark.tOk[k]).slice(0,3).join(', ');fb.innerHTML=`${pct}% — heard "${esc(t)}". Focus on: <b>${esc(miss)||'over-articulate'}</b>.`;}},
+    err=>{fb.className='drill-feedback bad';fb.textContent='Recognition: '+err;});}
+function toggleDrill(id){const p=LS.progress();p[id]=!p[id];if(!p[id])delete p[id];LS.setProgress(p);renderDrillList();updateProgress();}
+function updateProgress(){const total=drillData.reduce((s,d)=>s+d.items.length,0),done=Object.keys(LS.progress()).length;document.getElementById('progFill').style.width=(total?done/total*100:0)+'%';document.getElementById('progTxt').textContent=`${done} / ${total} drills complete`;}
+function allSentences(){return drillData.filter(d=>/sentence|Melody|Twister/i.test(d.cat)||d.cat.includes('Doc')).flatMap(d=>d.items.map(i=>i.target));}
+function allWords(){return drillData.filter(d=>/Word|Legal|Flap|TH|Vowel|Rhotic|Reduction/i.test(d.cat)).flatMap(d=>d.items.map(i=>i.target));}
+function randomLine(kind){let pool=kind==='sentence'?allSentences():kind==='legal'?drillData[0].items.map(i=>i.target):allWords();document.getElementById('customText').value=pool[Math.floor(rnd()*pool.length)];}
+let _seed=2463534242;function rnd(){_seed^=_seed<<13;_seed^=_seed>>>17;_seed^=_seed<<5;return((_seed>>>0)/4294967296);}
+
+/* ================= Init ================= */
+document.getElementById('audioFile').addEventListener('change',e=>uploadAudio(e.target.files[0]));
+(async()=>{
+  if(!window.isSecureContext)document.getElementById('insecureBanner').classList.remove('hidden');
+  if(!SR)document.getElementById('srBanner').classList.remove('hidden');
+  try{db=await openDB();}catch(e){console.warn('IndexedDB unavailable',e);}
+  // Reference MP3s are kept local-only (never deployed). Hide the preset audio entries when absent.
+  try{const h=await fetch(PRESET_AUDIO[0].src,{method:'HEAD'});presetAudioOK=h.ok;}catch(e){presetAudioOK=false;}
+  renderDrillTabs();renderDrillList();updateProgress();renderHome();
+  if(window.speechSynthesis){speechSynthesis.onvoiceschanged=()=>{if(currentTab==='voice')populateVoices();};}
+})();
+</script>
+</body>
+</html>

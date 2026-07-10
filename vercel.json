@@ -1,7 +1,9 @@
 {
   "rewrites": [
+    { "source": "/accent-trainer", "destination": "/accent-trainer/index.html" },
+    { "source": "/accent-trainer/", "destination": "/accent-trainer/index.html" },
     {
-      "source": "/((?!og-image\\.png$).*)",
+      "source": "/((?!og-image\\.png$|accent-trainer(/.*)?$).*)",
       "destination": "/index.html"
     }
   ]
