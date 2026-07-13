@@ -5720,6 +5720,119 @@ CP_CASES.breach = {
   }
 };
 
+// ══════════════════════════════════════════════════════════════════
+// CASEPOINT — TRANSRIDGE PIPELINE v. CASCADE HEADWATERS ALLIANCE
+// First Amendment privilege · membership / donor / strategy discovery
+// FA-DATA-START
+// ══════════════════════════════════════════════════════════════════
+var FA_DOCS = [
+  { id:"FA-0001", type:"memo", custodian:"cust-ed", tags:[],
+    from:"Elena Vasquez <e.vasquez@riverastone.com>", to:"Maya Reyes (Exec. Dir.) <m.reyes@cascadehw.org>", cc:"",
+    date:"April 7, 2025 · 9:15 AM", subject:"PRIVILEGED & CONFIDENTIAL — Review protocol: First Amendment privilege",
+    body:"Maya,\n\nThis memo sets out the review protocol for TransRidge's document requests.\n\n1. The First Amendment privilege is QUALIFIED, not absolute. Do not assume a document is protected merely because it involves politics or advocacy. The court will balance TransRidge's need for the information, its relevance, the availability of other sources, and the chilling effect of disclosure on our members' associational rights.\n\n2. Documents revealing member identities, donor identities, or internal advocacy strategy should be coded 'First Amendment — Flag & Escalate' and withheld pending our motion for a protective order.\n\n3. Material the Alliance itself made public (flyers, published op-eds, press releases) is NOT protected — there is no chilling effect in producing what is already public.\n\n4. The privilege does not shield evidence of unlawful conduct. Documents concerning the alleged trespass incidents must be produced regardless of their political context.\n\nThis memo is attorney-client privileged.\n\nElena Vasquez\nRivera & Stone LLP",
+    answer:{ responsive:"non-responsive", privilege:"privileged", action:"withhold", conf:"hc-aeo", issues:[] },
+    explanation:"Outside counsel's advice to the client about how to conduct this review is attorney-client privileged and is not itself responsive to TransRidge's requests. Withhold. Note the protocol it teaches: the First Amendment privilege is qualified — flag and escalate, never assume it applies." },
+
+  { id:"FA-0002", type:"file", custodian:"cust-vol", tags:["issue1"],
+    from:"", to:"", cc:"",
+    date:"March 3, 2025", subject:"CHA_member_roster_FY2025.xlsx (exported text)",
+    body:"Cascade Headwaters Alliance — Member Roster (INTERNAL — DO NOT DISTRIBUTE)\n\nTotal active members: 4,812\n\nExtract (rows 1–8 of 4,812):\n1. Alan Pruitt — Bend, OR — member since 2019 — alan.pruitt@personalmail.com\n2. Dorothy Kim — Sisters, OR — member since 2021 — dkim88@personalmail.com\n3. Marcus Delgado — Redmond, OR — member since 2020 — mdelgado@personalmail.com\n4. Ruth Ann Foley — Prineville, OR — member since 2022 — rafoley@personalmail.com\n5. Gene Whitaker — Madras, OR — member since 2018 — gwhitaker@personalmail.com\n6. Tessa Nguyen — Bend, OR — member since 2023 — tnguyen@personalmail.com\n7. Carl Osborne — La Pine, OR — member since 2019 — cosborne@personalmail.com\n8. Ida Marsh — Bend, OR — member since 2024 — imarsh@personalmail.com\n\n[4,804 additional rows omitted from extract]",
+    answer:{ responsive:"responsive", privilege:"fa-flag", action:"withhold", conf:"hc-aeo", issues:["issue1"] },
+    explanation:"The complete membership roster is the classic associational-privilege document (the NAACP v. Alabama scenario): compelled disclosure of rank-and-file member identities chills freedom of association. Responsive to TransRidge's Request No. 1, but the privilege is qualified — code First Amendment — Flag & Escalate and withhold pending the court's balancing ruling. Do not assume the court will ultimately protect it." },
+
+  { id:"FA-0003", type:"file", custodian:"cust-dev", tags:["issue1"],
+    from:"", to:"", cc:"",
+    date:"April 21, 2025", subject:"major_donor_pledges_FY2025.xlsx (exported text)",
+    body:"Major Donor Pledges — FY2025 (DEVELOPMENT CONFIDENTIAL)\n\n1. Eleanor Voss — $50,000 — pledged, anonymity requested\n2. The Tamarack Family Trust — $35,000 — paid\n3. R. and P. Okafor — $20,000 — paid, anonymity requested\n4. Gene Whitaker — $10,000 — pledged\n5. Anonymous (wire ref 4471) — $25,000 — paid\n\nNote from P. Nair: several of these donors gave specifically on assurance their support would remain confidential given local tensions over the pipeline.",
+    answer:{ responsive:"responsive", privilege:"fa-flag", action:"withhold", conf:"hc-aeo", issues:["issue1"] },
+    explanation:"Donor identities — several with explicit anonymity requests tied to fear of local backlash — sit at the core of the qualified First Amendment privilege: disclosure would chill financial support for advocacy. Flag & Escalate, withhold pending the protective-order motion. The chilling-effect showing here is strong, but the balancing decision belongs to the court, not the reviewer." },
+
+  { id:"FA-0004", type:"email", custodian:"cust-org", tags:["issue2"],
+    from:"Ben Calloway (Organizing Dir.) <b.calloway@cascadehw.org>", to:"Organizing Team <organizing@cascadehw.org>", cc:"",
+    date:"May 8, 2025 · 7:42 PM", subject:"Riverbend rally — plan and messaging",
+    body:"Team,\n\nPlan for the May 17 rally:\n\n- Staging in the permitted area at Riverbend Park pavilion. Marshals in yellow vests; Sam has the sign-in table.\n- Message discipline: this is about the aquifer and eminent domain. Do not engage counter-protesters.\n- Sign-making party Thursday at the office. Chant sheet attached.\n- Carpools leave Bend Library at 10 AM.\n\nKeep this plan internal until the event — we do not want TransRidge's PR firm getting ahead of our framing.\n\nBen",
+    answer:{ responsive:"responsive", privilege:"fa-flag", action:"withhold", conf:"hc-aeo", issues:["issue2"] },
+    explanation:"Internal planning of a lawful, permitted protest is core protected expression and association. Responsive to the strategy request, but compelled disclosure of internal organizing plans to a litigation adversary would chill advocacy — Flag & Escalate and withhold pending the court's ruling." },
+
+  { id:"FA-0005", type:"file", custodian:"cust-org", tags:["issue2"],
+    from:"", to:"", cc:"",
+    date:"May 9, 2025", subject:"riverbend_rally_flyer_FINAL.pdf (exported text)",
+    body:"RALLY FOR THE RIVER!\n\nSaturday, May 17 · 11 AM · Riverbend Park Pavilion\n\nJoin your neighbors to say NO to the Cascade Ridge Pipeline.\n\nSpeakers · Live music · Family friendly\n\nBring a sign! Carpools leave Bend Library at 10 AM.\n\nPaid for by Cascade Headwaters Alliance — cascadehw.org\n\n[Distribution: posted publicly around Bend, Redmond, and Sisters; shared on public social media]",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue2"] },
+    explanation:"Distractor. The flyer is advocacy material, but the Alliance published it — posted around town and on public social media. There is no chilling effect in producing what is already public, so no First Amendment privilege claim. Flagging it would be over-coding. Produce as Confidential." },
+
+  { id:"FA-0006", type:"file", custodian:"cust-ed", tags:["issue2"],
+    from:"", to:"", cc:"",
+    date:"April 12, 2025", subject:"gazette_oped_reyes_published_0412.pdf (exported text)",
+    body:"[As published in the Deschutes Gazette, April 12, 2025 — Opinion]\n\nTHE PIPELINE OUR VALLEY CANNOT AFFORD\nBy Maya Reyes, Executive Director, Cascade Headwaters Alliance\n\nTransRidge tells us the Cascade Ridge Pipeline is inevitable. It is not. Our members — ranchers, teachers, retirees, small-business owners — have packed every county hearing because they understand what is at stake: the aquifer that supplies drinking water to forty thousand people.\n\nWe will keep showing up, keep speaking, and keep petitioning our government. That is not obstruction. That is citizenship.\n\n[End of published text]",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue2"] },
+    explanation:"A published op-ed is public expression — no confidentiality, no chilling effect, no privilege. Produce. The First Amendment protects the right to speak; it does not make the published speech itself immune from discovery." },
+
+  { id:"FA-0007", type:"memo", custodian:"cust-ed", tags:["issue3"],
+    from:"Elena Vasquez <e.vasquez@riverastone.com>", to:"Maya Reyes (Exec. Dir.) <m.reyes@cascadehw.org>", cc:"",
+    date:"June 2, 2025 · 4:30 PM", subject:"PRIVILEGED & CONFIDENTIAL — Assessment of TransRidge's trespass and interference claims",
+    body:"Maya,\n\nYou asked for our assessment of the claims. In brief:\n\n1. The tortious-interference count is weak — TransRidge must show improper means, and lawful protest and petitioning are protected activity.\n\n2. The trespass count is the real exposure. If TransRidge ties the May 17 gate incident to anyone acting on the Alliance's behalf, damages and an injunction against site access are realistic. Our advice is set out in section 3.\n\n3. Recommended posture: [detailed legal strategy follows].\n\nThis memo contains legal advice and is protected by the attorney-client privilege and work product doctrine.\n\nElena Vasquez\nRivera & Stone LLP",
+    answer:{ responsive:"responsive", privilege:"privileged", action:"withhold", conf:"hc-aeo", issues:["issue3"] },
+    explanation:"Legal advice from outside counsel to the client — attorney-client privileged, which (unlike the First Amendment privilege) is absolute when its elements are met, not subject to a balancing test. Code Privileged (Attorney-Client), not Flag & Escalate. Responsive to the trespass issue but withheld and logged." },
+
+  { id:"FA-0008", type:"email", custodian:"cust-ops", tags:["issue2"],
+    from:"Dana Whitfield (Operations Mgr.) <d.whitfield@cascadehw.org>", to:"High Desert Charters <bookings@highdesertcharters.com>", cc:"Elena Vasquez <e.vasquez@riverastone.com>",
+    date:"May 12, 2025 · 10:05 AM", subject:"Bus rental — May 17 event",
+    body:"Hi,\n\nConfirming two 44-passenger coaches for Saturday May 17: pickup 10 AM at Bend Library, drop at Riverbend Park, return 3 PM. Please send the certificate of insurance and invoice to accounts@cascadehw.org.\n\nI have cc'd our attorney so she stays in the loop on event logistics.\n\nThanks,\nDana",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue2"] },
+    explanation:"Two lessons in one document. Cc'ing a lawyer 'to stay in the loop' does not create attorney-client privilege — no legal advice is sought or given. And a routine commercial booking sent to an outside vendor is not confidential associational material, so there is no First Amendment claim either. Produce as Confidential." },
+
+  { id:"FA-0009", type:"email", custodian:"cust-org", tags:["issue3","issue4"],
+    from:"R. Teller <rteller.field@personalmail.com>", to:"Ben Calloway (Organizing Dir.) <b.calloway@cascadehw.org>", cc:"",
+    date:"May 18, 2025 · 8:12 AM", subject:"last night at the compressor site",
+    body:"Ben — heads up. After the rally a few of us went back out to the TransRidge staging yard. Someone in the group cut the chain on the equipment gate and pulled up about thirty survey stakes along the ridge line. I did not touch anything but I was there. People are going to ask questions.\n\n---\nReply from B. Calloway, May 18, 9:03 AM: Do NOT put any of this in writing again. Call me.",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue3","issue4"] },
+    explanation:"Hot document at the heart of TransRidge's trespass claim: a firsthand account of the gate-cutting and stake-pulling, plus an organizer's 'do not put this in writing' reply. The First Amendment does not shield evidence of unlawful conduct, even inside an advocacy organization. No lawyer involved, no privilege of any kind. Produce, and escalate per the hot-doc protocol." },
+
+  { id:"FA-0010", type:"file", custodian:"cust-vol", tags:["issue1"],
+    from:"", to:"", cc:"",
+    date:"May 17, 2025", subject:"riverbend_signin_sheet.csv (exported text)",
+    body:"Riverbend rally — volunteer sign-in (May 17)\n\n1. Tessa Nguyen — ⟦PII|541-555-0182⟧ — ⟦PII|2210 Juniper Ct, Bend OR⟧ — ⟦DECOY|shirt size M⟧\n2. Carl Osborne — ⟦PII|541-555-0147⟧ — ⟦PII|88 Obsidian Way, La Pine OR⟧ — marshal shift 11–1\n3. Ida Marsh — ⟦PII|541-555-0119⟧ — ⟦PII|415 Larkspur St, Bend OR⟧ — sign-in table\n\n[62 additional rows omitted from extract]",
+    answer:{ responsive:"responsive", privilege:"fa-flag", action:"redact", conf:"hc-aeo", issues:["issue1"] },
+    explanation:"Volunteer identities implicate the associational privilege — Flag & Escalate. This one also trains redaction: if the court orders production after balancing, the phone numbers and home addresses are PII to redact; shift assignments and shirt sizes are not protected, and redacting them would be over-redaction." },
+
+  { id:"FA-0011", type:"email", custodian:"cust-ed", tags:["issue2"],
+    from:"Maya Reyes (Exec. Dir.) <m.reyes@cascadehw.org>", to:"J. Whitehorse (Willamette Riverkeepers) <j.whitehorse@wriverkeepers.org>; T. Brandt (High Desert Land Trust) <t.brandt@hdlandtrust.org>", cc:"",
+    date:"April 29, 2025 · 6:55 PM", subject:"Coalition strategy — phase 2 pressure campaign",
+    body:"Friends,\n\nPhase 2 plan for coalition sign-off:\n\n1. Coordinated comment letters to the county commission ahead of the June land-use vote.\n2. Meetings with the two banks in TransRidge's project financing — quiet outreach first, public campaign only if they stonewall.\n3. Joint town hall in Redmond, late June.\n\nPlease keep your organizations' participation confidential until we launch — two of your boards have asked not to be named while their own funding conversations are pending.\n\nMaya",
+    answer:{ responsive:"responsive", privilege:"fa-flag", action:"withhold", conf:"hc-aeo", issues:["issue2"] },
+    explanation:"Confidential strategy shared among coalition partners — associational privilege covers collective advocacy planning, and the email itself records why disclosure chills association: partner boards asked not to be named. Flag & Escalate, withhold pending the court's balancing ruling." },
+
+  { id:"FA-0012", type:"file", custodian:"cust-dev", tags:["issue1"],
+    from:"", to:"", cc:"",
+    date:"March 20, 2025", subject:"Meridian_Foundation_grant_application_FY25.pdf (exported text)",
+    body:"GRANT APPLICATION — Meridian Foundation\n\nApplicant: Cascade Headwaters Alliance (EIN on file)\nRequest: $75,000 — Deschutes basin water-quality monitoring program\n\nProgram description: volunteer-led quarterly sampling at 22 river sites, lab analysis, and a public data dashboard.\n\nBudget summary: staff $41,000; lab fees $19,500; equipment $9,000; outreach $5,500.\n\nNote: per Meridian Foundation policy, all awarded grants are published in the Foundation's annual report.",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue1"] },
+    explanation:"Distractor on the donor issue. An institutional foundation grant is publicly reported — by the foundation itself and in the organization's Form 990 — so there is no anonymity interest and no chilling effect. Produce. The associational-privilege claim centers on individual members and donors who fear reprisal, not on public institutional funding." },
+
+  { id:"FA-0013", type:"email", custodian:"cust-ed", tags:[],
+    from:"Maya Reyes (Exec. Dir.) <m.reyes@cascadehw.org>", to:"Carmen Reyes <carmen.r@personalmail.com>", cc:"",
+    date:"May 4, 2025 · 8:20 PM", subject:"Mom's birthday",
+    body:"Car — I can do dinner Saturday but not before 7. Did you order the cake or am I doing it? Let's split whatever it costs. Also bring the photo albums, she asked about them again.\n\nM",
+    answer:{ responsive:"non-responsive", privilege:"not-privileged", action:"withhold", conf:"confidential", issues:[] },
+    explanation:"Purely personal family logistics with no connection to the pipeline, the campaign, or any discovery request. Not responsive; withhold. Sent from a work account, but content controls responsiveness — not the mailbox it came from." },
+
+  { id:"FA-0014", type:"file", custodian:"cust-ops", tags:[],
+    from:"", to:"", cc:"",
+    date:"May 20, 2025", subject:"field_photos_2025_archive.zip (no text extracted)",
+    body:"[This file could not be rendered for review. The archive failed text extraction and appears corrupted. Flag to the technical/processing team for re-collection.]",
+    answer:{ responsive:"technical", privilege:"not-privileged", action:"withhold", conf:"confidential", issues:[] },
+    explanation:"The file failed processing and cannot be reviewed. Code Responsiveness as Technical Issue and route for re-collection — never guess substantive coding for an unreadable file. Withhold pending a readable version." },
+
+  { id:"FA-0015", type:"email", custodian:"cust-ed", tags:["issue2"],
+    from:"Dana Brooks <dbrooks@deschutesgazette.com>", to:"Maya Reyes (Exec. Dir.) <m.reyes@cascadehw.org>", cc:"",
+    date:"June 10, 2025 · 11:47 AM", subject:"Comment request — TransRidge lawsuit",
+    body:"Ms. Reyes,\n\nI am writing a story on TransRidge's lawsuit against the Alliance. Can you comment on the trespass allegations and on the company's demand for your membership list? Deadline is Thursday noon.\n\nDana Brooks, Deschutes Gazette\n\n---\nReply from M. Reyes, June 10, 2:30 PM: On the record: 'TransRidge is using this lawsuit to unmask its critics. Courts have protected the privacy of advocacy organizations' members for seventy years, and we are confident they will here.' No comment on the specific allegations while litigation is pending.",
+    answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue2"] },
+    explanation:"Communications with a reporter and an on-the-record statement drafted for publication are outward-facing — not confidential associational material, and not legal advice. No privilege applies. Produce as Confidential." }
+];
+// FA-DATA-END
+
 var CP_ACTIVE = 'antitrust';
 function cpCase(){ return CP_CASES[CP_ACTIVE]; }
 function cpDocs(){ return cpCase().docs; }
