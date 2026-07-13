@@ -44,6 +44,7 @@ The entire application is a single file: `index.html` (~5,500 lines of inline CS
 - `// CASE SWITCHING` (~line 4042) — `openCase(caseNum)` sets `ACTIVE_DOCS` and `ACTIVE_CASE` to switch between simulator cases
 - `// FEATURE 2: PROGRESS PERSISTENCE` / `// PROGRESS PERSISTENCE — localStorage PRIMARY + Supabase SECONDARY` (~line 4562) — `saveProgress()` writes to localStorage immediately then syncs to Supabase; `loadProgressRemote()` / `loadProgressLocal()` restore on login
 - `ev-*` (~line 4776) — Mock Everlaw coding interface (GDPR case)
+- `// CASEPOINT — TRANSRIDGE PIPELINE v. CASCADE HEADWATERS ALLIANCE` — `FA_DOCS` + `CP_CASES.firstam`; First Amendment qualified-privilege case with `fa-flag` (Flag & Escalate) coding option; `FA-DATA-START`/`FA-DATA-END`/`FA-CASE-END` markers are used by data-integrity check scripts — keep them
 - `loadTimesheets()` / `loadPayments()` / `loadTactical()` — Leadership-only data views backed by `timesheets`, `payments`, `tactical` tables
 
 **Simulator cases:** `ACTIVE_CASE` / `ACTIVE_DOCS` switch between the four document sets:
@@ -51,10 +52,9 @@ The entire application is a single file: `index.html` (~5,500 lines of inline CS
 - Case 2: `CASE2_DOCS`
 - Case 3: `P3_DOCS` — GDPR/AI (Veridian Bank)
 - Case 4: `P4_DOCS` — launched from `other-projects` page; Foreign language review uses `PTBR_DOCS`
+- Casepoint cases (`CP_CASES`, launched from `other-projects` via `openCasepointCase(id)`): `antitrust` (NorthStar/Meridian, `CP_DOCS`), `breach` (St. Aurelius, `SAH_DOCS`), `firstam` (TransRidge v. Cascade Headwaters — First Amendment privilege, `FA_DOCS`, 500 docs: 15 hand-authored + seeded generator)
 
 **Supabase tables:** `quiz_scores`, `timesheets`, `payments`, `tactical`
-
-**Known quirk:** The file ends with a duplicate `<!DOCTYPE html>` fragment starting at line ~5453 — this is inert (browsers ignore it) but avoid editing past line 5451.
 
 ## Styling
 
