@@ -6007,6 +6007,36 @@ var FA_DOCS = [
   }
 })();
 // FA-DATA-END
+CP_CASES.firstam = {
+  id: 'firstam',
+  crumb: '<b>TransRidge Pipeline v. Cascade Headwaters</b> &nbsp;›&nbsp; First Level Review &nbsp;›&nbsp; First Amendment Privilege',
+  panelTitle: 'First Amendment Review Coding',
+  docs: FA_DOCS,
+  hotBand: '🔥 <strong>Hot Document:</strong> This document may contain smoking-gun content about the alleged trespass or property damage — code carefully. The First Amendment does not shield evidence of unlawful conduct.',
+  fields: [
+    { key:'responsive', label:'RESPONSIVENESS', options:[
+      {v:'responsive',l:'Responsive'},{v:'non-responsive',l:'Not Responsive'},{v:'technical',l:'Technical Issue'}]},
+    { key:'privilege', label:'PRIVILEGE', options:[
+      {v:'not-privileged',l:'Not Privileged'},{v:'privileged',l:'Privileged (A-C)'},{v:'fa-flag',l:'First Am. — Flag & Escalate'}]},
+    { key:'action', label:'PRODUCTION', options:[
+      {v:'produce',l:'Produce'},{v:'withhold',l:'Withhold'},{v:'redact',l:'Redact'}]},
+    { key:'conf', label:'CONFIDENTIALITY', options:[
+      {v:'confidential',l:'Confidential'},{v:'hc-aeo',l:'Highly Conf. – AEO'}]}
+  ],
+  issues: { label:'ISSUE TAGS', options:[
+    {v:'issue1',l:'Membership & Donors',color:'#2e9e5b'},
+    {v:'issue2',l:'Protest Strategy',color:'#b8860b'},
+    {v:'issue3',l:'Trespass / Property Damage',color:'#c62828'},
+    {v:'issue4',l:'Hot Doc',color:'#d6453a'}]},
+  labels: {
+    'responsive':'Responsive','non-responsive':'Not Responsive','technical':'Technical Issue',
+    'not-privileged':'Not Privileged','privileged':'Privileged (Attorney-Client)','fa-flag':'First Amendment — Flag & Escalate',
+    'produce':'Produce','withhold':'Withhold','redact':'Redact',
+    'confidential':'Confidential','hc-aeo':'Highly Confidential – AEO',
+    'issue1':'Membership & Donors','issue2':'Protest Strategy','issue3':'Trespass / Property Damage','issue4':'Hot Doc'
+  }
+};
+// FA-CASE-END
 
 var CP_ACTIVE = 'antitrust';
 function cpCase(){ return CP_CASES[CP_ACTIVE]; }
