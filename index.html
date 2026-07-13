@@ -6919,6 +6919,23 @@ onLogin = function() {
 };
 
 
+// Restore guest progress on page load — without this, the empty in-memory
+// state gets saved over the guest's localStorage on unload/close, erasing it.
+// The magic-link flow may set SB.user before DOM ready; onLogin re-applies
+// user-keyed data over this either way.
+document.addEventListener('DOMContentLoaded', function() {
+  if (SB.user) return;
+  var localData = loadProgressLocal();
+  if (localData) {
+    applyProgressData(localData);
+    updateRelProgress();
+    updateLandingStats();
+    evUpdateProgress();
+    evUpdateLanding();
+    cpUpdateLanding();
+  }
+});
+
 // Save progress when user leaves the page or switches tabs
 window.addEventListener('beforeunload', function() { saveProgressLocal(); });
 document.addEventListener('visibilitychange', function() {
