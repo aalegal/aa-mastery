@@ -5876,8 +5876,11 @@ var FA_DOCS = [
   var PEOPLE = ['Alan Pruitt','Dorothy Kim','Marcus Delgado','Ruth Ann Foley','Gene Whitaker','Tessa Nguyen','Carl Osborne','Ida Marsh','Ray Bellamy','Nina Kowalski','Owen Tate','Lucia Fuentes'];
   var TOWNS = ['Bend, OR','Redmond, OR','Sisters, OR','Prineville, OR','Madras, OR','La Pine, OR'];
   var MONTHS = [['September',2024],['October',2024],['November',2024],['March',2025],['April',2025],['May',2025]];
+  var MONTHS25 = [['March',2025],['April',2025],['May',2025],['June',2025]];
   function dateStr(r){ var m=pick(r,MONTHS), day=1+Math.floor(r()*28), h=1+Math.floor(r()*12), mn=Math.floor(r()*60), ap=r()<0.5?'AM':'PM'; return m[0]+' '+day+', '+m[1]+' · '+h+':'+(mn<10?'0'+mn:mn)+' '+ap; }
   function fileDate(r){ var m=pick(r,MONTHS); return m[0]+' '+(1+Math.floor(r()*28))+', '+m[1]; }
+  function dateStr25(r){ var m=pick(r,MONTHS25), day=1+Math.floor(r()*28), h=1+Math.floor(r()*12), mn=Math.floor(r()*60), ap=r()<0.5?'AM':'PM'; return m[0]+' '+day+', '+m[1]+' · '+h+':'+(mn<10?'0'+mn:mn)+' '+ap; }
+  function fileDate25(r){ var m=pick(r,MONTHS25); return m[0]+' '+(1+Math.floor(r()*28))+', '+m[1]; }
   function money(r,lo,hi){ return '$'+(lo+Math.floor(r()*(hi-lo))).toLocaleString(); }
   function memberEmail(name){ return name.toLowerCase().replace(/[^a-z]/g,'')+'@personalmail.com'; }
 
@@ -5946,7 +5949,7 @@ var FA_DOCS = [
       }},
     // Counsel updates — A-C privileged withhold (w:6)
     { w:6, cust:['cust-ed'], make:function(r,cust){
-        return { type:'memo',
+        return { type:'memo', date:dateStr25(r),
           subject:'PRIVILEGED & CONFIDENTIAL — '+pick(r,['litigation status update','discovery strategy','protective order motion — draft outline','deposition preparation','response to TransRidge demand letter']),
           from:'Elena Vasquez <e.vasquez@riverastone.com>', to:person(cust), cc:'',
           body:'Maya,\n\n'+pick(r,[
@@ -5961,9 +5964,10 @@ var FA_DOCS = [
       }},
     // Trespass-adjacent operational docs — produce (w:6)
     { w:6, cust:['cust-ops','cust-org'], make:function(r,cust){
-        return { type:pick(r,['email','file']),
+        var t = pick(r,['email','file']);
+        return { type:t,
           subject:pick(r,['Site observation log — ridge segment','Incident report — confrontation at access road','Gate photos — staging yard fence line','Field notes — survey crew activity','Equipment yard observation notes']),
-          from:person(cust), to:person(cust==='cust-ops'?'cust-org':'cust-ops'), cc:'',
+          from:(t==='file'?'':person(cust)), to:(t==='file'?'':person(cust==='cust-ops'?'cust-org':'cust-ops')), cc:'',
           body:pick(r,[
             'Observation log: TransRidge survey crew active on the ridge segment 9 AM to 2 PM. All observations made from the public forest road. Photos attached.',
             'Incident report: verbal confrontation between two of our monitors and a TransRidge security contractor at the access road gate. No physical contact. Monitors reminded to stay on the public easement.',
@@ -5976,7 +5980,7 @@ var FA_DOCS = [
       }},
     // Vendor invoices — produce (w:5)
     { w:5, cust:['cust-ops'], make:function(r,cust){
-        return { type:'file',
+        return { type:'file', date:fileDate25(r),
           subject:pick(r,['CentralOR Print Co — Invoice #CP-'+(500+Math.floor(r()*4000)),'High Desert Charters — Invoice #HD-'+(100+Math.floor(r()*900)),'Riverbend PA & Staging — Invoice #RB-'+(200+Math.floor(r()*700)),'Juniper Signworks — Invoice #JS-'+(300+Math.floor(r()*900))]),
           from:'', to:'', cc:'',
           body:'INVOICE\n\nBill to: Cascade Headwaters Alliance\nServices: '+pick(r,['flyer and yard-sign printing','charter bus service, rally day','PA system and stage rental','banner fabrication'])+'\nAmount due: '+money(r,300,6000)+' net 30.\n\nRemit to accounts receivable.',
@@ -6024,7 +6028,7 @@ var FA_DOCS = [
     FA_DOCS.push({
       id:id, type:d.type, custodian:cust, tags:d.issues.slice(),
       from:d.from, to:d.to, cc:d.cc,
-      date:(d.type==='file' ? fileDate(r) : dateStr(r)),
+      date: d.date || (d.type==='file' ? fileDate(r) : dateStr(r)),
       subject:d.subject, body:d.body,
       answer:d.answer, explanation:d.explanation
     });
