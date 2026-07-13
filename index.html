@@ -5831,6 +5831,181 @@ var FA_DOCS = [
     answer:{ responsive:"responsive", privilege:"not-privileged", action:"produce", conf:"confidential", issues:["issue2"] },
     explanation:"Communications with a reporter and an on-the-record statement drafted for publication are outward-facing — not confidential associational material, and not legal advice. No privilege applies. Produce as Confidential." }
 ];
+// ══════════════════════════════════════════════════════════════════════════
+// Procedural volume: docs FA-0016 … FA-0500 from weighted archetypes.
+// Seeded RNG (no Math.random/Date) so the same docs render every load —
+// progress keyed by doc id stays stable.
+// ══════════════════════════════════════════════════════════════════════════
+(function buildFirstAmVolume(){
+  function rngFor(seed){ var s=(seed>>>0)||1; return function(){ s=(Math.imul(s,1664525)+1013904223)>>>0; return s/4294967296; }; }
+  function pick(r,a){ return a[Math.floor(r()*a.length)]; }
+
+  var ROSTER = {
+    'cust-ed':  {name:'Maya Reyes (Exec. Dir.)',          email:'m.reyes@cascadehw.org'},
+    'cust-org': {name:'Ben Calloway (Organizing Dir.)',   email:'b.calloway@cascadehw.org'},
+    'cust-dev': {name:'Priya Nair (Development Dir.)',    email:'p.nair@cascadehw.org'},
+    'cust-vol': {name:'Sam Otieno (Volunteer Coord.)',    email:'s.otieno@cascadehw.org'},
+    'cust-ops': {name:'Dana Whitfield (Operations Mgr.)', email:'d.whitfield@cascadehw.org'}
+  };
+  function person(cust){ var p=ROSTER[cust]; return p.name+' <'+p.email+'>'; }
+
+  var PEOPLE = ['Alan Pruitt','Dorothy Kim','Marcus Delgado','Ruth Ann Foley','Gene Whitaker','Tessa Nguyen','Carl Osborne','Ida Marsh','Ray Bellamy','Nina Kowalski','Owen Tate','Lucia Fuentes'];
+  var TOWNS = ['Bend, OR','Redmond, OR','Sisters, OR','Prineville, OR','Madras, OR','La Pine, OR'];
+  var MONTHS = [['September',2024],['October',2024],['November',2024],['March',2025],['April',2025],['May',2025]];
+  function dateStr(r){ var m=pick(r,MONTHS), day=1+Math.floor(r()*28), h=1+Math.floor(r()*12), mn=Math.floor(r()*60), ap=r()<0.5?'AM':'PM'; return m[0]+' '+day+', '+m[1]+' · '+h+':'+(mn<10?'0'+mn:mn)+' '+ap; }
+  function fileDate(r){ var m=pick(r,MONTHS); return m[0]+' '+(1+Math.floor(r()*28))+', '+m[1]; }
+  function money(r,lo,hi){ return '$'+(lo+Math.floor(r()*(hi-lo))).toLocaleString(); }
+  function memberEmail(name){ return name.toLowerCase().replace(/[^a-z]/g,'')+'@personalmail.com'; }
+
+  // Each archetype: weight w, eligible custodians, make(r,cust) returning
+  // { type, subject, from, to, cc, body, issues, answer, explanation }.
+  var A = [
+    // Member communications — flag & escalate (w:9)
+    { w:9, cust:['cust-vol','cust-dev'], make:function(r,cust){
+        var name=pick(r,PEOPLE), town=pick(r,TOWNS);
+        return { type:'email',
+          subject:pick(r,['Welcome to Cascade Headwaters Alliance!','Your membership renewal','Member update — thank you','New member packet','Membership confirmation']),
+          from:person(cust), to:name+' <'+memberEmail(name)+'>', cc:'',
+          body:'Dear '+name+',\n\n'+pick(r,[
+            'Welcome to the Alliance! Your membership is confirmed. You are member number '+(1000+Math.floor(r()*4000))+' — one of thousands of neighbors in '+town+' and across the basin standing up for our water.',
+            'Thank you for renewing your membership. Your continued support from '+town+' keeps this campaign going.',
+            'Your new-member packet is on its way to your address in '+town+'. Meanwhile, here is your member login for the volunteer portal.',
+            'We have recorded your membership renewal. As always, we never share our member list with anyone.'])
+            +'\n\nFor the river,\n'+ROSTER[cust].name.split(' (')[0],
+          issues:['issue1'],
+          answer:{ responsive:'responsive', privilege:'fa-flag', action:'withhold', conf:'hc-aeo', issues:['issue1'] },
+          explanation:'This correspondence identifies an individual rank-and-file member — exactly what the associational privilege protects from compelled disclosure. Responsive to the membership request, but qualified privilege: Flag & Escalate and withhold pending the protective-order ruling.' };
+      }},
+    // Donor acknowledgments — flag & escalate (w:8)
+    { w:8, cust:['cust-dev'], make:function(r,cust){
+        var name=pick(r,PEOPLE);
+        return { type:'email',
+          subject:pick(r,['Thank you for your gift','Your donation receipt','Pledge confirmation','Year-end giving — thank you']),
+          from:person(cust), to:name+' <'+memberEmail(name)+'>', cc:'',
+          body:'Dear '+name+',\n\nThank you for your '+pick(r,['gift','pledge','contribution'])+' of '+money(r,50,5000)+' to Cascade Headwaters Alliance. '
+            +pick(r,['Per your request, your support will be kept strictly confidential.','Your gift will fund the water-quality monitoring program.','This letter serves as your tax receipt; no goods or services were provided.','Your support makes the campaign against the Cascade Ridge Pipeline possible.'])
+            +'\n\nWith gratitude,\nPriya Nair\nDevelopment Director',
+          issues:['issue1'],
+          answer:{ responsive:'responsive', privilege:'fa-flag', action:'withhold', conf:'hc-aeo', issues:['issue1'] },
+          explanation:'A donor acknowledgment identifying an individual supporter and amount — compelled disclosure of donor identities chills financial support for advocacy. Qualified First Amendment privilege: Flag & Escalate, withhold pending the balancing ruling.' };
+      }},
+    // Protest strategy / organizing threads — flag & escalate (w:9)
+    { w:9, cust:['cust-org','cust-ed'], make:function(r,cust){
+        var rcv = cust==='cust-org' ? 'cust-ed' : 'cust-org';
+        return { type:'email',
+          subject:pick(r,['Canvass plan — west county','Phone bank script v'+(1+Math.floor(r()*4)),'Hearing turnout strategy','Volunteer captain assignments','Comment-letter campaign plan']),
+          from:person(cust), to:person(rcv), cc:'',
+          body:pick(r,[
+            'Draft canvass plan attached: 40 volunteers, four precincts, focus on households near the proposed easement. Talking points emphasize the aquifer study.',
+            'Phone bank script revised — leads with the eminent-domain angle, asks members to testify at the county hearing. Target: 600 calls this week.',
+            'Turnout plan for the land-use hearing: members get first two rows, speakers rehearse Tuesday, yellow shirts for visibility. Do not share the speaker list outside the team.',
+            'Volunteer captain assignments for the petition drive are attached. Captains coordinate their own crews; roster stays internal.',
+            'Comment-letter campaign: template goes to members only, personalized letters beat form letters, deadline is the 21st.'])
+            +'\n\nKeep internal.\n'+ROSTER[cust].name.split(' (')[0],
+          issues:['issue2'],
+          answer:{ responsive:'responsive', privilege:'fa-flag', action:'withhold', conf:'hc-aeo', issues:['issue2'] },
+          explanation:'Internal advocacy strategy — organizing plans, targets, and volunteer assignments. Core protected association and expression; disclosure to a litigation adversary would chill organizing. Flag & Escalate and withhold pending the court ruling.' };
+      }},
+    // Public communications — produce (distractor) (w:7)
+    { w:7, cust:['cust-ed','cust-org'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['press_release_'+pick(r,['hearing','rally','petition','lawsuit_response'])+'.pdf (exported text)','blog_post_published_'+(1+Math.floor(r()*28))+'.txt','public_facebook_event.txt (captured)','newsletter_public_edition.pdf (exported text)']),
+          from:'', to:'', cc:'',
+          body:'[PUBLISHED / PUBLICLY POSTED]\n\n'+pick(r,[
+            'FOR IMMEDIATE RELEASE — Cascade Headwaters Alliance announced today that more than 3,000 residents have signed the petition opposing the Cascade Ridge Pipeline. "Our community has spoken," said Executive Director Maya Reyes.',
+            'From the CHA public blog: What the aquifer study actually says — a plain-language summary of the hydrology report, and why the pipeline route puts drinking water at risk.',
+            'PUBLIC EVENT — Rally for the River, Riverbend Park. All welcome. Speakers, live music, family friendly. Hosted by Cascade Headwaters Alliance.',
+            'CHA Public Newsletter: hearing dates, how to submit a comment to the county commission, and volunteer opportunities. Forward to a friend!']),
+          issues:['issue2'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue2'] },
+          explanation:'Advocacy-related but PUBLISHED — the organization put this in the public domain itself, so compelled production creates no chilling effect and no First Amendment privilege applies. Flagging public material is over-coding. Produce as Confidential.' };
+      }},
+    // Counsel updates — A-C privileged withhold (w:6)
+    { w:6, cust:['cust-ed'], make:function(r,cust){
+        return { type:'memo',
+          subject:'PRIVILEGED & CONFIDENTIAL — '+pick(r,['litigation status update','discovery strategy','protective order motion — draft outline','deposition preparation','response to TransRidge demand letter']),
+          from:'Elena Vasquez <e.vasquez@riverastone.com>', to:person(cust), cc:'',
+          body:'Maya,\n\n'+pick(r,[
+            'Status update on the TransRidge matter: our motion for a protective order covering member and donor records is on track for filing this month. Our legal analysis of the balancing factors follows.',
+            'Our advice on the pending document requests: objections to Requests 1 and 3 on First Amendment grounds, with the supporting declarations described below.',
+            'In preparation for your deposition, we should discuss the topics below at our next privileged call. Please do not forward this memo.',
+            'Our assessment of TransRidge’s settlement posture and our recommended response is set out below.'])
+            +'\n\nThis communication contains legal advice and is protected by the attorney-client privilege.\n\nElena Vasquez\nRivera & Stone LLP',
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'privileged', action:'withhold', conf:'hc-aeo', issues:['issue3'] },
+          explanation:'Legal advice from outside counsel to the client about the litigation — attorney-client privileged. Unlike the qualified First Amendment privilege, A-C privilege is absolute when its elements are met. Code Privileged (Attorney-Client), withhold, and log.' };
+      }},
+    // Trespass-adjacent operational docs — produce (w:6)
+    { w:6, cust:['cust-ops','cust-org'], make:function(r,cust){
+        return { type:pick(r,['email','file']),
+          subject:pick(r,['Site observation log — ridge segment','Incident report — confrontation at access road','Gate photos — staging yard fence line','Field notes — survey crew activity','Equipment yard observation notes']),
+          from:person(cust), to:person(cust==='cust-ops'?'cust-org':'cust-ops'), cc:'',
+          body:pick(r,[
+            'Observation log: TransRidge survey crew active on the ridge segment 9 AM to 2 PM. All observations made from the public forest road. Photos attached.',
+            'Incident report: verbal confrontation between two of our monitors and a TransRidge security contractor at the access road gate. No physical contact. Monitors reminded to stay on the public easement.',
+            'Fence-line photos from Saturday attached. Note: the equipment gate chain appears to have been replaced since last week.',
+            'Field notes: stake line now extends past the creek crossing. Flagging for the legal team — this may exceed the surveyed easement.',
+            'Yard observation: three new excavators delivered. Monitoring shift schedule attached for next week.']),
+          issues:['issue3'],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:['issue3'] },
+          explanation:'Operational monitoring and incident documentation relating to the alleged trespass dispute — squarely responsive to Issue 3 and not privileged: it is factual observation, not confidential strategy or member identity, and the First Amendment does not shield evidence relevant to the conduct claims. Produce as Confidential.' };
+      }},
+    // Vendor invoices — produce (w:5)
+    { w:5, cust:['cust-ops'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['CentralOR Print Co — Invoice #CP-'+(500+Math.floor(r()*4000)),'High Desert Charters — Invoice #HD-'+(100+Math.floor(r()*900)),'Riverbend PA & Staging — Invoice #RB-'+(200+Math.floor(r()*700)),'Juniper Signworks — Invoice #JS-'+(300+Math.floor(r()*900))]),
+          from:'', to:'', cc:'',
+          body:'INVOICE\n\nBill to: Cascade Headwaters Alliance\nServices: '+pick(r,['flyer and yard-sign printing','charter bus service, rally day','PA system and stage rental','banner fabrication'])+'\nAmount due: '+money(r,300,6000)+' net 30.\n\nRemit to accounts receivable.',
+          issues:[],
+          answer:{ responsive:'responsive', privilege:'not-privileged', action:'produce', conf:'confidential', issues:[] },
+          explanation:'Routine vendor invoice for event services — responsive background material, shared with an outside commercial vendor, so neither privileged nor confidential associational content. Produce as Confidential with no substantive issue tags.' };
+      }},
+    // Junk / personal noise — not responsive (w:5)
+    { w:5, cust:['cust-ed','cust-org','cust-dev','cust-vol','cust-ops'], make:function(r,cust){
+        return { type:'email',
+          subject:pick(r,['Nonprofit Quarterly — this week’s stories','Your conference registration is confirmed','Office coffee order','Trail run Saturday?','Dentist appointment reminder']),
+          from:pick(r,['NPQ <news@npquarterly.org>','Events <events@nonprofitwest.org>','Bend Roasters <orders@bendroasters.com>','Trail Club <runs@bendtrailclub.org>','Smile Dental <appointments@smiledental.com>']),
+          to:person(cust), cc:'',
+          body:pick(r,[
+            'This week in the nonprofit sector: fundraising trends, board governance tips, and upcoming webinars. Unsubscribe below.',
+            'Your registration for the Nonprofit West conference is confirmed. See you in Portland in October.',
+            'Your monthly coffee order has shipped: two cases of medium roast, one decaf.',
+            'Group trail run Saturday 8 AM, Shevlin Park upper lot. Reply to RSVP.',
+            'Reminder: your dental cleaning is scheduled for next Tuesday at 2:30 PM.']),
+          issues:[],
+          answer:{ responsive:'non-responsive', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'Bulk newsletter or personal noise with no connection to the pipeline dispute or any discovery request. Not responsive; withhold. Teaches quick disposal of obvious junk without over-coding.' };
+      }},
+    // Corrupted / failed processing — technical (w:3)
+    { w:3, cust:['cust-ops'], make:function(r,cust){
+        return { type:'file',
+          subject:pick(r,['gis_layers_backup_0'+(1+Math.floor(r()*9))+'.zip (no text extracted)','rally_video_raw.mov (no text extracted)','old_laptop_image.dd (unreadable)','donor_db_export.bak (corrupted)']),
+          from:'', to:'', cc:'',
+          body:'[This file could not be rendered for review. No text could be extracted from the container. Flag to the technical/processing team for re-collection.]',
+          issues:[],
+          answer:{ responsive:'technical', privilege:'not-privileged', action:'withhold', conf:'confidential', issues:[] },
+          explanation:'The file failed processing and cannot be reviewed. Code Responsiveness as Technical Issue and route for re-collection — never guess substantive coding for an unreadable file.' };
+      }}
+  ];
+
+  var POOL=[];
+  A.forEach(function(a,i){ for(var k=0;k<a.w;k++) POOL.push(i); });
+
+  for (var n=16; n<=500; n++){
+    var r = rngFor(n*2654435761 + 17);
+    var arch = A[POOL[Math.floor(r()*POOL.length)]];
+    var cust = pick(r, arch.cust);
+    var d = arch.make(r, cust);
+    var id = 'FA-' + ('000'+n).slice(-4);
+    FA_DOCS.push({
+      id:id, type:d.type, custodian:cust, tags:d.issues.slice(),
+      from:d.from, to:d.to, cc:d.cc,
+      date:(d.type==='file' ? fileDate(r) : dateStr(r)),
+      subject:d.subject, body:d.body,
+      answer:d.answer, explanation:d.explanation
+    });
+  }
+})();
 // FA-DATA-END
 
 var CP_ACTIVE = 'antitrust';
