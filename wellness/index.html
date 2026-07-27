@@ -321,9 +321,11 @@
       <div class="res-desc" id="res-direct-note"></div>
     </div>
 
+    <!-- Fallback, shown only if the contact can't be loaded (offline, or the
+         table isn't set up yet). Not a sign-in gate — the number is public. -->
     <div class="res" id="res-direct-locked">
       <div class="res-name">Your supervisor's direct line</div>
-      <div class="res-desc"><a href="#" onclick="switchTab('checkin');return false">Sign in</a> to see it — it's kept off the public page. If you need someone right now and can't sign in, call <strong>199</strong>, free and 24 hours.</div>
+      <div class="res-desc">Couldn't load it just now — check your connection and refresh. If you need someone urgently and can't reach your supervisor, call <strong>199</strong>: free, 24 hours, no account needed.</div>
     </div>
 
     <div class="res">
@@ -448,18 +450,18 @@ function applySession(){
   loadContacts();
 }
 
-// Supervisor contact details live in the database, not in this file, because
-// this file is public. RLS restricts the table to authenticated users, so the
-// anon key alone cannot read it — the number never reaches an unauthenticated
-// visitor, including one reading the page source.
+// Supervisor contact details live in the database rather than in this file.
+// The table is readable without a login, so anyone who needs help can reach a
+// person without signing in — but the number stays out of this PUBLIC git
+// repository, where it would be permanent and indexed. Changing it later is a
+// single UPDATE that leaves no trace.
 async function loadContacts(){
   var open=el('res-direct'), locked=el('res-direct-locked');
-  if(!SESSION){open.classList.add('hidden');locked.classList.remove('hidden');return;}
   try{
-    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_contacts?select=*&active=is.true&order=sort.asc&limit=1',{
-      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SESSION.token}
-    });
-    if(!r.ok)throw new Error('unauthorised');
+    var h={'apikey':SUPABASE_ANON_KEY};
+    if(SESSION)h['Authorization']='Bearer '+SESSION.token;
+    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_contacts?select=*&active=is.true&order=sort.asc&limit=1',{headers:h});
+    if(!r.ok)throw new Error('unavailable');
     var rows=await r.json();
     if(!rows.length)throw new Error('none');
     var c=rows[0];
@@ -471,7 +473,7 @@ async function loadContacts(){
     open.classList.remove('hidden');
     locked.classList.add('hidden');
   }catch(e){
-    // Not authorised, table missing, or nothing configured — show the locked card.
+    // Offline, table missing, or nothing configured — show the fallback.
     open.classList.add('hidden');
     locked.classList.remove('hidden');
   }

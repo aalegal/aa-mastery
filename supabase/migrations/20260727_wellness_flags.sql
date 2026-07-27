@@ -71,10 +71,19 @@ create table public.wellness_contacts (
 
 alter table public.wellness_contacts enable row level security;
 
--- Any signed-in team member may read. No insert/update/delete policy —
--- edit these rows from the Supabase dashboard.
-create policy "authenticated_select_wellness_contacts" on public.wellness_contacts
-  for select to authenticated
+-- Readable without a login, so someone who needs help can reach a person
+-- without signing in first. This does mean the number is effectively public
+-- once the page renders it — that is a deliberate choice, made because the
+-- team should not hit a login wall in a bad moment.
+--
+-- Keeping it here rather than in the HTML still buys something real: the
+-- number never enters this PUBLIC git repository, where it would be permanent
+-- and indexed. Changing or removing it later is one UPDATE, with no trace left
+-- behind.
+--
+-- No insert/update/delete policy — edit these rows from the Supabase dashboard.
+create policy "public_select_wellness_contacts" on public.wellness_contacts
+  for select to anon, authenticated
   using (true);
 
 -- No seed row here on purpose. This repository is PUBLIC, so a personal phone
