@@ -51,6 +51,42 @@ create policy "leadership_ack_wellness_flags" on public.wellness_flags
 -- No delete policy for anyone. Removal happens only via the purge below, which
 -- runs as the table owner and bypasses RLS.
 
+-- ── Supervisor contacts ─────────────────────────────────────────────
+-- Held here rather than in wellness/index.html because that file is served
+-- publicly — anything written into it is readable by anyone, whether or not
+-- the UI hides it, and personal numbers on open pages get scraped.
+-- RLS restricts reads to authenticated users, so the anon key alone cannot
+-- retrieve these.
+
+create table public.wellness_contacts (
+  id uuid primary key default gen_random_uuid(),
+  name text not null,
+  role text,
+  phone text not null,          -- E.164, for the tel: link
+  display_number text,          -- how it's shown, e.g. '0700 000 000'
+  note text,
+  sort int not null default 0,
+  active boolean not null default true
+);
+
+alter table public.wellness_contacts enable row level security;
+
+-- Any signed-in team member may read. No insert/update/delete policy —
+-- edit these rows from the Supabase dashboard.
+create policy "authenticated_select_wellness_contacts" on public.wellness_contacts
+  for select to authenticated
+  using (true);
+
+-- No seed row here on purpose. This repository is PUBLIC, so a personal phone
+-- number committed to it would be permanently in git history and indexed.
+-- Add contacts by hand in the Supabase dashboard (or the SQL editor), e.g.:
+--
+--   insert into public.wellness_contacts
+--     (name, role, phone, display_number, note, sort)
+--   values
+--     ('Name', 'direct line', '+255700000000', '0700 000 000',
+--      'Call or message if you need to talk to someone at work.', 0);
+
 -- ── Tiered retention ────────────────────────────────────────────────
 -- The free-text note is the part someone might regret writing, so it has the
 -- shortest life. The coarse record survives long enough to notice a pattern

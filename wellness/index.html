@@ -310,9 +310,25 @@
     </div>
 
     <div class="section-head">At work</div>
+
+    <!-- Direct line. Deliberately NOT hardcoded here — this file is served
+         publicly, so anything in it is readable by anyone, hidden or not.
+         The number is fetched from Supabase after sign-in, where RLS restricts
+         it to authenticated users. -->
+    <div class="res primary hidden" id="res-direct">
+      <div class="res-name" id="res-direct-name"></div>
+      <div class="res-num"><a id="res-direct-tel" href="#"></a></div>
+      <div class="res-desc" id="res-direct-note"></div>
+    </div>
+
+    <div class="res" id="res-direct-locked">
+      <div class="res-name">Your supervisor's direct line</div>
+      <div class="res-desc"><a href="#" onclick="switchTab('checkin');return false">Sign in</a> to see it — it's kept off the public page. If you need someone right now and can't sign in, call <strong>199</strong>, free and 24 hours.</div>
+    </div>
+
     <div class="res">
-      <div class="res-name">Your supervisor</div>
-      <div class="res-desc">If the pressure is coming from the work itself — volume, deadlines, or the material you're reviewing — that's something your leads can actually change. The <a href="#" onclick="switchTab('checkin');return false">Check In tab</a> is the quiet way to start that conversation.</div>
+      <div class="res-name">Changing the work itself</div>
+      <div class="res-desc">If the pressure is coming from volume, deadlines, or the material you're reviewing, that's something your leads can actually change. The <a href="#" onclick="switchTab('checkin');return false">Check In tab</a> is the quiet way to start that conversation.</div>
     </div>
 
     <div class="banner"><span>ℹ️</span><div>Details were last verified <b>27 July 2026</b>. Numbers do change — if you find one of these is out of date, please tell your supervisor so this page can be fixed.</div></div>
@@ -429,6 +445,36 @@ function applySession(){
   if(authed)el('ci-whoami').textContent=SESSION.name+' ('+SESSION.email+')';
   el('nav-flags').classList.toggle('hidden',!isLead());
   if(isLead())loadFlags();
+  loadContacts();
+}
+
+// Supervisor contact details live in the database, not in this file, because
+// this file is public. RLS restricts the table to authenticated users, so the
+// anon key alone cannot read it — the number never reaches an unauthenticated
+// visitor, including one reading the page source.
+async function loadContacts(){
+  var open=el('res-direct'), locked=el('res-direct-locked');
+  if(!SESSION){open.classList.add('hidden');locked.classList.remove('hidden');return;}
+  try{
+    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_contacts?select=*&active=is.true&order=sort.asc&limit=1',{
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SESSION.token}
+    });
+    if(!r.ok)throw new Error('unauthorised');
+    var rows=await r.json();
+    if(!rows.length)throw new Error('none');
+    var c=rows[0];
+    el('res-direct-name').textContent=c.name+(c.role?' — '+c.role:'');
+    var tel=el('res-direct-tel');
+    tel.textContent=c.display_number||c.phone;
+    tel.setAttribute('href','tel:'+c.phone);
+    el('res-direct-note').textContent=c.note||'Call or message if you need to talk to someone at work.';
+    open.classList.remove('hidden');
+    locked.classList.add('hidden');
+  }catch(e){
+    // Not authorised, table missing, or nothing configured — show the locked card.
+    open.classList.add('hidden');
+    locked.classList.remove('hidden');
+  }
 }
 
 // ══════════════════════════════════════════════════════════════════
