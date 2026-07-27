@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Team Wellness</title>
+<meta name="description" content="Look after yourself · check in · get support — AA Team wellness and mental health resources.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0a0b12; --bg2:#0f1120; --panel:#12142440; --panel2:#171a2e;
+    --line:rgba(255,255,255,0.09); --line2:rgba(255,255,255,0.06);
+    --text:#eef0f7; --muted:#8b93ab; --dim:#5b6379;
+    --violet:#8b7cff; --violet2:#6d5bf0; --teal:#12d3b0; --cyan:#33c9ff; --amber:#f6b23a; --rose:#f2506e; --green:#37d99a;
+    --grad:linear-gradient(135deg,#8b7cff,#12d3b0);
+    --grad2:linear-gradient(135deg,#6d5bf0 0%,#33c9ff 100%);
+    --radius:18px; --radius-sm:12px;
+    --shadow:0 10px 40px -12px rgba(0,0,0,0.6);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+    background-image:radial-gradient(1200px 600px at 80% -10%,rgba(18,211,176,0.15),transparent 60%),radial-gradient(1000px 500px at -10% 10%,rgba(139,124,255,0.13),transparent 55%);background-attachment:fixed}
+  button{font-family:inherit;cursor:pointer;color:inherit}
+  a{color:var(--cyan);text-decoration:none}
+  a:hover{text-decoration:underline}
+  ::-webkit-scrollbar{height:9px;width:9px}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.13);border-radius:9px}::-webkit-scrollbar-track{background:transparent}
+
+  /* Header + nav */
+  .topbar{position:sticky;top:0;z-index:60;backdrop-filter:blur(18px);background:rgba(10,11,18,0.72);border-bottom:1px solid var(--line)}
+  .topbar-inner{max-width:1080px;margin:0 auto;padding:16px 20px 0;display:flex;flex-direction:column;align-items:center}
+  .brand{display:flex;align-items:center;gap:11px}
+  .brand-logo{width:34px;height:34px;border-radius:10px;background:var(--grad);display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 6px 18px -6px rgba(18,211,176,0.7)}
+  .brand-name{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;letter-spacing:-0.3px}
+  .brand-name .g{background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .brand-sub{font-size:11px;color:var(--muted);margin-top:2px;text-align:center}
+  .nav{display:flex;gap:4px;margin-top:14px;overflow-x:auto;max-width:100%;padding-bottom:2px}
+  .nav-btn{border:none;background:none;padding:11px 15px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;color:var(--muted);border-bottom:2px solid transparent;transition:color .18s,border-color .18s;white-space:nowrap;display:flex;align-items:center;gap:6px}
+  .nav-btn:hover{color:var(--text)}
+  .nav-btn.active{color:#fff;border-bottom-color:var(--teal)}
+  .nav-btn .em{font-size:14px}
+  .back-link{position:absolute;left:20px;top:18px;font-size:11.5px;color:var(--dim);font-family:'Space Grotesk',sans-serif;font-weight:600}
+  .back-link:hover{color:var(--text);text-decoration:none}
+
+  .wrap{max-width:1080px;margin:0 auto;padding:24px 20px 80px}
+  .hidden{display:none!important}
+
+  .hero{border-radius:var(--radius);padding:22px 24px;margin-bottom:22px;position:relative;overflow:hidden;border:1px solid var(--line);
+    background:linear-gradient(120deg,rgba(18,211,176,0.13),rgba(139,124,255,0.08))}
+  .hero::after{content:'';position:absolute;right:-40px;top:-40px;width:180px;height:180px;border-radius:50%;background:var(--grad);opacity:.15;filter:blur(20px)}
+  .hero h1{font-family:'Space Grotesk',sans-serif;font-size:22px;font-weight:700;margin-bottom:6px;position:relative}
+  .hero p{font-size:13px;color:var(--muted);line-height:1.7;max-width:680px;position:relative}
+  .hero p + p{margin-top:9px}
+
+  .card{background:rgba(255,255,255,0.035);border:1px solid var(--line2);border-radius:var(--radius);backdrop-filter:blur(6px);box-shadow:var(--shadow)}
+  .card-pad{padding:20px}
+  .card-title{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:5px}
+  .card-hint{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:16px}
+  .mb{margin-bottom:16px}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .divider{height:1px;background:var(--line2);margin:16px 0}
+  .field-label{font-size:10px;font-family:'Space Grotesk',sans-serif;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--dim);margin-bottom:10px}
+  .section-head{font-family:'Space Grotesk',sans-serif;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;color:var(--dim);margin:26px 0 12px}
+
+  input[type=text],input[type=email],input[type=password],input[type=number],textarea,select{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);font-size:13.5px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit}
+  textarea{resize:vertical;min-height:90px;line-height:1.6}
+  input:focus,textarea:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px rgba(18,211,176,0.15)}
+  .btn{border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);border-radius:var(--radius-sm);padding:11px 17px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600;transition:all .18s;white-space:nowrap}
+  .btn:hover{border-color:var(--teal);transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(135deg,#0c9d7f,#12d3b0);border:none;color:#042;box-shadow:0 8px 20px -8px rgba(18,211,176,0.8)}
+  .btn.violet{background:var(--grad2);border:none;color:#fff;box-shadow:0 8px 20px -8px rgba(109,91,240,0.8)}
+  .btn.ghost{background:none}
+  .btn.sm{padding:8px 12px;font-size:11.5px}
+  .btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+  .empty{text-align:center;padding:34px 20px;color:var(--muted);font-size:13px;line-height:1.7;border:1px dashed var(--line);border-radius:var(--radius)}
+
+  .banner{border-radius:var(--radius-sm);padding:13px 16px;font-size:12.5px;line-height:1.65;margin-bottom:16px;display:flex;gap:10px;align-items:flex-start;background:rgba(246,178,58,0.08);border:1px solid rgba(246,178,58,0.25)}
+  .banner b{color:var(--amber)}
+  .banner.good{background:rgba(55,217,154,0.08);border-color:rgba(55,217,154,0.28)}.banner.good b{color:var(--green)}
+  .banner.bad{background:rgba(242,80,110,0.08);border-color:rgba(242,80,110,0.28)}.banner.bad b{color:var(--rose)}
+
+  /* Accordion */
+  .acc{border:1px solid var(--line2);border-radius:var(--radius-sm);margin-bottom:9px;background:rgba(255,255,255,0.03);overflow:hidden}
+  .acc-head{width:100%;text-align:left;padding:15px 17px;display:flex;align-items:center;gap:11px;background:none;border:none;font-size:13.5px;font-weight:600;font-family:'Space Grotesk',sans-serif;transition:background .15s}
+  .acc-head:hover{background:rgba(255,255,255,0.03)}
+  .acc-head .ico{font-size:16px;flex-shrink:0}
+  .acc-head .caret{margin-left:auto;color:var(--dim);font-size:12px;transition:transform .2s;flex-shrink:0}
+  .acc.open .acc-head .caret{transform:rotate(90deg)}
+  .acc-body{display:none;padding:2px 18px 18px;font-size:13px;line-height:1.75;color:var(--muted)}
+  .acc.open .acc-body{display:block}
+  .acc-body p{margin-bottom:11px}
+  .acc-body strong{color:var(--text);font-weight:600}
+  .acc-body ul{margin:0 0 12px 18px}
+  .acc-body li{margin-bottom:7px}
+  .acc-body .callout{border-left:3px solid var(--teal);background:rgba(18,211,176,0.06);padding:11px 14px;border-radius:0 8px 8px 0;margin:12px 0;color:var(--text);font-size:12.5px}
+  .acc-body .callout.warn{border-left-color:var(--amber);background:rgba(246,178,58,0.07)}
+  .say{border:1px solid var(--line2);border-radius:10px;padding:11px 14px;margin:8px 0;font-size:12.5px;line-height:1.65}
+  .say.do{background:rgba(55,217,154,0.06);border-color:rgba(55,217,154,0.22)}
+  .say.dont{background:rgba(242,80,110,0.06);border-color:rgba(242,80,110,0.22)}
+  .say .tag{display:block;font-family:'Space Grotesk',sans-serif;font-size:9.5px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;margin-bottom:5px}
+  .say.do .tag{color:var(--green)} .say.dont .tag{color:var(--rose)}
+
+  /* Scenarios */
+  .scen{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:11px;background:rgba(255,255,255,0.025)}
+  .scen-q{font-size:13px;line-height:1.7;font-style:italic;color:var(--text);margin-bottom:12px}
+  .scen-a{display:none;font-size:12.5px;line-height:1.75;color:var(--muted);border-top:1px solid var(--line2);padding-top:12px}
+  .scen.open .scen-a{display:block}
+  .scen-a strong{color:var(--text)}
+
+  /* Check-in form */
+  .opt-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:9px;margin-bottom:6px}
+  .opt{border:1px solid var(--line);background:rgba(255,255,255,0.03);border-radius:var(--radius-sm);padding:13px 15px;text-align:left;transition:all .16s}
+  .opt:hover{border-color:rgba(18,211,176,0.5)}
+  .opt.active{border-color:var(--teal);background:rgba(18,211,176,0.1)}
+  .opt b{display:block;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:700;margin-bottom:3px}
+  .opt span{font-size:11px;color:var(--muted);line-height:1.5;display:block}
+  .optional-tag{font-size:10px;font-weight:600;color:var(--dim);letter-spacing:.4px;text-transform:uppercase;margin-left:6px}
+  .char-count{font-size:11px;color:var(--dim);text-align:right;margin-top:5px}
+
+  /* Flags inbox */
+  .flag{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:15px 17px;margin-bottom:10px;background:rgba(255,255,255,0.03)}
+  .flag.unack{border-left:3px solid var(--amber)}
+  .flag-top{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:8px}
+  .flag-who{font-family:'Space Grotesk',sans-serif;font-size:13.5px;font-weight:700}
+  .flag-when{font-size:11px;color:var(--dim);margin-left:auto}
+  .tagpill{font-size:10px;font-weight:700;font-family:'Space Grotesk',sans-serif;letter-spacing:.5px;text-transform:uppercase;padding:3px 9px;border-radius:20px}
+  .t-unwell{background:rgba(51,201,255,0.15);color:var(--cyan)}
+  .t-low{background:rgba(139,124,255,0.16);color:var(--violet)}
+  .t-personal{background:rgba(246,178,58,0.15);color:var(--amber)}
+  .t-other{background:rgba(255,255,255,0.08);color:var(--muted)}
+  .c-full{background:rgba(55,217,154,0.14);color:var(--green)}
+  .c-reduced{background:rgba(246,178,58,0.15);color:var(--amber)}
+  .c-none{background:rgba(242,80,110,0.15);color:var(--rose)}
+  .flag-note{font-size:12.5px;line-height:1.7;color:var(--muted);background:rgba(0,0,0,0.22);border-radius:9px;padding:11px 13px;margin:9px 0;white-space:pre-wrap;word-break:break-word}
+  .flag-meta{font-size:11.5px;color:var(--dim);margin-top:7px}
+  .flag-acked{font-size:11.5px;color:var(--green);margin-top:8px}
+
+  /* Help */
+  .res{border:1px solid var(--line2);border-radius:var(--radius-sm);padding:16px 18px;margin-bottom:11px;background:rgba(255,255,255,0.03)}
+  .res.primary{border-color:rgba(18,211,176,0.4);background:rgba(18,211,176,0.06)}
+  .res-name{font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;margin-bottom:4px}
+  .res-num{font-family:'Space Grotesk',sans-serif;font-size:26px;font-weight:700;background:var(--grad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;line-height:1.15;margin:6px 0}
+  .res-desc{font-size:12.5px;color:var(--muted);line-height:1.7}
+  .res-desc strong{color:var(--text)}
+
+  .footer{margin-top:44px;text-align:center;font-size:11px;color:var(--dim);line-height:1.9}
+
+  @media(max-width:560px){
+    .hero h1{font-size:19px}
+    .topbar-inner{padding:14px 14px 0}
+    .back-link{position:static;align-self:flex-start;margin-bottom:8px}
+    .wrap{padding:20px 14px 70px}
+    .opt-grid{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <a class="back-link" href="/">← AA Mastery</a>
+    <div class="brand">
+      <div class="brand-logo">💚</div>
+      <div><div class="brand-name"><span class="g">Team</span> Wellness</div>
+      <div class="brand-sub">Look after yourself · check in · get support</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-btn active" data-tab="you" onclick="switchTab('you')"><span class="em">🌿</span>For You</button>
+      <button class="nav-btn" data-tab="leads" onclick="switchTab('leads')"><span class="em">🤝</span>For Leads</button>
+      <button class="nav-btn" data-tab="checkin" onclick="switchTab('checkin')"><span class="em">💬</span>Check In</button>
+      <button class="nav-btn" data-tab="help" onclick="switchTab('help')"><span class="em">🆘</span>Help</button>
+      <button class="nav-btn hidden" id="nav-flags" data-tab="flags" onclick="switchTab('flags')"><span class="em">📥</span>Flags<span id="flag-count"></span></button>
+    </nav>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ══════════ FOR YOU ══════════ -->
+  <section id="tab-you">
+    <div class="hero">
+      <h1>Looking after yourself is part of the work</h1>
+      <p>Document review asks you to concentrate hard, for long stretches, sometimes on material that is genuinely unpleasant. That takes something out of you. Noticing it early is a skill, not a weakness.</p>
+      <p>Nothing on this page is tracked, scored, or reported. Read what's useful and ignore the rest.</p>
+    </div>
+    <div class="section-head">Read</div>
+    <div id="acc-you"></div>
+    <div class="section-head">Situations you might recognise</div>
+    <div id="scen-you"></div>
+  </section>
+
+  <!-- ══════════ FOR LEADS ══════════ -->
+  <section id="tab-leads" class="hidden">
+    <div class="hero">
+      <h1>Responding well when someone isn't okay</h1>
+      <p>You don't need to be a counsellor. Most of what helps is ordinary: noticing, asking plainly, listening without rushing to fix, and adjusting what you can actually control — the work.</p>
+      <p>This track covers what to look for, what to say, what not to say, and where your role stops.</p>
+    </div>
+    <div class="section-head">Read</div>
+    <div id="acc-leads"></div>
+    <div class="section-head">Situations you'll face</div>
+    <div id="scen-leads"></div>
+  </section>
+
+  <!-- ══════════ CHECK IN ══════════ -->
+  <section id="tab-checkin" class="hidden">
+    <div class="hero">
+      <h1>Not at 100% today?</h1>
+      <p>Tell your leads once, here, instead of explaining yourself to several people. They'll see what you're able to take on today so the work can be adjusted around it.</p>
+      <p>This is not a leave request and not a disciplinary record.</p>
+    </div>
+
+    <div class="card card-pad mb">
+      <div class="card-title">Before you fill this in</div>
+      <div class="card-hint" style="margin-bottom:0">
+        <strong style="color:var(--text)">Who sees it:</strong> your supervisors only — not the whole team.<br>
+        <strong style="color:var(--text)">How long it's kept:</strong> anything you write in the note box is erased after <strong style="color:var(--text)">30 days</strong>. The rest (category, capacity, date) is erased after <strong style="color:var(--text)">90 days</strong>. Nothing is kept beyond that.<br>
+        <strong style="color:var(--text)">What's required:</strong> only the first two questions. The note and the duration are optional — leave them blank if you'd rather not say.
+      </div>
+    </div>
+
+    <div id="ci-auth" class="card card-pad mb hidden">
+      <div class="card-title">Sign in to check in</div>
+      <div class="card-hint">Your leads need to know who the message is from, so this part needs a sign-in. The rest of this site doesn't.</div>
+      <div class="mb"><div class="field-label">Email</div><input type="email" id="ci-email" autocomplete="email" placeholder="you@example.com"></div>
+      <div class="mb"><div class="field-label">Password</div><input type="password" id="ci-pass" autocomplete="current-password" placeholder="••••••••"></div>
+      <div id="ci-auth-msg"></div>
+      <button class="btn primary" id="ci-signin" onclick="signIn()">Sign in</button>
+    </div>
+
+    <div id="ci-form" class="hidden">
+      <div class="card card-pad mb">
+        <div class="row" style="margin-bottom:14px">
+          <div style="font-size:12.5px;color:var(--muted)">Signed in as <strong id="ci-whoami" style="color:var(--text)"></strong></div>
+          <button class="btn ghost sm" style="margin-left:auto" onclick="signOut()">Sign out</button>
+        </div>
+
+        <div class="field-label">1 · What's going on? <span style="color:var(--rose)">*</span></div>
+        <div class="opt-grid" id="opt-category">
+          <button class="opt" data-v="unwell"><b>Unwell</b><span>Physically sick or in pain</span></button>
+          <button class="opt" data-v="low"><b>Low</b><span>Mood, stress, or feeling burnt out</span></button>
+          <button class="opt" data-v="personal"><b>Personal matter</b><span>Something outside work</span></button>
+          <button class="opt" data-v="other"><b>Other</b><span>Something else</span></button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field-label">2 · What can you take on today? <span style="color:var(--rose)">*</span></div>
+        <div class="opt-grid" id="opt-capacity">
+          <button class="opt" data-v="full"><b>Full load</b><span>Managing — just letting you know</span></button>
+          <button class="opt" data-v="reduced"><b>Reduced</b><span>Lighter batches or fewer hours</span></button>
+          <button class="opt" data-v="none"><b>Need the day</b><span>Not able to work today</span></button>
+        </div>
+
+        <div class="divider"></div>
+
+        <div class="field-label">3 · Anything you want to add?<span class="optional-tag">Optional</span></div>
+        <textarea id="ci-note" maxlength="600" placeholder="Only if you want to. Erased after 30 days." oninput="noteCount()"></textarea>
+        <div class="char-count"><span id="ci-count">0</span> / 600</div>
+
+        <div class="divider"></div>
+
+        <div class="field-label">4 · Roughly how long?<span class="optional-tag">Optional</span></div>
+        <input type="number" id="ci-days" min="1" max="90" placeholder="Number of days — leave blank if you don't know">
+
+        <div id="ci-msg" style="margin-top:16px"></div>
+        <button class="btn primary" id="ci-submit" style="margin-top:16px" onclick="submitFlag()">Send to my leads</button>
+      </div>
+    </div>
+
+    <div id="ci-done" class="hidden">
+      <div class="banner good"><span>✅</span><div><b>Sent.</b> Your leads can see it now. Take the time you need — and if things get worse, the <a href="#" onclick="switchTab('help');return false">Help tab</a> has people who can actually help.</div></div>
+      <button class="btn" onclick="resetForm()">Send another update</button>
+    </div>
+  </section>
+
+  <!-- ══════════ HELP ══════════ -->
+  <section id="tab-help" class="hidden">
+    <div class="hero">
+      <h1>If you need real help</h1>
+      <p>This site is a training resource. It is not a counselling service and it cannot help in an emergency. The people below can.</p>
+    </div>
+
+    <div class="banner bad"><span>🚨</span><div><b>If someone's life is in danger right now</b> — go to the nearest hospital emergency department, or get someone to take you. In Tanzania, ambulance response can be slow or unavailable outside the major cities, so travelling directly to a hospital is usually faster than waiting.</div></div>
+
+    <div class="section-head">Talk to someone today</div>
+
+    <div class="res primary">
+      <div class="res-name">Afya Call Center</div>
+      <div class="res-num">199</div>
+      <div class="res-desc">Tanzania's Ministry of Health national health line. <strong>Free, 24 hours, confidential.</strong> Works from any phone, including a basic feature phone, by call or SMS. Mental health is one of the areas they advise on, alongside general health. This is the best first call if you're not sure where to start.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">Mirembe National Mental Health Hospital — Dodoma</div>
+      <div class="res-desc">Tanzania's national referral hospital for mental health, and the country's only specialist mental health hospital. Provides general adult psychiatry, substance use services, and neuropsychiatric care. Appropriate for ongoing treatment or a referral, rather than an immediate crisis.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">Emergency numbers</div>
+      <div class="res-desc"><strong>112</strong> — police and general emergencies. <strong>114</strong> — ambulance.<br>
+      Be aware that coverage is patchy outside Dar es Salaam and response times can be slow. Getting yourself to a hospital directly is often the faster route.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">116 — National Child Helpline</div>
+      <div class="res-desc">Free and 24 hours, but aimed at children and young people. Listed here in case it's useful for someone in your family rather than for you.</div>
+    </div>
+
+    <div class="section-head">At work</div>
+    <div class="res">
+      <div class="res-name">Your supervisor</div>
+      <div class="res-desc">If the pressure is coming from the work itself — volume, deadlines, or the material you're reviewing — that's something your leads can actually change. The <a href="#" onclick="switchTab('checkin');return false">Check In tab</a> is the quiet way to start that conversation.</div>
+    </div>
+
+    <div class="banner"><span>ℹ️</span><div>Details were last verified <b>27 July 2026</b>. Numbers do change — if you find one of these is out of date, please tell your supervisor so this page can be fixed.</div></div>
+  </section>
+
+  <!-- ══════════ FLAGS (leadership) ══════════ -->
+  <section id="tab-flags" class="hidden">
+    <div class="hero">
+      <h1>Check-ins from the team</h1>
+      <p>Newest first. Acknowledging tells the record that someone has seen it — it doesn't notify the person, so follow up with them directly too.</p>
+      <p>Notes are erased 30 days after they're written, and entries disappear entirely after 90 days.</p>
+    </div>
+    <div id="flags-status"></div>
+    <div id="flags-list"></div>
+  </section>
+
+  <div class="footer">
+    Team Wellness · part of AA Mastery · not a clinical service<br>
+    Training content on this page is not tracked, scored, or reported.
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════════════════════════════════════
+// CONFIG
+// ══════════════════════════════════════════════════════════════════
+var SUPABASE_URL='https://mrxhydaoxlxuampmgaoi.supabase.co';
+var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
+// Mirrors LEADERSHIP_EMAILS in the main app. Used only to decide whether to SHOW
+// the Flags tab — actual access is enforced by row level security in Postgres,
+// which keys on the JWT email and cannot be bypassed from the browser.
+var LEADERSHIP_EMAILS=['jeff@ataandeadvisors.com'];
+var SESSION_KEY='aa_wellness_session';
+
+// ══════════════════════════════════════════════════════════════════
+// UTIL
+// ══════════════════════════════════════════════════════════════════
+function esc(v){
+  return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+function el(id){return document.getElementById(id);}
+function msg(target,text,kind){
+  var cls=kind==='ok'?'banner good':(kind==='err'?'banner bad':'banner');
+  var icon=kind==='ok'?'✅':(kind==='err'?'⚠️':'ℹ️');
+  el(target).innerHTML='<div class="'+cls+'"><span>'+icon+'</span><div>'+esc(text)+'</div></div>';
+}
+function clearMsg(target){el(target).innerHTML='';}
+
+// ══════════════════════════════════════════════════════════════════
+// SESSION
+// ══════════════════════════════════════════════════════════════════
+var SESSION=null;
+function loadSession(){
+  try{
+    var raw=localStorage.getItem(SESSION_KEY);
+    if(!raw)return null;
+    var s=JSON.parse(raw);
+    if(!s||!s.token||!s.expires_at)return null;
+    if(Date.now()>=s.expires_at){localStorage.removeItem(SESSION_KEY);return null;}
+    return s;
+  }catch(e){return null;}
+}
+function saveSession(s){try{localStorage.setItem(SESSION_KEY,JSON.stringify(s));}catch(e){}}
+function isLead(){
+  return !!SESSION && LEADERSHIP_EMAILS.indexOf((SESSION.email||'').toLowerCase())!==-1;
+}
+
+async function signIn(){
+  var email=el('ci-email').value.trim(), pass=el('ci-pass').value;
+  clearMsg('ci-auth-msg');
+  if(!email||!pass){msg('ci-auth-msg','Enter your email and password.','err');return;}
+  var btn=el('ci-signin');btn.disabled=true;btn.textContent='Signing in…';
+  try{
+    var r=await fetch(SUPABASE_URL+'/auth/v1/token?grant_type=password',{
+      method:'POST',
+      headers:{'apikey':SUPABASE_ANON_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({email:email,password:pass})
+    });
+    var d=await r.json();
+    if(!r.ok||!d.access_token){
+      msg('ci-auth-msg',d.error_description||d.msg||'Could not sign in. Check your details and try again.','err');
+      return;
+    }
+    var u=d.user||{};
+    SESSION={
+      token:d.access_token,
+      email:(u.email||email).toLowerCase(),
+      name:(u.user_metadata&&u.user_metadata.display_name)||(u.email||email).split('@')[0],
+      expires_at:Date.now()+((d.expires_in||3600)*1000)
+    };
+    saveSession(SESSION);
+    el('ci-pass').value='';
+    applySession();
+  }catch(e){
+    msg('ci-auth-msg','Network problem — could not reach the server.','err');
+  }finally{
+    btn.disabled=false;btn.textContent='Sign in';
+  }
+}
+
+function signOut(){
+  SESSION=null;
+  try{localStorage.removeItem(SESSION_KEY);}catch(e){}
+  applySession();
+  if(currentTab==='flags')switchTab('you');
+}
+
+function applySession(){
+  var authed=!!SESSION;
+  el('ci-auth').classList.toggle('hidden',authed);
+  el('ci-form').classList.toggle('hidden',!authed||submitted);
+  el('ci-done').classList.toggle('hidden',!submitted);
+  if(authed)el('ci-whoami').textContent=SESSION.name+' ('+SESSION.email+')';
+  el('nav-flags').classList.toggle('hidden',!isLead());
+  if(isLead())loadFlags();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════════════════════════════
+var currentTab='you';
+function switchTab(t){
+  currentTab=t;
+  ['you','leads','checkin','help','flags'].forEach(function(x){
+    var s=el('tab-'+x); if(s)s.classList.toggle('hidden',x!==t);
+  });
+  document.querySelectorAll('.nav-btn').forEach(function(b){
+    b.classList.toggle('active',b.getAttribute('data-tab')===t);
+  });
+  window.scrollTo(0,0);
+  if(t==='flags')loadFlags();
+  if(history.replaceState)history.replaceState(null,'','#'+t);
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CHECK-IN FORM
+// ══════════════════════════════════════════════════════════════════
+var pick={category:null,capacity:null};
+var submitted=false;
+
+function wireOptions(groupId,key){
+  el(groupId).addEventListener('click',function(e){
+    var b=e.target.closest('.opt'); if(!b)return;
+    pick[key]=b.getAttribute('data-v');
+    this.querySelectorAll('.opt').forEach(function(x){x.classList.remove('active');});
+    b.classList.add('active');
+  });
+}
+function noteCount(){el('ci-count').textContent=el('ci-note').value.length;}
+
+async function submitFlag(){
+  clearMsg('ci-msg');
+  if(!SESSION){msg('ci-msg','Your session expired — please sign in again.','err');applySession();return;}
+  if(!pick.category){msg('ci-msg','Please answer question 1.','err');return;}
+  if(!pick.capacity){msg('ci-msg','Please answer question 2.','err');return;}
+
+  var daysRaw=el('ci-days').value.trim();
+  var days=daysRaw===''?null:parseInt(daysRaw,10);
+  if(days!==null&&(isNaN(days)||days<1||days>90)){
+    msg('ci-msg','Duration should be a number of days between 1 and 90, or left blank.','err');return;
+  }
+  var note=el('ci-note').value.trim();
+
+  var btn=el('ci-submit');btn.disabled=true;btn.textContent='Sending…';
+  try{
+    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_flags',{
+      method:'POST',
+      headers:{
+        'apikey':SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+SESSION.token,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify({
+        user_email:SESSION.email,
+        user_name:SESSION.name,
+        category:pick.category,
+        capacity:pick.capacity,
+        note:note===''?null:note,
+        expected_days:days
+      })
+    });
+    if(!r.ok){
+      var d=null; try{d=await r.json();}catch(e2){}
+      if(r.status===401||r.status===403){
+        msg('ci-msg','Your session expired — please sign in again.','err');
+        signOut();
+        return;
+      }
+      msg('ci-msg',(d&&(d.message||d.hint))||'Could not send that. Please try again.','err');
+      return;
+    }
+    submitted=true;
+    el('ci-form').classList.add('hidden');
+    el('ci-done').classList.remove('hidden');
+  }catch(e){
+    msg('ci-msg','Network problem — could not reach the server.','err');
+  }finally{
+    btn.disabled=false;btn.textContent='Send to my leads';
+  }
+}
+
+function resetForm(){
+  submitted=false;
+  pick={category:null,capacity:null};
+  document.querySelectorAll('.opt').forEach(function(x){x.classList.remove('active');});
+  el('ci-note').value='';el('ci-days').value='';noteCount();
+  clearMsg('ci-msg');
+  applySession();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// FLAGS INBOX (leadership)
+// ══════════════════════════════════════════════════════════════════
+var CAT_LABEL={unwell:'Unwell',low:'Low',personal:'Personal',other:'Other'};
+var CAP_LABEL={full:'Full load',reduced:'Reduced',none:'Needs the day'};
+
+async function loadFlags(){
+  if(!isLead())return;
+  var status=el('flags-status'), list=el('flags-list');
+  status.innerHTML='<div class="empty">Loading…</div>';list.innerHTML='';
+  try{
+    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_flags?select=*&order=created_at.desc',{
+      headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SESSION.token}
+    });
+    if(!r.ok){
+      status.innerHTML='';
+      msg('flags-status', r.status===401||r.status===403
+        ? 'Your session expired, or this account is not authorised to view check-ins.'
+        : 'Could not load check-ins.','err');
+      return;
+    }
+    var rows=await r.json();
+    status.innerHTML='';
+    renderFlags(rows);
+    var pending=rows.filter(function(x){return !x.acknowledged_at;}).length;
+    el('flag-count').textContent=pending?' ('+pending+')':'';
+  }catch(e){
+    status.innerHTML='';
+    msg('flags-status','Network problem — could not load check-ins.','err');
+  }
+}
+
+function renderFlags(rows){
+  var list=el('flags-list');
+  if(!rows.length){
+    list.innerHTML='<div class="empty">No check-ins right now.<br>That may be good news, or it may mean people don\'t know this exists yet.</div>';
+    return;
+  }
+  list.innerHTML=rows.map(function(f){
+    var cat=CAT_LABEL[f.category]||f.category;
+    var cap=CAP_LABEL[f.capacity]||f.capacity;
+    var when=new Date(f.created_at).toLocaleString();
+    var acked=!!f.acknowledged_at;
+    var h='<div class="flag'+(acked?'':' unack')+'">';
+    h+='<div class="flag-top">';
+    h+='<span class="flag-who">'+esc(f.user_name||f.user_email)+'</span>';
+    h+='<span class="tagpill t-'+esc(f.category)+'">'+esc(cat)+'</span>';
+    h+='<span class="tagpill c-'+esc(f.capacity)+'">'+esc(cap)+'</span>';
+    h+='<span class="flag-when">'+esc(when)+'</span>';
+    h+='</div>';
+    h+='<div class="flag-meta">'+esc(f.user_email)+'</div>';
+    if(f.note)h+='<div class="flag-note">'+esc(f.note)+'</div>';
+    if(f.expected_days)h+='<div class="flag-meta">Expects about '+esc(f.expected_days)+' day'+(f.expected_days>1?'s':'')+'.</div>';
+    if(acked){
+      h+='<div class="flag-acked">✅ Acknowledged by '+esc(f.acknowledged_by||'a supervisor')+' · '+esc(new Date(f.acknowledged_at).toLocaleString())+'</div>';
+    }else{
+      h+='<button class="btn sm primary" style="margin-top:11px" onclick="ackFlag(\''+esc(f.id)+'\',this)">Acknowledge</button>';
+    }
+    h+='</div>';
+    return h;
+  }).join('');
+}
+
+async function ackFlag(id,btn){
+  if(!SESSION)return;
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    var r=await fetch(SUPABASE_URL+'/rest/v1/wellness_flags?id=eq.'+encodeURIComponent(id),{
+      method:'PATCH',
+      headers:{
+        'apikey':SUPABASE_ANON_KEY,
+        'Authorization':'Bearer '+SESSION.token,
+        'Content-Type':'application/json',
+        'Prefer':'return=minimal'
+      },
+      body:JSON.stringify({acknowledged_by:SESSION.email,acknowledged_at:new Date().toISOString()})
+    });
+    if(!r.ok){btn.disabled=false;btn.textContent='Acknowledge';msg('flags-status','Could not save that.','err');return;}
+    loadFlags();
+  }catch(e){
+    btn.disabled=false;btn.textContent='Acknowledge';
+    msg('flags-status','Network problem — could not save.','err');
+  }
+}
+
+// ══════════════════════════════════════════════════════════════════
+// CONTENT
+// ══════════════════════════════════════════════════════════════════
+var YOU=[
+  {ico:'🔍',t:'Knowing your own warning signs',b:`
+    <p>Burnout rarely announces itself. It shows up as small changes you can explain away one at a time. The point of knowing your own signs is to catch it before it becomes a crisis.</p>
+    <p><strong>Common ones in review work:</strong></p>
+    <ul>
+      <li>Dread before opening a batch, when the same work was fine last month</li>
+      <li>Reading the same document three times and retaining none of it</li>
+      <li>Your error rate creeping up while you're working <em>harder</em>, not less</li>
+      <li>Losing hours — looking up and not knowing where the afternoon went</li>
+      <li>Feeling flat about work you used to find interesting</li>
+      <li>Snapping at people, or withdrawing from the team chat</li>
+      <li>Trouble sleeping, or sleeping plenty and still exhausted</li>
+    </ul>
+    <div class="callout">One of these on a bad week is just a bad week. Several of them, most days, for two weeks or more, is a signal worth acting on.</div>
+    <p>Try noticing which one shows up <strong>first</strong> for you. That's your early warning, and it's usually the same one each time.</p>`},
+
+  {ico:'🪨',t:'When the material itself is heavy',b:`
+    <p>Some cases involve genuinely distressing content — abuse, violence, graphic evidence, people at their worst. Being affected by that is not fragility. It's a normal response, and it's a recognised occupational exposure in this line of work.</p>
+    <p><strong>Things that actually help:</strong></p>
+    <ul>
+      <li><strong>Change the sensory experience.</strong> Shrink the window, turn off image previews, mute audio, view in greyscale. You still do the work; you reduce the impact.</li>
+      <li><strong>Break the batch.</strong> Don't do heavy material in one long stretch. Alternate with lighter documents where the workflow allows.</li>
+      <li><strong>Mark a clear end.</strong> A deliberate transition after a hard session — walk outside, change rooms, wash your face. It sounds trivial and it isn't.</li>
+      <li><strong>Say it out loud.</strong> Telling one person "that batch was grim" discharges more than carrying it silently.</li>
+    </ul>
+    <div class="callout warn">If material is following you home — intrusive images, disturbed sleep, avoiding things that remind you of it — that's worth telling someone about now rather than later. It responds well to early help and badly to being ignored.</div>
+    <p>Pushing through and saying nothing is the approach that most reliably makes this worse.</p>`},
+
+  {ico:'🔋',t:'Fatigue, screens, and the body',b:`
+    <p>Long review days are physically demanding in ways that are easy to dismiss because you're sitting down.</p>
+    <ul>
+      <li><strong>Eyes:</strong> every 20 minutes, look at something roughly 6 metres away for 20 seconds. It measurably reduces strain.</li>
+      <li><strong>Breaks are throughput, not indulgence.</strong> Accuracy falls off sharply in long unbroken stretches, and rework costs more time than the break would have.</li>
+      <li><strong>Water and food.</strong> Dehydration and skipped meals show up as poor concentration long before they show up as thirst or hunger.</li>
+      <li><strong>Position.</strong> Screen at eye level, feet flat. Neck and back pain accumulate quietly over months.</li>
+      <li><strong>Sleep.</strong> The single biggest lever on next-day review accuracy. Late nights to hit a target usually cost more than they gain.</li>
+    </ul>
+    <div class="callout">If you're consistently working past your hours to keep up, that's not a personal failing to fix with willpower — it's a workload question, and it belongs with your lead.</div>`},
+
+  {ico:'💬',t:'Speaking up — and what actually happens',b:`
+    <p>People often stay quiet because they don't know what will happen if they speak. So, plainly:</p>
+    <p><strong>What a check-in does:</strong> tells your supervisors you're not at full capacity today, and roughly why, so the work can be arranged around it.</p>
+    <p><strong>What it does not do:</strong></p>
+    <ul>
+      <li>It is not a leave request and does not approve time off</li>
+      <li>It is not a disciplinary record and is not used in performance review</li>
+      <li>It is not shared with the wider team</li>
+      <li>It is not kept — the note goes after 30 days, everything else after 90</li>
+    </ul>
+    <div class="callout">You control how much you say. Only the first two questions are required. A check-in that just says "Low · reduced capacity" is a perfectly complete check-in.</div>
+    <p>If you'd rather speak to a person than fill in a form, do that instead. The form exists to make it easier, not to replace a conversation.</p>`},
+
+  {ico:'🚧',t:'Boundaries',b:`
+    <p>Deadlines are real, and so are limits. Both things are true.</p>
+    <ul>
+      <li><strong>Finishing time.</strong> Occasional crunch before a production is part of the job. Every night is not crunch — it's an under-resourced project, and your lead needs to hear that.</li>
+      <li><strong>Messages after hours.</strong> Agree with your lead what counts as urgent. Most things can wait until morning, and assuming they can't is how people burn out.</li>
+      <li><strong>Saying no to more.</strong> "I can take that on if something else moves — which should it be?" is a professional answer, not a refusal.</li>
+      <li><strong>Days off.</strong> A day off spent checking messages is not a day off, and you'll feel it by the following week.</li>
+    </ul>
+    <div class="callout">Protecting your capacity is part of doing the work well. Reviewers who pace themselves are more accurate over a project than reviewers who sprint and crash.</div>`},
+
+  {ico:'🤲',t:'Getting real help',b:`
+    <p>This site is a training resource. It is not counselling, and there are limits to what a workplace tool should try to do.</p>
+    <p>If you are struggling in a way that goes beyond a hard week — or if you're having thoughts of harming yourself — please talk to someone who is trained for it. The <strong>Help</strong> tab lists services in Tanzania, including a free 24-hour national health line you can call from any phone.</p>
+    <div class="callout">Asking for help early is the version of this that works. Waiting until you can't function is much harder to come back from.</div>
+    <p>Telling your lead is also an option. They can't treat anything, but they can change your workload, and sometimes that's the pressure that needs to come off first.</p>`}
+];
+
+var LEADS=[
+  {ico:'👀',t:'Spotting it early',b:`
+    <p>People rarely say "I'm burning out." They show it in their work first. What you're looking for is <strong>change from that person's own normal</strong>, not comparison against the team.</p>
+    <ul>
+      <li>Accuracy dropping while hours go up</li>
+      <li>Going quiet — fewer questions, less presence in team chat, camera off when it didn't used to be</li>
+      <li>Over-apologising for small things</li>
+      <li>Missing standups, or arriving visibly drained</li>
+      <li>Sudden overwork — some people respond to distress by burying themselves in it</li>
+      <li>Escalating less, because forming a view feels like too much</li>
+    </ul>
+    <div class="callout">Two weeks of a clear change from their baseline is your cue to ask. You don't need certainty — asking early costs very little and waiting costs a lot.</div>`},
+
+  {ico:'🗣️',t:'Opening the conversation',b:`
+    <p>Lead with what you've observed, keep it private, and give them room to say nothing.</p>
+    <div class="say do"><span class="tag">Try</span>"I've noticed you've seemed quieter the last couple of weeks. I'm not asking about your work — I'm asking how you're doing."</div>
+    <div class="say do"><span class="tag">Try</span>"You don't have to tell me anything. But if something's making this harder right now, I'd rather know so I can help with the workload."</div>
+    <div class="say do"><span class="tag">Try</span>"Take your time. I'm not in a rush."</div>
+    <p><strong>Then stop talking.</strong> The most useful thing you do in this conversation is leave a silence long enough for them to fill.</p>
+    <ul>
+      <li>Do it privately, and not at the end of a shift when they have to go straight back to work</li>
+      <li>Ask once. If they say they're fine, accept it and leave the door open</li>
+      <li>Follow up a week later — a second, unhurried ask often gets a different answer</li>
+    </ul>`},
+
+  {ico:'🚫',t:"What not to say",b:`
+    <p>Well-meant responses do most of the damage here. These are the common ones.</p>
+    <div class="say dont"><span class="tag">Avoid</span>"We're all under pressure." — True, and it tells them to stop talking.</div>
+    <div class="say dont"><span class="tag">Avoid</span>"You seem depressed / anxious." — You're not diagnosing. Describe what you saw, not what you think it means.</div>
+    <div class="say dont"><span class="tag">Avoid</span>"Have you tried exercising / sleeping more?" — Unsolicited fixes land as dismissal.</div>
+    <div class="say dont"><span class="tag">Avoid</span>"What exactly happened?" — Don't press for detail they haven't offered. You don't need it to help.</div>
+    <div class="say dont"><span class="tag">Avoid</span>"Let me know if you need anything." — Too vague to act on. Offer something specific instead.</div>
+    <div class="callout">Compare: "I can move the Veridian batch to Junior this week and push your deadline to Friday. Would that help?" — concrete, immediate, and doesn't require them to explain themselves.</div>`},
+
+  {ico:'🔒',t:'Handling a disclosure',b:`
+    <p>If someone tells you something personal, how you handle it determines whether anyone else ever tells you anything.</p>
+    <ul>
+      <li><strong>Don't promise total secrecy</strong> before you know what you're hearing. Say: "I'll keep this between us as far as I can — if I ever thought you were at risk, I'd need to get help, and I'd tell you first."</li>
+      <li><strong>Share only what's needed, only with who needs it.</strong> "Grace is at reduced capacity this week" is usually all another lead needs. The reason is rarely their business.</li>
+      <li><strong>Ask before you pass anything on.</strong> "Is it alright if I tell Simon you need lighter batches? I won't say why."</li>
+      <li><strong>Don't discuss it in group chats</strong>, and don't refer to it in front of others, even obliquely.</li>
+      <li><strong>Write down as little as possible.</strong></li>
+    </ul>
+    <div class="callout warn">If someone discloses that they intend to harm themselves, confidentiality stops being the priority. Stay with them, get them to the Help tab resources or a hospital, and tell them plainly that you need to involve someone who can help.</div>`},
+
+  {ico:'⚖️',t:'Adjusting the workload',b:`
+    <p>This is the part you actually control, and it's usually the most valuable thing you can offer.</p>
+    <ul>
+      <li><strong>Reduce volume before reducing hours.</strong> A lighter target often helps more than a shorter day.</li>
+      <li><strong>Move them off heavy material</strong> if the case content is the problem. Rotate distressing batches around the team rather than leaving them with whoever started them.</li>
+      <li><strong>Give simpler work.</strong> Straightforward responsiveness coding is far less depleting than difficult privilege calls.</li>
+      <li><strong>Take away a deadline</strong> where you can. Uncertainty about whether they'll cope is often heavier than the work itself.</li>
+      <li><strong>Say what you've changed and for how long.</strong> "Lighter batches this week, we'll review Friday" is reassuring. An open-ended arrangement makes people anxious about when it ends.</li>
+    </ul>
+    <div class="callout">Check the adjustment actually happened. An offer that never materialises is worse than not offering.</div>`},
+
+  {ico:'🛑',t:'Knowing where your role stops',b:`
+    <p>You are a supervisor, not a clinician. Trying to be the latter helps nobody and puts you at risk too.</p>
+    <p><strong>Your job:</strong> notice, ask, listen, adjust the work, point to real help, follow up.</p>
+    <p><strong>Not your job:</strong> diagnosing, counselling, being available at all hours, or carrying it alone.</p>
+    <div class="callout warn">Hand it on when: they mention self-harm or suicide; when they're unable to function day to day; when it's been weeks with no improvement; or when you're out of your depth. Handing over well is a better outcome than persevering badly.</div>
+    <p>Look after yourself too. Supporting someone who's struggling is genuinely tiring, and supervisors burn out quietly. Use your own check-in.</p>`},
+
+  {ico:'📥',t:'Responding to a check-in',b:`
+    <p>When a flag arrives in the <strong>Flags</strong> tab:</p>
+    <ul>
+      <li><strong>Acknowledge it in the system</strong> so it's on record as seen — but understand that acknowledging does <em>not</em> notify the person.</li>
+      <li><strong>Then message them directly.</strong> Short and warm: "Got your check-in — thanks for telling me. I've moved your batch to tomorrow. Anything else that would help?"</li>
+      <li><strong>Same day.</strong> A check-in that goes unanswered for three days teaches everyone the tool doesn't work.</li>
+      <li><strong>Don't interrogate the note.</strong> If they left it blank, that's their choice; respect it.</li>
+      <li><strong>Watch for repeats.</strong> Three flags in a quarter is a pattern worth a proper conversation, not another workload tweak.</li>
+    </ul>
+    <div class="callout">Notes are erased after 30 days and the whole entry after 90. Don't treat the inbox as a record you can refer back to — act on it now.</div>`}
+];
+
+var SCEN_YOU=[
+  {q:'The case material you\'re reviewing is genuinely disturbing, and it\'s following you home. You keep seeing it when you try to sleep.',
+   a:`<p><strong>This needs action now, not endurance.</strong> Intrusive images and disrupted sleep after exposure to distressing material are a recognised response, and they respond well to early help.</p>
+      <p>Tell your lead today. You don't have to describe the content — "the material on this case is affecting me and I need to come off it for a while" is enough. Rotating heavy batches is normal practice, not a favour.</p>
+      <p>If it continues after you've moved off the case, call <strong>199</strong> (free, 24 hours) and talk to someone trained for it. Don't wait to see if it fades.</p>`},
+
+  {q:'You\'ve been getting slower and making more mistakes for about three weeks. You\'re working longer hours to compensate, which isn\'t helping.',
+   a:`<p><strong>That combination — falling accuracy plus rising hours — is close to a textbook burnout signal.</strong> The extra hours are making it worse, because fatigue is the cause rather than the cure.</p>
+      <p>Raise a check-in with <em>Low</em> and <em>Reduced</em>. Then talk to your lead about the target, not your effort. The honest framing is: "My accuracy is dropping and longer days aren't fixing it. I think I need a lighter load for a week."</p>
+      <p>A good lead will take that seriously — it's a quality issue as much as a wellbeing one, and rework costs the project more than a lighter week does.</p>`},
+
+  {q:'Something serious is happening in your family. You can still work, but you\'re distracted and you don\'t want to talk about it.',
+   a:`<p><strong>You don't have to explain anything.</strong> Choose <em>Personal matter</em>, set your capacity honestly, and leave the note blank. That is a complete check-in.</p>
+      <p>Your leads then know to expect less this week without knowing why — which is precisely what the category exists for.</p>
+      <p>If you'd rather your lead heard it from you directly, a sentence is plenty: "Something's going on at home. I'm here, but I'm not at full speed for a bit."</p>`},
+
+  {q:'You feel fine, but a colleague seems to be struggling and you don\'t know whether to say anything.',
+   a:`<p><strong>Say something to them, not about them.</strong> "You've seemed a bit flat lately — you alright?" is enough, and coming from a peer it often lands better than from a supervisor.</p>
+      <p>Don't report it to a lead behind their back unless you're genuinely worried about their safety. Being talked about is a fast way to make someone withdraw further.</p>
+      <p>Do point them here. "There's a check-in thing on the site if you want the workload eased without a whole conversation" is a low-pressure way to help.</p>`}
+];
+
+var SCEN_LEADS=[
+  {q:'A team member says they\'re fine, but they\'ve missed three deadlines this week and they\'re usually reliable.',
+   a:`<p><strong>Accept the "fine" and keep the door open — but don't drop it.</strong> The first ask often gets a reflexive answer, particularly from someone who's used to being dependable.</p>
+      <p>Say: "Alright. I'm not going to push. But this isn't like you, so I'm going to check in again next week — and if something's going on before then, come find me."</p>
+      <p>Meanwhile, act on what you can see without needing a reason. Lighten the batch, extend a deadline. You don't need a disclosure to reduce a workload.</p>
+      <p>Ask again in a week, in private, unhurried. The second ask frequently gets the real answer.</p>`},
+
+  {q:'Someone tells you they\'ve been diagnosed with depression and asks you not to tell anyone.',
+   a:`<p><strong>Thank them — that took effort.</strong> Then be straight about confidentiality rather than over-promising.</p>
+      <p>"I'll keep this to myself. The only thing I'd have to act on is if I thought you were in danger, and I'd tell you before I did anything."</p>
+      <p>Ask what would actually help, rather than deciding for them: "Is there anything about the work that would make this easier?" Some people want lighter loads; others want normality and would find special treatment worse.</p>
+      <p>If you need to adjust their work in a way others will notice, agree the wording first: "I'll tell Simon you're on lighter batches this week. I won't say why."</p>
+      <p>Don't check in daily — it reads as monitoring. Weekly, briefly, is about right.</p>`},
+
+  {q:'A check-in arrives marked "Need the day" with no note, from someone who has now flagged three times this quarter.',
+   a:`<p><strong>Handle today first.</strong> Acknowledge it, cover their work, and message them: "Got it — take the day, I've covered your batch. No need to explain."</p>
+      <p><strong>Then, separately and not today, have the bigger conversation.</strong> Three flags in a quarter is a pattern, and the answer to a pattern isn't another one-day workaround.</p>
+      <p>When they're back and steady: "I've noticed this has come up a few times. I'm not asking why — I'm asking whether there's something about how the work is set up that we should change."</p>
+      <p>Point them at the Help tab. A recurring pattern often needs support you can't provide.</p>`},
+
+  {q:'You\'re a lead, and you\'re the one struggling. Two people have disclosed difficult things to you this month and you\'re carrying it.',
+   a:`<p><strong>This is a real occupational load and it's routinely ignored.</strong> Supporting people who are struggling is tiring, and supervisors tend not to use the systems they administer.</p>
+      <p>Use your own check-in. It's not only for the team.</p>
+      <p>Talk to another supervisor — you can discuss the weight of it without repeating what was said to you. "I've had a couple of heavy conversations and I'm feeling it" breaks no confidence.</p>
+      <p>And if it's beyond a hard month, call <strong>199</strong>. The advice in the "Getting real help" section applies to you exactly as it applies to your team.</p>`}
+];
+
+function renderAcc(target,items){
+  el(target).innerHTML=items.map(function(s,i){
+    return '<div class="acc" id="'+target+'-'+i+'">'+
+      '<button class="acc-head" onclick="toggleAcc(\''+target+'-'+i+'\')">'+
+        '<span class="ico">'+s.ico+'</span><span>'+esc(s.t)+'</span><span class="caret">▶</span>'+
+      '</button>'+
+      '<div class="acc-body">'+s.b+'</div>'+
+    '</div>';
+  }).join('');
+}
+function toggleAcc(id){el(id).classList.toggle('open');}
+
+function renderScen(target,items){
+  el(target).innerHTML=items.map(function(s,i){
+    return '<div class="scen" id="'+target+'-'+i+'">'+
+      '<div class="scen-q">'+esc(s.q)+'</div>'+
+      '<button class="btn sm" onclick="toggleScen(\''+target+'-'+i+'\',this)">What would help</button>'+
+      '<div class="scen-a" style="margin-top:12px">'+s.a+'</div>'+
+    '</div>';
+  }).join('');
+}
+function toggleScen(id,btn){
+  var n=el(id);n.classList.toggle('open');
+  btn.textContent=n.classList.contains('open')?'Hide':'What would help';
+}
+
+// ══════════════════════════════════════════════════════════════════
+// INIT
+// ══════════════════════════════════════════════════════════════════
+renderAcc('acc-you',YOU);
+renderAcc('acc-leads',LEADS);
+renderScen('scen-you',SCEN_YOU);
+renderScen('scen-leads',SCEN_LEADS);
+wireOptions('opt-category','category');
+wireOptions('opt-capacity','capacity');
+
+SESSION=loadSession();
+applySession();
+
+(function initialTab(){
+  var h=(location.hash||'').replace('#','');
+  if(['you','leads','checkin','help','flags'].indexOf(h)!==-1){
+    if(h==='flags'&&!isLead()){switchTab('you');return;}
+    switchTab(h);
+  }
+})();
+</script>
+</body>
+</html>

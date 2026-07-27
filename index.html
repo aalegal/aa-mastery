@@ -1428,6 +1428,7 @@ tr:nth-child(even) td{background:#0d162080}
     <button onclick="nav('foreign-review')">🇧🇷 Foreign Language</button>
     <button onclick="nav('projects')">📁 Projects</button>
     <button onclick="location.href='/accent-trainer/'">🎓 Accent Trainer</button>
+    <button onclick="location.href='/wellness/'">💚 Wellness</button>
   </div>
   <div id="auth-zone">
     <span id="user-pill" class="user-pill" style="display:none"></span>
@@ -1436,6 +1437,17 @@ tr:nth-child(even) td{background:#0d162080}
     <button id="btn-timesheets" class="btn btn-sm btn-gold" style="display:none" onclick="nav('timesheets')">🕒 Timesheets</button>
     <button id="btn-leadership" class="btn btn-sm btn-gold" style="display:none" onclick="nav('leadership')">🔒 Leadership</button>
     <button id="btn-admin" class="btn btn-sm btn-red" style="display:none" onclick="nav('admin')">⚙️ Admin</button>
+  </div>
+</div>
+
+<!-- Wellness check-ins awaiting a supervisor. Count only — no detail is rendered here. -->
+<div id="wellness-alert" style="display:none;max-width:1100px;margin:14px auto 0;padding:0 18px">
+  <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:rgba(18,211,176,0.08);border:1px solid rgba(18,211,176,0.3);border-radius:12px;padding:13px 16px">
+    <span style="font-size:19px">💚</span>
+    <div style="font-size:.87rem;line-height:1.55;flex:1;min-width:200px">
+      <b style="color:#12d3b0" id="wellness-alert-text"></b> — someone on the team has said they're not at full capacity.
+    </div>
+    <button class="btn btn-sm btn-gold" onclick="location.href='/wellness/#flags'">Open check-ins</button>
   </div>
 </div>
 
@@ -3606,6 +3618,7 @@ function onLogin(){
   document.getElementById('btn-login').style.display='none';document.getElementById('btn-logout').style.display='inline-block';
   if(u.email===ADMIN_EMAIL)document.getElementById('btn-admin').style.display='inline-block';
   if(isLeadership(u)){document.getElementById('btn-timesheets').style.display='inline-block';document.getElementById('btn-leadership').style.display='inline-block';}
+  loadWellnessAlert();
   if(currentPage==='quiz')initQuizPage();
   if(typeof reportLoginContext==='function')reportLoginContext();
   if(PENDING_NAV){var pn=PENDING_NAV;PENDING_NAV=null;nav(pn);}
@@ -3616,7 +3629,37 @@ async function logout(){
   document.getElementById('btn-logout').style.display='none';document.getElementById('btn-admin').style.display='none';
   document.getElementById('btn-timesheets').style.display='none';document.getElementById('btn-leadership').style.display='none';
   if(currentPage==='leadership'||currentPage==='timesheets')nav('home');
+  document.getElementById('wellness-alert').style.display='none';
   if(currentPage==='quiz')initQuizPage();
+}
+
+// Wellness check-ins awaiting acknowledgement. Gated on email rather than
+// isLeadership(), because that helper also matches display_name — which users
+// can set themselves. A non-supervisor passing the name check would otherwise
+// read back their OWN flags via the own-select RLS policy and see a banner
+// about themselves. Only the count is fetched; no flag detail enters this page.
+async function loadWellnessAlert(){
+  var box=document.getElementById('wellness-alert');
+  if(!box)return;
+  var em=((SB.user&&SB.user.email)||'').toLowerCase();
+  if(LEADERSHIP_EMAILS.map(function(e){return e.toLowerCase();}).indexOf(em)===-1){
+    box.style.display='none';return;
+  }
+  try{
+    var r=await axios({
+      method:'GET',
+      url:SB.url+'/rest/v1/wellness_flags?select=id&acknowledged_at=is.null',
+      headers:SB.hdr()
+    });
+    var n=(r.data||[]).length;
+    if(!n){box.style.display='none';return;}
+    document.getElementById('wellness-alert-text').textContent=
+      n===1?'1 check-in needs a look':(n+' check-ins need a look');
+    box.style.display='block';
+  }catch(e){
+    // Table may not exist yet, or the account isn't authorised. Stay quiet.
+    box.style.display='none';
+  }
 }
 document.getElementById('modal-bg').addEventListener('click',function(e){if(e.target===this)closeModal();});
 
