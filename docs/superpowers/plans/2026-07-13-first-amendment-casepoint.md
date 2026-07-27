@@ -19,16 +19,16 @@
 - Case key: `firstam`. Card counter element IDs: `cp-proj-coded-firstam` and `cp-proj-acc-firstam` (the `cpUpdateLanding()` function derives these from the case key — they must match).
 - Generator must be deterministic: seeded RNG only (`rngFor`), no `Date.now()`/`Math.random()`, so doc IDs and content are stable across page loads (progress is keyed by doc ID).
 - Redaction span syntax in doc bodies: `⟦PII|…⟧` and `⟦DECOY|…⟧` (already parsed by `cpRenderBodyHtml`).
-- Insertion anchor for all JS: immediately **before** the line `var CP_ACTIVE = 'antitrust';` (currently ~line 5723), which directly follows the `CP_CASES.breach = {…};` block.
+- Insertion anchor for all JS: immediately **before** the line `var CP_ACTIVE = 'antitrust';`, which directly follows the `CP_CASES.breach = {…};` block.
 - Marker comments `// FA-DATA-START`, `// FA-DATA-END`, `// FA-CASE-END` delimit the new section — the verification scripts extract by these markers. Do not remove them.
-- Run all commands from the repo root: `/Users/jeff/Documents/aa-mastery`.
+- Run all commands from the repo root: `/Users/jeff/Documents copy/aa-mastery` (note: NOT `~/Documents/aa-mastery`, which is iCloud-broken and unreadable).
 
 ---
 
 ### Task 1: Hand-authored teaching documents (`FA_DOCS`, docs 1–15)
 
 **Files:**
-- Modify: `index.html` — insert new section before `var CP_ACTIVE = 'antitrust';` (~line 5723)
+- Modify: `index.html` — insert new section before `var CP_ACTIVE = 'antitrust';`
 
 **Interfaces:**
 - Consumes: nothing (self-contained data).
@@ -565,7 +565,7 @@ git commit -m "feat(firstam): CP_CASES.firstam case object with Flag & Escalate 
 ### Task 4: Other Projects page card
 
 **Files:**
-- Modify: `index.html` — inside `<div id="page-other-projects">`, insert after the St. Aurelius breach card's closing `</div>` (the card ends right before the `<!-- PROJECT 4: AI -->` comment, ~line 2551)
+- Modify: `index.html` — inside `<div id="page-other-projects">`, insert after the St. Aurelius breach card's closing `</div>` (the card ends right before the `<!-- PROJECT 4: AI -->` comment)
 
 **Interfaces:**
 - Consumes: `openCasepointCase('firstam')` (engine, existing) and `CP_CASES.firstam` (Task 3).
