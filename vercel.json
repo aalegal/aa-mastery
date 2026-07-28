@@ -2,8 +2,10 @@
   "rewrites": [
     { "source": "/accent-trainer", "destination": "/accent-trainer/index.html" },
     { "source": "/accent-trainer/", "destination": "/accent-trainer/index.html" },
+    { "source": "/wellness", "destination": "/wellness/index.html" },
+    { "source": "/wellness/", "destination": "/wellness/index.html" },
     {
-      "source": "/((?!og-image\\.png$|accent-trainer).*)",
+      "source": "/((?!og-image\\.png$|accent-trainer|wellness).*)",
       "destination": "/index.html"
     }
   ]
