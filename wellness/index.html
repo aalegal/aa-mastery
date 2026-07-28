@@ -309,36 +309,13 @@
 
     <div class="banner bad"><span>🚨</span><div><b>If someone's life is in danger right now</b> — go to the nearest hospital emergency department, or get someone to take you. In Tanzania, ambulance response can be slow or unavailable outside the major cities, so travelling directly to a hospital is usually faster than waiting.</div></div>
 
-    <div class="section-head">Talk to someone today</div>
-
-    <div class="res primary">
-      <div class="res-name">Afya Call Center</div>
-      <div class="res-num">199</div>
-      <div class="res-desc">Tanzania's Ministry of Health national health line. <strong>Free, 24 hours, confidential.</strong> Works from any phone, including a basic feature phone, by call or SMS. Mental health is one of the areas they advise on, alongside general health. This is the best first call if you're not sure where to start.</div>
-    </div>
-
-    <div class="res">
-      <div class="res-name">Mirembe National Mental Health Hospital — Dodoma</div>
-      <div class="res-desc">Tanzania's national referral hospital for mental health, and the country's only specialist mental health hospital. Provides general adult psychiatry, substance use services, and neuropsychiatric care. Appropriate for ongoing treatment or a referral, rather than an immediate crisis.</div>
-    </div>
-
-    <div class="res">
-      <div class="res-name">Emergency numbers</div>
-      <div class="res-desc"><strong>112</strong> — police and general emergencies. <strong>114</strong> — ambulance.<br>
-      Be aware that coverage is patchy outside Dar es Salaam and response times can be slow. Getting yourself to a hospital directly is often the faster route.</div>
-    </div>
-
-    <div class="res">
-      <div class="res-name">116 — National Child Helpline</div>
-      <div class="res-desc">Free and 24 hours, but aimed at children and young people. Listed here in case it's useful for someone in your family rather than for you.</div>
-    </div>
-
-    <div class="section-head">At work</div>
+    <div class="section-head">Start here — talk to someone at work</div>
 
     <!-- Direct line. Deliberately NOT hardcoded here — this file is served
-         publicly, so anything in it is readable by anyone, hidden or not.
-         The number is fetched from Supabase after sign-in, where RLS restricts
-         it to authenticated users. -->
+         publicly and lives in a public git repo, so a number written into it
+         would be permanent and indexed. It is fetched from Supabase, which is
+         readable without a login so nobody hits a sign-in wall in a bad moment,
+         but stays editable and removable without a trace. -->
     <div class="res primary hidden" id="res-direct">
       <div class="res-name" id="res-direct-name"></div>
       <div class="res-num"><a id="res-direct-tel" href="#"></a></div>
@@ -355,6 +332,31 @@
     <div class="res">
       <div class="res-name">Changing the work itself</div>
       <div class="res-desc">If the pressure is coming from volume, deadlines, or the material you're reviewing, that's something your leads can actually change. The <a href="#" onclick="switchTab('checkin');return false">Check In tab</a> is the quiet way to start that conversation.</div>
+    </div>
+
+    <div class="section-head">If you'd rather not talk to someone at work</div>
+    <p style="font-size:12.5px;color:var(--muted);line-height:1.7;margin:-4px 0 14px">Sometimes you don't want your workplace involved, or you need someone trained rather than a supervisor. These are free, confidential, and nothing to do with AA Team.</p>
+
+    <div class="res primary">
+      <div class="res-name">Afya Call Center</div>
+      <div class="res-num">199</div>
+      <div class="res-desc">Tanzania's Ministry of Health national health line. <strong>Free, 24 hours, confidential.</strong> Works from any phone, including a basic feature phone, by call or SMS. Mental health is one of the areas they advise on, alongside general health. This is the best call if you're not sure where to start.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">Mirembe National Mental Health Hospital — Dodoma</div>
+      <div class="res-desc">Tanzania's national referral hospital for mental health, and the country's only specialist mental health hospital. Provides general adult psychiatry, substance use services, and neuropsychiatric care. Appropriate for ongoing treatment or a referral, rather than an immediate crisis.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">Emergency numbers</div>
+      <div class="res-desc"><strong>112</strong> — police and general emergencies. <strong>114</strong> — ambulance.<br>
+      Be aware that coverage is patchy outside Dar es Salaam and response times can be slow. Getting yourself to a hospital directly is often the faster route.</div>
+    </div>
+
+    <div class="res">
+      <div class="res-name">116 — National Child Helpline</div>
+      <div class="res-desc">Free and 24 hours, but aimed at children and young people. Listed here in case it's useful for someone in your family rather than for you.</div>
     </div>
 
     <div class="banner"><span>ℹ️</span><div>Details were last verified <b>27 July 2026</b>. Numbers do change — if you find one of these is out of date, please tell your supervisor so this page can be fixed.</div></div>
