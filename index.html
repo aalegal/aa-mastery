@@ -95,6 +95,27 @@ ul,ol{padding-left:20px;margin-top:6px}li{margin-bottom:4px}
 .lpane{display:none}.lpane.active{display:block}
 .tpane{display:none}.tpane.active{display:block}
 .muted{color:var(--muted)}
+/* Wellbeing views (leadership + admin) */
+.wb-strip{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0 16px}
+.wb-stat{background:#0e1a2e;border:1px solid var(--border2);border-radius:10px;padding:10px 14px;min-width:112px}
+.wb-stat b{display:block;font-size:1.35rem;font-weight:700;line-height:1.15;color:var(--gold-light)}
+.wb-stat span{font-size:.68rem;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.wb-stat.warn b{color:#ffb74d} .wb-stat.bad b{color:#ff8a80} .wb-stat.good b{color:#7ec88a}
+.wb-alert{display:flex;gap:10px;align-items:flex-start;border-radius:9px;padding:11px 14px;margin-bottom:8px;font-size:.84rem;line-height:1.6}
+.wb-alert.high{background:rgba(255,82,82,0.09);border:1px solid rgba(255,82,82,0.3)}
+.wb-alert.med{background:rgba(255,152,0,0.09);border:1px solid rgba(255,152,0,0.28)}
+.wb-alert.info{background:rgba(94,158,255,0.09);border:1px solid rgba(94,158,255,0.26)}
+.wb-alert b{color:var(--gold-light)}
+.wb-pill{display:inline-block;font-size:.65rem;font-weight:700;letter-spacing:.4px;text-transform:uppercase;padding:2px 8px;border-radius:20px;white-space:nowrap}
+.wb-unwell{background:rgba(51,201,255,0.16);color:#7fd6ff}
+.wb-low{background:rgba(139,124,255,0.18);color:#b4a9ff}
+.wb-personal{background:rgba(246,178,58,0.16);color:#ffcf7a}
+.wb-other{background:rgba(255,255,255,0.09);color:var(--muted)}
+.wb-full{background:rgba(126,200,138,0.16);color:#9ada9f}
+.wb-reduced{background:rgba(255,152,0,0.16);color:#ffc36b}
+.wb-none{background:rgba(255,82,82,0.16);color:#ff9e99}
+.wb-note{font-size:.8rem;line-height:1.65;color:var(--muted);background:rgba(0,0,0,0.25);border-radius:8px;padding:9px 12px;margin-top:7px;white-space:pre-wrap;word-break:break-word}
+.wb-purged{font-size:.74rem;color:var(--muted);font-style:italic;margin-top:6px}
 .lead-status{font-size:.8rem;margin-top:8px;min-height:1.1em;color:var(--muted)}
 .lead-status.err{color:#e57373}
 .lead-status.ok{color:#7ec88a}
@@ -2056,6 +2077,7 @@ tr:nth-child(even) td{background:#0d162080}
       <button type="button" class="rtab active" onclick="showAdminTab('jobs',this)">📋 Job Leads</button>
       <button type="button" class="rtab" onclick="showAdminTab('users',this)">👥 Users &amp; Scores</button>
       <button type="button" class="rtab" onclick="showAdminTab('security',this)">🛡️ Security</button>
+      <button type="button" class="rtab" onclick="showAdminTab('wellbeing',this)">💚 Supervisor Wellbeing</button>
     </div>
   </div>
 
@@ -2093,6 +2115,18 @@ tr:nth-child(even) td{background:#0d162080}
     <div class="card">
       <h2>📊 All Scores Overview</h2>
       <div id="admin-scores"><div style="color:var(--muted)"><span class="spinner"></span>Loading...</div></div>
+    </div>
+  </div>
+
+  <div id="apane-wellbeing" class="rpane">
+    <div class="card">
+      <h2>💚 Supervisor Wellbeing</h2>
+      <p class="muted" style="font-size:.85rem;margin-bottom:4px">Check-ins submitted by supervisors themselves. Supervisors burn out quietly — they administer the system and tend not to use it, and they carry disclosures from the team on top of their own work.</p>
+      <div style="background:rgba(126,200,138,0.07);border:1px solid rgba(126,200,138,0.22);border-radius:9px;padding:11px 14px;margin:10px 0;font-size:.82rem;line-height:1.65;color:var(--muted)">
+        <strong style="color:#9ada9f">This shows only what supervisors have submitted themselves.</strong> The For Leads track tells them plainly: <em>"Use your own check-in. It's not only for the team."</em> If this view is empty, that's the thing to fix — ask them to use it, rather than looking for another way to find out.
+      </div>
+      <div id="wb-admin-status" class="lead-status"></div>
+      <div id="wb-admin-body"></div>
     </div>
   </div>
 
@@ -2731,6 +2765,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div class="rtabs" id="lead-tabs" style="margin-top:14px">
       <button class="rtab active" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
       <button class="rtab" onclick="showLead('payments',this)">💵 Payments</button>
+      <button class="rtab" onclick="showLead('wellbeing',this)">💚 Team Wellbeing</button>
       <button class="rtab" onclick="showLead('other',this)">📦 Other Stuff</button>
     </div>
 
@@ -2759,6 +2794,16 @@ tr:nth-child(even) td{background:#0d162080}
     </div>
 
     <!-- OTHER STUFF -->
+    <div id="lpane-wellbeing" class="lpane">
+      <h3>💚 Team Wellbeing</h3>
+      <p class="muted" style="font-size:.85rem;margin-top:4px">Patterns from the check-ins your team submits at <a href="/wellness/" style="color:var(--gold-light)">/wellness</a>. The team is told on that page that supervisors can see these patterns over time — please keep it that way.</p>
+      <div style="background:rgba(126,200,138,0.07);border:1px solid rgba(126,200,138,0.22);border-radius:9px;padding:11px 14px;margin-top:10px;font-size:.82rem;line-height:1.65;color:var(--muted)">
+        <strong style="color:#9ada9f">How to use this well.</strong> These are prompts to check on someone, not performance data. Notes are erased after 30 days and entries after 90 — so act on what you see now rather than treating this as a record. Nothing here belongs in a performance review.
+      </div>
+      <div id="wb-lead-status" class="lead-status"></div>
+      <div id="wb-lead-body"></div>
+    </div>
+
     <div id="lpane-other" class="lpane">
       <h3>Other Stuff</h3>
       <p class="muted">A flexible space for anything else leadership needs to track.</p>
@@ -2989,6 +3034,7 @@ function showLead(id,btn){
   if(id==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(id==='payments')loadPayments();
   if(id==='meetings')loadTactical();
+  if(id==='wellbeing')loadWellbeing();
 }
 function showTime(id,btn){
   document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
@@ -3489,6 +3535,7 @@ function showAdminTab(id,btn){
   document.querySelectorAll('#admin-tabs .rtab').forEach(function(t){t.classList.remove('active');});
   var pane=document.getElementById('apane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
+  if(id==='wellbeing')loadSupervisorWellbeing();
 }
 async function loadAdmin(){
   var u=SB.user;
@@ -3655,6 +3702,172 @@ async function logout(){
   if(currentPage==='leadership'||currentPage==='timesheets')nav('home');
   document.getElementById('wellness-alert').style.display='none';
   if(currentPage==='quiz')initQuizPage();
+}
+
+// ══════════════════════════════════════════════════════════════════
+// WELLBEING ANALYSIS (leadership + admin)
+//
+// Reads only wellness_flags — check-ins people submit themselves, knowing
+// supervisors see them. There is no inference from activity, hours, or
+// behaviour here: this reports what someone chose to tell you, and flags the
+// patterns worth a conversation.
+//
+// Notes are nulled at 30 days and rows deleted at 90 by the purge job, so
+// anything older shows as a pattern count without the words.
+// ══════════════════════════════════════════════════════════════════
+var WB_CAT={unwell:'Unwell',low:'Low',personal:'Personal',other:'Other'};
+var WB_CAP={full:'Full load',reduced:'Reduced',none:'Needs the day'};
+var WB_CAP_RANK={full:1,reduced:2,none:3};
+
+function wbDays(iso){return (Date.now()-new Date(iso).getTime())/86400000;}
+
+// Group flags by person and derive the signals worth surfacing.
+function wbAnalyse(rows){
+  var byPerson={};
+  rows.forEach(function(f){
+    var k=(f.user_email||'').toLowerCase();
+    if(!byPerson[k])byPerson[k]={email:f.user_email,name:f.user_name||f.user_email,flags:[]};
+    byPerson[k].flags.push(f);
+  });
+  var people=Object.values(byPerson);
+  people.forEach(function(p){
+    // rows arrive newest-first
+    p.flags.sort(function(a,b){return new Date(b.created_at)-new Date(a.created_at);});
+    p.latest=p.flags[0];
+    p.count90=p.flags.length;
+    p.count30=p.flags.filter(function(f){return wbDays(f.created_at)<=30;}).length;
+    p.unacked=p.flags.filter(function(f){return !f.acknowledged_at;}).length;
+    p.daysSince=wbDays(p.latest.created_at);
+    // Escalating = latest capacity worse than the one before it
+    p.escalating=false;
+    if(p.flags.length>1){
+      var a=WB_CAP_RANK[p.flags[0].capacity]||0, b=WB_CAP_RANK[p.flags[1].capacity]||0;
+      p.escalating=a>b && wbDays(p.flags[0].created_at)<=30;
+    }
+    p.firstTime=p.flags.length===1 && p.daysSince<=7;
+    p.currentlyDown=p.daysSince<=7 && (p.latest.capacity==='reduced'||p.latest.capacity==='none');
+  });
+  people.sort(function(a,b){return new Date(b.latest.created_at)-new Date(a.latest.created_at);});
+  return people;
+}
+
+function wbAlerts(people,rows){
+  var out=[];
+  people.forEach(function(p){
+    if(p.count90>=3)out.push({level:'high',icon:'🔁',
+      text:'<b>'+esc(p.name)+'</b> has checked in '+p.count90+' times in 90 days. A repeating pattern usually needs a proper conversation, not another workload tweak.'});
+    if(p.escalating)out.push({level:'med',icon:'📉',
+      text:'<b>'+esc(p.name)+'</b> has gone from <em>'+esc(WB_CAP[p.flags[1].capacity]||'')+'</em> to <em>'+esc(WB_CAP[p.latest.capacity]||'')+'</em>. Worth asking how they are today.'});
+    if(p.firstTime)out.push({level:'info',icon:'🆕',
+      text:'<b>'+esc(p.name)+'</b> has checked in for the first time. How this is received decides whether they ever do it again — reply warmly and soon.'});
+  });
+  var stale=rows.filter(function(f){return !f.acknowledged_at && wbDays(f.created_at)>1;});
+  if(stale.length)out.push({level:'high',icon:'⏰',
+    text:stale.length+' check-in'+(stale.length>1?'s have':' has')+' been waiting more than a day. A check-in nobody answers teaches the team the tool does not work.'});
+  return out;
+}
+
+function wbRender(rows,statusId,bodyId,emptyMsg){
+  var status=document.getElementById(statusId), body=document.getElementById(bodyId);
+  if(!rows.length){status.textContent='';body.innerHTML='<div class="card" style="margin-top:12px;text-align:center;padding:22px;color:var(--muted);font-size:.86rem;line-height:1.7">'+emptyMsg+'</div>';return;}
+  var people=wbAnalyse(rows), alerts=wbAlerts(people,rows);
+  var pending=rows.filter(function(f){return !f.acknowledged_at;}).length;
+  var down=people.filter(function(p){return p.currentlyDown;}).length;
+  var repeat=people.filter(function(p){return p.count90>=3;}).length;
+  var last30=rows.filter(function(f){return wbDays(f.created_at)<=30;}).length;
+
+  var h='<div class="wb-strip">'+
+    '<div class="wb-stat'+(pending?' warn':'')+'"><b>'+pending+'</b><span>Need a reply</span></div>'+
+    '<div class="wb-stat'+(down?' bad':' good')+'"><b>'+down+'</b><span>Down this week</span></div>'+
+    '<div class="wb-stat"><b>'+last30+'</b><span>Check-ins · 30d</span></div>'+
+    '<div class="wb-stat'+(repeat?' bad':'')+'"><b>'+repeat+'</b><span>Repeat pattern</span></div>'+
+    '<div class="wb-stat"><b>'+people.length+'</b><span>People · 90d</span></div>'+
+  '</div>';
+
+  if(alerts.length){
+    h+='<h4 style="margin:16px 0 8px;font-size:.9rem">Worth your attention</h4>';
+    alerts.forEach(function(a){h+='<div class="wb-alert '+a.level+'"><span>'+a.icon+'</span><div>'+a.text+'</div></div>';});
+  }
+
+  h+='<h4 style="margin:18px 0 8px;font-size:.9rem">By person</h4>';
+  h+='<div style="overflow-x:auto"><table class="data-table" style="min-width:660px"><thead><tr>'+
+     '<th>Person</th><th style="text-align:center">90d</th><th style="text-align:center">30d</th>'+
+     '<th>Latest</th><th>Capacity</th><th>When</th></tr></thead><tbody>';
+  people.forEach(function(p){
+    h+='<tr><td>'+esc(p.name)+'</td>'+
+       '<td style="text-align:center'+(p.count90>=3?';color:#ff8a80;font-weight:700':'')+'">'+p.count90+'</td>'+
+       '<td style="text-align:center">'+p.count30+'</td>'+
+       '<td><span class="wb-pill wb-'+esc(p.latest.category)+'">'+esc(WB_CAT[p.latest.category]||p.latest.category)+'</span></td>'+
+       '<td><span class="wb-pill wb-'+esc(p.latest.capacity)+'">'+esc(WB_CAP[p.latest.capacity]||p.latest.capacity)+'</span></td>'+
+       '<td style="white-space:nowrap;font-size:.78rem;color:var(--muted)">'+(p.daysSince<1?'today':Math.floor(p.daysSince)+'d ago')+'</td></tr>';
+  });
+  h+='</tbody></table></div>';
+
+  h+='<h4 style="margin:20px 0 8px;font-size:.9rem">Recent check-ins</h4>';
+  rows.slice(0,25).forEach(function(f){
+    var acked=!!f.acknowledged_at;
+    h+='<div class="card" style="margin-bottom:8px;padding:13px 15px'+(acked?'':';border-left:3px solid #ffb74d')+'">'+
+       '<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">'+
+         '<strong style="font-size:.9rem">'+esc(f.user_name||f.user_email)+'</strong>'+
+         '<span class="wb-pill wb-'+esc(f.category)+'">'+esc(WB_CAT[f.category]||f.category)+'</span>'+
+         '<span class="wb-pill wb-'+esc(f.capacity)+'">'+esc(WB_CAP[f.capacity]||f.capacity)+'</span>'+
+         '<span style="margin-left:auto;font-size:.74rem;color:var(--muted)">'+esc(new Date(f.created_at).toLocaleString())+'</span>'+
+       '</div>';
+    if(f.note)h+='<div class="wb-note">'+esc(f.note)+'</div>';
+    else if(wbDays(f.created_at)>30)h+='<div class="wb-purged">Note erased after 30 days, as promised on the check-in form.</div>';
+    if(f.expected_days)h+='<div style="font-size:.78rem;color:var(--muted);margin-top:6px">Expected about '+esc(f.expected_days)+' day'+(f.expected_days>1?'s':'')+'.</div>';
+    if(acked)h+='<div style="font-size:.76rem;color:#7ec88a;margin-top:7px">✅ Acknowledged by '+esc(f.acknowledged_by||'a supervisor')+'</div>';
+    else h+='<button class="btn btn-sm btn-gold" style="margin-top:9px" onclick="wbAck(\''+esc(f.id)+'\',this)">Acknowledge</button>';
+    h+='</div>';
+  });
+
+  status.textContent='';
+  body.innerHTML=h;
+}
+
+async function loadWellbeing(){
+  var status=document.getElementById('wb-lead-status');
+  if(!status)return;
+  status.className='lead-status';status.textContent='Loading…';
+  try{
+    var r=await axios({method:'GET',url:SB.url+'/rest/v1/wellness_flags?select=*&order=created_at.desc',headers:SB.hdr()});
+    wbRender(r.data||[],'wb-lead-status','wb-lead-body',
+      'No check-ins yet.<br>That may be good news — or it may mean the team does not know the tool exists. Worth mentioning it once.');
+  }catch(e){
+    status.className='lead-status err';
+    status.textContent='Could not load check-ins. '+((e.response&&e.response.data&&e.response.data.message)||e.message||'');
+  }
+}
+
+// Admin view: supervisors' own check-ins only.
+async function loadSupervisorWellbeing(){
+  var status=document.getElementById('wb-admin-status');
+  if(!status)return;
+  status.className='lead-status';status.textContent='Loading…';
+  try{
+    var r=await axios({method:'GET',url:SB.url+'/rest/v1/wellness_flags?select=*&order=created_at.desc',headers:SB.hdr()});
+    var leads=LEADERSHIP_EMAILS.map(function(e){return e.toLowerCase();});
+    var rows=(r.data||[]).filter(function(f){return leads.indexOf((f.user_email||'').toLowerCase())!==-1;});
+    wbRender(rows,'wb-admin-status','wb-admin-body',
+      'No supervisor check-ins yet.<br>Supervisors rarely use the tool they administer. Asking them to is the fix — there is no other honest way to know how they are doing.');
+  }catch(e){
+    status.className='lead-status err';
+    status.textContent='Could not load check-ins. '+((e.response&&e.response.data&&e.response.data.message)||e.message||'');
+  }
+}
+
+async function wbAck(id,btn){
+  btn.disabled=true;btn.textContent='Saving…';
+  try{
+    await axios({method:'PATCH',url:SB.url+'/rest/v1/wellness_flags?id=eq.'+encodeURIComponent(id),
+      headers:SB.hdr({'Prefer':'return=minimal'}),
+      data:{acknowledged_by:(SB.user&&SB.user.email)||'',acknowledged_at:new Date().toISOString()}});
+    if(currentPage==='admin')loadSupervisorWellbeing(); else loadWellbeing();
+    loadWellnessAlert();
+  }catch(e){
+    btn.disabled=false;btn.textContent='Acknowledge';
+    alert('Could not save that. Please try again.');
+  }
 }
 
 // Wellness check-ins awaiting acknowledgement. Gated on email rather than
@@ -7749,33 +7962,5 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 
 
 <div id="save-progress-toast" style="position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2a4a;border:1px solid var(--gold-deep);color:var(--gold-light);padding:7px 16px;border-radius:8px;font-size:.78rem;font-weight:600;z-index:10001;display:none;white-space:nowrap;box-shadow:0 4px 16px rgba(0,0,0,.5);"></div>
-</body>
-</html>TYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>AA Team – Privilege &amp; Coding Mastery</title>
-<meta name="description" content="The official training hub for AA Team paralegals. Master Attorney-Client Privilege, Work Product, Common Interest, and responsiveness coding.">
-<meta name="author" content="AA Team – ATA &amp; Advisors">
-<meta name="theme-color" content="#d4a82a">
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://aa-mastery.vercel.app">
-<meta property="og:site_name" content="AA Team Mastery">
-<meta property="og:title" content="AA Team – Privilege &amp; Coding Mastery">
-<meta property="og:description" content="Master privilege review and responsiveness coding. Adaptive quizzes that drill your weak spots until you hit 100%.">
-<meta property="og:image" content="https://aa-mastery.vercel.app/og-image.png">
-<meta property="og:image:secure_url" content="https://aa-mastery.vercel.app/og-image.png">
-<meta property="og:image:type" content="image/png">
-<meta property="og:image:width" content="1200">
-<meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="AA Team Privilege &amp; Coding Mastery – Training Hub">
-<meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:url" content="https://aa-mastery.vercel.app">
-<meta name="twitter:title" content="AA Team – Privilege &amp; Coding Mastery">
-<meta name="twitter:description" content="Master privilege review and responsiveness coding. Adaptive quizzes that drill your weak spots until you hit 100%.">
-<meta name="twitter:image" content="https://aa-mastery.vercel.app/og-image.png">
-<meta name="twitter:image:alt" content="AA Team Privilege &amp; Coding Mastery – Training Hub">
-
 </body>
 </html>
