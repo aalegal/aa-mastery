@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:1200px;height:630px;overflow:hidden}
+  body{
+    font-family:'Inter',system-ui,sans-serif;
+    background:#0a0b12;
+    color:#eef0f7;
+    background-image:
+      radial-gradient(900px 520px at 88% -12%,rgba(18,211,176,0.26),transparent 62%),
+      radial-gradient(760px 480px at -8% 8%,rgba(139,124,255,0.24),transparent 58%);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    padding:0 84px;
+    position:relative;
+  }
+  /* soft glow orb, mirrors the .hero::after treatment on the page */
+  .orb{
+    position:absolute;right:-90px;top:-90px;width:420px;height:420px;border-radius:50%;
+    background:linear-gradient(135deg,#8b7cff,#12d3b0);opacity:.16;filter:blur(48px);
+  }
+  .brand{display:flex;align-items:center;gap:22px;margin-bottom:34px}
+  .logo{
+    width:96px;height:96px;border-radius:26px;
+    background:linear-gradient(135deg,#8b7cff,#12d3b0);
+    display:flex;align-items:center;justify-content:center;font-size:52px;
+    box-shadow:0 22px 54px -16px rgba(18,211,176,0.85);
+  }
+  h1{
+    font-family:'Space Grotesk',sans-serif;
+    font-size:82px;font-weight:700;letter-spacing:-2.4px;line-height:1;
+  }
+  h1 .g{
+    background:linear-gradient(135deg,#8b7cff,#12d3b0);
+    -webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
+  }
+  .tag{
+    font-size:29px;color:#9aa3bb;margin-top:14px;letter-spacing:-.3px;
+  }
+  .chips{display:flex;gap:14px;margin-top:44px;flex-wrap:wrap}
+  .chip{
+    font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:600;
+    padding:14px 24px;border-radius:34px;
+    border:1px solid rgba(255,255,255,0.14);
+    background:rgba(255,255,255,0.055);
+    color:#dfe3ee;
+    display:flex;align-items:center;gap:10px;
+  }
+  .foot{
+    position:absolute;left:84px;bottom:52px;
+    display:flex;align-items:center;gap:14px;
+    font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:600;color:#5b6379;
+  }
+  .foot .dot{width:7px;height:7px;border-radius:50%;background:#12d3b0}
+  .rule{
+    position:absolute;left:84px;right:84px;bottom:126px;height:1px;
+    background:linear-gradient(90deg,rgba(255,255,255,0.16),rgba(255,255,255,0));
+  }
+</style>
+</head>
+<body>
+  <div class="orb"></div>
+
+  <div class="brand">
+    <div class="logo">💚</div>
+    <div>
+      <h1><span class="g">Team</span> Wellness</h1>
+      <div class="tag">Look after yourself · check in · get support</div>
+    </div>
+  </div>
+
+  <!-- Keep these short enough to stay on ONE row at 1200px — wrapping looks
+       lopsided in a link preview. -->
+  <div class="chips">
+    <div class="chip">🌿 Spotting burnout early</div>
+    <div class="chip">🤝 Responding well</div>
+    <div class="chip">💬 A quiet way to check in</div>
+  </div>
+
+  <div class="rule"></div>
+  <div class="foot"><span class="dot"></span> AA Mastery · aa-mastery.vercel.app/wellness</div>
+</body>
+</html>
