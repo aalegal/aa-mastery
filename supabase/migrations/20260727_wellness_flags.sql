@@ -52,11 +52,9 @@ create policy "leadership_ack_wellness_flags" on public.wellness_flags
 -- runs as the table owner and bypasses RLS.
 
 -- ── Supervisor contacts ─────────────────────────────────────────────
--- Held here rather than in wellness/index.html because that file is served
--- publicly — anything written into it is readable by anyone, whether or not
--- the UI hides it, and personal numbers on open pages get scraped.
--- RLS restricts reads to authenticated users, so the anon key alone cannot
--- retrieve these.
+-- Held here rather than in wellness/index.html so the number stays out of this
+-- PUBLIC git repository, where it would be permanent and indexed. See the
+-- policy note below for why it is nonetheless readable without a login.
 
 create table public.wellness_contacts (
   id uuid primary key default gen_random_uuid(),
