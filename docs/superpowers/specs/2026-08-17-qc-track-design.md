@@ -59,6 +59,30 @@ the client's five criteria, because that framing is the point of the program. In
 - Not a live-project tool. No client documents ever enter this app.
 - Phase 1 does not attempt the live-data loop. It ships as pure training.
 
+## Calibration
+
+Supplied from live projects, 2026-08-17. These are the defaults seeded into
+`qc_projects`; per-project rows override them.
+
+| Setting | Value | Note |
+| --- | --- | --- |
+| Accuracy target | **100%** | The stated goal. Not aspirational framing — it is the bar. |
+| Accuracy tolerance | **1 error per 1,000 documents** | "Not too bad." Treated as the pass line. |
+| Target pace | **60 docs/hr** | One document per minute, sustained. |
+| Response window | **2 minutes** | Time to acknowledge a PM. |
+
+Two consequences run through the whole design.
+
+**The unit of accuracy is errors per 1,000 documents, not percent.** A 92% score reads as a
+good grade and is, against this bar, a disaster — 80 errors per 1,000. Every accuracy number
+a trainee sees is therefore expressed in the same unit the client uses to judge them. This
+is the single most important calibration decision in the spec.
+
+**Pace and responsiveness are in direct tension, deliberately.** 60 docs/hr is one document
+per minute; a 2-minute response window is two documents' worth of work. Answering a PM
+costs pace, visibly, and the drill does not hide that. Holding both at once is the skill
+being trained.
+
 ## Architecture
 
 A new page, `qc`, registered in `nav(p)` alongside the existing fifteen. Five sub-views:
@@ -102,9 +126,30 @@ three reasons: a batch is reproducible, so a person can review their own mistake
 the same data; two people can be given the identical batch for fair comparison; and nobody
 can reroll for an easier draw.
 
-Error density is per-project configuration, defaulting to 0.15. Fifteen percent is
-realistic for a competent first-pass reviewer, and is high enough that a batch of 50 carries
-enough errors to score meaningfully.
+### Two error densities, for two different jobs
+
+Error density is per-project configuration, and it takes **two** values, because practice
+and certification are training opposite things.
+
+| Batch type | Density | Size | Purpose |
+| --- | --- | --- | --- |
+| **Practice** | 0.15 | 50 docs | Dense enough to teach. ~7–8 errors per batch, enough signal to learn each error type and to score a short session meaningfully. |
+| **Certification** | 0.02 | 250 docs | Realistic. ~5 errors buried in 245 clean documents. |
+
+The certification density is the important one, and it follows directly from the 1-in-1,000
+tolerance. On a live project **almost every document a QC reviewer opens is fine.** That is
+exactly why rubber-stamping happens: it is a rational response to a stream where the base
+rate of error is near zero, and it is invisibly correct 98% of the time. Vigilance under
+near-zero signal is the skill that separates someone the client keeps on QC from someone
+they quietly move off it.
+
+A drill packed with 15% errors cannot train that. It teaches error-spotting under
+artificially rich conditions and, worse, primes the expectation that errors are common —
+which is what produces the over-corrector. So practice is dense, certification is sparse,
+and only the certification batch counts toward the Accuracy pillar.
+
+Both values are per-project config. If observed first-pass error rates differ from these,
+they are one row change and no code change.
 
 ### Error taxonomy
 
@@ -148,25 +193,85 @@ reviewer who changes everything, destabilises the set, and burns the team's time
 Rubber-stamping and over-correcting both get people quietly removed from QC on live
 projects. Both are scored here.
 
-Over a batch, let:
+Scoring is **per document**, not per seeded error, so that the number produced is directly
+comparable to the standard the client applies. A document is *handled correctly* when:
 
-- `S` = seeded errors, `w(e)` = severity weight of error `e`
-- `caught` = errors identified **and** corrected to the right value
-- `spotted` = errors identified but corrected to a *wrong* value (half credit)
-- `clean` = documents with no seeded error
-- `false_corrections` = clean documents the trainee changed
+- it carried an error and was corrected to the right value, or
+- it was clean and was agreed with, or
+- it was `ambiguous` and was escalated
+
+Anything else is a **defect**:
+
+| Defect | Weight | |
+| --- | --- | --- |
+| Miss | `w(e)` | Agreed with a seeded error. The rubber-stamp. |
+| Bad fix | `w(e) / 2` | Spotted the error, corrected it to the wrong value. |
+| False correction | severity of the field changed, default 2 | Changed a clean document. |
+| Missed escalation | 2 | Silently resolved a genuine close call. |
+| Over-escalation | 1 | Escalated something clear. Wastes supervisor time. |
+
+Defect units are normalised against weight 2 — the modal severity — so a missed privilege
+(`w=5`) counts as 2.5 defects and a wrong issue tag (`w=1`) counts as 0.5:
 
 ```
-catch_rate       = ( Σ w(e) for caught  +  0.5 · Σ w(e) for spotted ) / Σ w(e) for S
-false_corr_rate  = false_corrections / clean
-
-accuracy = 100 × ( 0.60 · catch_rate
-                 + 0.25 · (1 − false_corr_rate)
-                 + 0.15 · family_agreement )
+defects       = Σ w(d) / 2
+defect_rate   = 1000 × defects / documents_reviewed      // defects per 1,000 documents
 ```
 
-`family_agreement` is the consistency term defined in Component 4. It is folded in here
-rather than given its own pillar, for the reason set out under *Goal*.
+### The denominator is literally 1,000 documents
+
+The Accuracy pillar is computed over a **rolling window of the last 1,000 certification
+documents** — four 250-document batches. This is not a smoothing convenience. It makes the
+pillar the client's own metric with no rescaling: "errors per 1,000 documents" means exactly
+that.
+
+It also fixes a real problem. At a 1-in-1,000 tolerance, a single defect in one 250-document
+batch is already four times the bar, so single-batch scoring would swing wildly between
+perfect and failing on one slip. A person needs to demonstrate the standard *sustained*,
+which is also what the client is actually observing.
+
+Until 1,000 certification documents exist, the pillar reports over whatever is complete and
+is labelled with its true denominator — "3 defects in 500 documents so far".
+
+**Certification draws across cases, not within one.** A full window is 1,000 *unique*
+documents, and no single case set holds that many — TransRidge has ~500, which is two
+non-overlapping certification batches. Re-serving a document a person has already reviewed
+compromises the measurement even under a fresh error seed, because they remember the
+document. The certification pool is therefore drawn across all large case sets
+(`P3_DOCS` 510, `P4_DOCS` 500, `PTBR_DOCS` 500, `FA_DOCS` ~500 — about 2,000 documents),
+which is also closer to the truth: a QC reviewer works more than one matter.
+
+This has a sequencing consequence. Phase 1 ships with TransRidge as the only certification
+case, so the window caps at 500 documents and the pillar is labelled accordingly. The full
+1,000-document window becomes available in Phase 2, when the remaining cases come online.
+
+### Mapping to the dial
+
+Piecewise linear between anchors. These are a calibration choice, held in one table and
+tunable without touching scoring logic:
+
+| Defects per 1,000 | Pillar |
+| --- | --- |
+| 0 | 100 |
+| 1 | 95 |
+| 2 | 90 |
+| 5 | 78 |
+| 10 | 60 |
+| 20 | 35 |
+| 40 | 10 |
+| 60+ | 0 |
+
+The QC-Ready floor of Accuracy ≥ 90 therefore means **no worse than 2 defects per 1,000
+documents**, severity-weighted — the stated tolerance, with a little room for a single
+low-severity slip.
+
+### Diagnostics beneath the headline
+
+`catch_rate`, `false_correction_rate` and `family_agreement` are still computed and shown,
+but as *diagnostics* rather than as the score. They answer "why is my defect rate what it
+is" — am I rubber-stamping, over-correcting, or coding near-duplicates inconsistently.
+`family_agreement` is the consistency term from Component 4, folded in here rather than
+given its own pillar, for the reason set out under *Goal*.
 
 Escalation folds in as follows:
 
@@ -183,18 +288,24 @@ touching scoring logic.
 
 Every batch is timed, with a live docs/hr readout against the project's target.
 
-**Pace is never scored alone.** It is reported as *sustainable pace* — throughput
-discounted by how far accuracy fell below the project threshold:
+**Pace is never scored alone.** It is reported as *sustainable pace* — throughput discounted
+by the quality it was achieved at:
 
 ```
-effective_pace = achieved_docs_per_hour × min(1, accuracy / accuracy_threshold)²
-pace_pillar    = 100 × min(1.25, effective_pace / target_pace)
+quality_factor = (accuracy_pillar / 100)²
+effective_pace = achieved_docs_per_hour × quality_factor
+pace_pillar    = 100 × min(1.25, effective_pace / 60)          // 60 docs/hr target
 ```
 
-The square is deliberate. Accuracy at 80% of threshold costs you 36% of your pace score,
-not 20%. That is "speed without sacrificing accuracy" expressed as a number a person can
-chase, and it makes racing through a batch strictly worse than working it properly. The
-1.25 cap means exceeding the bar is rewarded but not unboundedly.
+The square is deliberate. At an Accuracy pillar of 90 — already at the tolerance limit — a
+reviewer keeps only 81% of their throughput. Someone racing at 75 docs/hr with an Accuracy
+pillar of 60 books an effective 27 docs/hr and scores 45, well below someone working
+carefully at target. That is "speed without sacrificing accuracy" expressed as a number a
+person can chase, and it makes rushing a batch strictly worse than working it properly.
+
+The 1.25 cap means beating 60 docs/hr is rewarded, but only to a point — nobody should be
+optimising past the pace bar at the expense of the accuracy bar, which is the one the client
+will not bend on.
 
 The batch also records a **pace curve** — throughput across first, middle and final thirds.
 A fast start that fades is a reliability signal and feeds that pillar.
@@ -229,6 +340,12 @@ score_i = 1                      if ack ≤ W
 responsiveness = 100 × mean(score_i)
 ```
 
+At the calibrated `W` of **2 minutes**, that means full credit inside two minutes, partial
+credit decaying to nothing at six, and zero thereafter. Two minutes is two documents' work
+at target pace, so the drill has to make an arriving message genuinely noticeable — a
+visible, persistent inbox state, not a subtle chime. Missing an interrupt should be a
+decision, not an accident of the interface.
+
 Interrupts fire at seeded positions in the batch, so timing is reproducible alongside the
 document draw.
 
@@ -245,10 +362,12 @@ shared across the family.
 family_agreement = families coded identically / families presented
 ```
 
-`family_agreement` feeds the **Accuracy** pillar at a 0.15 weight, per Component 1. It is
-also stored on its own in `qc_attempts.consistency` and surfaced as a named sub-metric on
-the Accuracy dial's detail view, so a person whose accuracy is being dragged down by
-inconsistency can see that specifically rather than guessing.
+Consistency reaches the Accuracy pillar through the defect count, not through a separate
+weight: coding one member of a family differently from the rest *is* a defect, scored under
+the Inconsistency error type at weight 2. `family_agreement` is kept as a **diagnostic** —
+stored in `qc_attempts.consistency` and surfaced on the Accuracy dial's detail view — so a
+person whose defect rate is being driven by inconsistency can see that specifically rather
+than guessing at it.
 
 A second measure, **drift**, tracks the stability of per-error-type accuracy across batches,
 computed as `1 − normalised_stddev`. Drift feeds the **Reliability** pillar, not Accuracy —
@@ -264,7 +383,7 @@ Five dials, 0–100, each with the bar marked.
 
 | Pillar | Simulation source | Live-project source |
 | --- | --- | --- |
-| Accuracy | Catch rate, false-correction rate, family agreement | Supervisor-logged QC error rate |
+| Accuracy | Defects per 1,000 certification documents, rolling | Supervisor-logged QC error rate |
 | Pace | Sustainable pace vs. target | Actual docs/hr from project reports |
 | Responsiveness | In-sim acknowledgement times | Supervisor-logged response times |
 | Judgment | Escalation calls, instruction-change application, correction quality | Supervisor rating on instruction application |
@@ -350,10 +469,13 @@ in the policy, not in the page.
 create table public.qc_projects (
   case_key                  text primary key,      -- 'joba', 'firstam', …
   display_name              text not null,
-  target_pace_docs_per_hour numeric not null,
-  accuracy_threshold        numeric not null,      -- 0–100
-  response_window_minutes   int     not null,
-  error_density             numeric not null default 0.15,
+  target_pace_docs_per_hour numeric not null default 60,
+  max_defects_per_1000      numeric not null default 1,    -- the accuracy tolerance
+  response_window_minutes   int     not null default 2,
+  practice_density          numeric not null default 0.15,
+  practice_batch_size       int     not null default 50,
+  cert_density              numeric not null default 0.02,
+  cert_batch_size           int     not null default 250,
   active                    boolean not null default true,
   updated_at                timestamptz not null default now()
 );
@@ -363,10 +485,12 @@ create table public.qc_attempts (
   user_email     text not null,
   case_key       text not null references public.qc_projects(case_key),
   batch_no       int  not null,
+  batch_type     text not null check (batch_type in ('practice','certification')),
   seed           text not null,
   started_at     timestamptz not null,
   completed_at   timestamptz,
   docs_reviewed  int not null default 0,
+  defects        numeric,        -- severity-weighted, normalised to weight 2
   accuracy       numeric,
   pace           numeric,
   responsiveness numeric,
@@ -450,28 +574,43 @@ Three pieces need writing. Everything else is computed.
 Each phase ships something usable on the day it lands.
 
 **Phase 1 — QC Review Engine.** Seeded error generator, agree/correct/escalate UI,
-two-sided severity-weighted scoring, batch-complete review screen, error taxonomy reference.
-Two cases: **Joba v. Bukando** (55 docs) as the on-ramp, since the team already knows it, and
-**TransRidge v. Cascade Headwaters** (~500 docs) for volume — it is privilege-heavy, which
-is where the severe errors live. Trains accuracy, judgment, attention to detail and pattern
-recognition. No new tables; results persist through the existing progress mechanism.
+per-document defect scoring, batch-complete review screen, error taxonomy reference. Both
+batch modes, and the `qc_projects` and `qc_attempts` tables with RLS — the rolling
+1,000-document accuracy window needs durable storage, so these come in at the start rather
+than being retrofitted.
+
+Two cases, chosen to fit the two batch modes:
+
+- **Joba v. Bukando** (55 docs) — *practice only*. The on-ramp: the team already knows the
+  case, and 50-document practice batches fit it exactly. It cannot host certification, which
+  needs 250.
+- **TransRidge v. Cascade Headwaters** (~500 docs) — *practice and certification*. Large
+  enough for 250-document batches, and privilege-heavy, which is where the severe defects
+  live.
+
+Ships as pure training: a person can drill, certify, and see their defect rate per 1,000.
+Trains accuracy, judgment, attention to detail and pattern recognition.
 
 **Phase 2 — Conditions.** Pace clock and sustainable-pace scoring, the three interrupt
-types, near-duplicate seeding and consistency scoring, `qc_projects` config and its
-leadership editor. Rolls across the remaining cases. Requires the real per-project numbers.
+types, near-duplicate seeding and the consistency diagnostic, and the leadership editor for
+`qc_projects`. Rolls across the remaining cases — which also widens the pool of documents
+large enough to certify against.
 
-**Phase 3 — The loop.** `qc_attempts` and `qc_readiness` tables with RLS, the weekly
-supervisor form, the five-pillar scorecard, leadership roster, status ladder, and the
-simulation/live weighting.
+**Phase 3 — The loop.** `qc_readiness` with RLS, the weekly supervisor form, the five-pillar
+scorecard, leadership roster, status ladder, and the simulation/live weighting.
 
-## Inputs needed
+## Inputs
 
-Per project, for Phase 2 — Phase 1 is not blocked on these:
+Supplied 2026-08-17 and recorded under *Calibration*: 100% accuracy target with a 1-in-1,000
+tolerance, 60 docs/hr, 2-minute response window. These become the `qc_projects` defaults.
 
-- Target pace, documents per hour
-- Accuracy threshold, percent
-- Expected response window, minutes
-- Whether observed first-pass error rate differs materially from the 0.15 default
+Still open, and not blocking any phase:
+
+- **Per-project overrides.** Whether any live project runs a different pace or response
+  window from the defaults. Until told otherwise, every case inherits them.
+- **Observed first-pass defect rate.** The `cert_density` of 0.02 is derived from the
+  tolerance, not from measurement. If live QC findings show first-pass reviewers running
+  materially above or below 2%, that is one config value and no code change.
 
 ## Risks
 
@@ -481,6 +620,13 @@ Per project, for Phase 2 — Phase 1 is not blocked on these:
 - **Generated errors feeling artificial.** If seeded errors are too easy to spot the drill
   teaches nothing. Mitigated by frequency-weighted error selection and by reviewing the
   first batches against real QC findings, adjusting the mix.
+- **Certification is a real time cost.** 250 documents at 60 docs/hr is roughly four hours,
+  and a full 1,000-document window is closer to seventeen. That is the honest price of
+  measuring against a 1-in-1,000 standard — the bar cannot be demonstrated on a short
+  sitting. Mitigated by making certification batches resumable across sittings, by keeping
+  practice batches to 50 documents (~50 minutes), and by expecting the window to fill over
+  weeks rather than in one push. If four hours proves unworkable in practice, the lever is
+  `cert_batch_size`, at the cost of a noisier per-batch reading.
 - **`index.html` is already ~2.2MB.** QC Track adds meaningful code to a single file. Kept
   in one clearly delimited `// ══ QC TRACK` section with its own state object, following the
   existing sectioning convention, and no changes to existing simulator internals beyond
