@@ -1346,6 +1346,64 @@ tr:nth-child(even) td{background:#0d162080}
 .fl-tag-i17{color:#f48fb1;border-color:#f06292;background:#f0629210;}
 .fl-tag-i18{color:#ff8a65;border-color:#ff7043;background:#ff704310;}
 
+
+/* ── QC TRACK ─────────────────────────────────────────────── */
+.qc-lede{color:#9fb0c9;max-width:60ch;margin:.5rem 0 1.25rem}
+.qc-actions{margin-top:1.25rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.qc-note{color:#7d8ca3;font-size:.85rem;margin-left:.5rem}
+.qc-dial{background:var(--card);border:1px solid #1c2740;border-radius:10px;padding:1.25rem;max-width:30rem}
+.qc-dial-label{color:#9fb0c9;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+.qc-dial-value{font-size:2.25rem;font-weight:700;color:var(--gold);line-height:1.2}
+.qc-dial-sub{color:#c3d0e4;margin-top:.25rem}
+.qc-dial-bar{color:#7d8ca3;font-size:.85rem;margin-top:.75rem;border-top:1px solid #1c2740;padding-top:.75rem}
+.qc-case{background:var(--card);border:1px solid #1c2740;border-radius:10px;padding:1rem;margin-bottom:.75rem}
+.qc-case h3{margin:0 0 .25rem}
+.qc-case-meta{color:#7d8ca3;font-size:.85rem;margin-bottom:.75rem}
+.qc-shell-bar{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.6rem .9rem;margin-bottom:.75rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.qc-panes{display:grid;grid-template-columns:14rem 1fr 20rem;gap:.75rem;align-items:start}
+.qc-pane-list{max-height:70vh;overflow:auto;background:var(--card);border:1px solid #1c2740;border-radius:8px}
+.qc-pane-doc{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;max-height:70vh;overflow:auto}
+.qc-pane-decide{display:flex;flex-direction:column;gap:.75rem}
+.qc-list-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.45rem .65rem;border-bottom:1px solid #16203a;cursor:pointer;font-size:.85rem}
+.qc-list-row:hover{background:#131c2e}
+.qc-list-row-active{background:#16223c;border-left:3px solid var(--gold)}
+.qc-list-id{font-family:ui-monospace,Menlo,monospace;color:#c3d0e4}
+.qc-chip{font-size:.7rem;padding:.1rem .45rem;border-radius:999px;white-space:nowrap}
+.qc-chip-none{background:#1c2740;color:#8b9ab3}
+.qc-chip-agree{background:#0d3b34;color:#4fd1b5}
+.qc-chip-correct{background:#3d3413;color:var(--gold)}
+.qc-chip-esc{background:#3a2033;color:#e58fc0}
+.qc-doc-meta{border-bottom:1px solid #1c2740;padding-bottom:.6rem;margin-bottom:.75rem;color:#9fb0c9;font-size:.85rem}
+.qc-doc-body{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;line-height:1.55;color:#dbe4f0;margin:0}
+.qc-thread-item{border-top:1px solid #16203a;margin-top:.75rem;padding-top:.75rem;font-size:.82rem;color:#c3d0e4}
+.qc-thread-meta{color:#7d8ca3;margin-bottom:.25rem}
+.qc-card{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.9rem}
+.qc-card h4{margin:0 0 .6rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c9}
+.qc-code-row{display:flex;justify-content:space-between;gap:.75rem;padding:.3rem 0;border-bottom:1px solid #16203a;font-size:.85rem}
+.qc-code-row span{color:#7d8ca3}
+.qc-correct-form{margin-top:.75rem;display:flex;flex-direction:column;gap:.5rem}
+.qc-correct-form label{display:flex;flex-direction:column;gap:.2rem;font-size:.8rem;color:#9fb0c9}
+.qc-issue-list{display:flex;flex-wrap:wrap;gap:.5rem}
+.qc-issue{flex-direction:row!important;align-items:center;gap:.3rem!important;color:#c3d0e4!important}
+.qc-result{background:var(--card);border:1px solid #1c2740;border-left:3px solid var(--gold);border-radius:8px;padding:1.1rem;max-width:36rem}
+.qc-result-headline{font-size:1.5rem;font-weight:700;color:var(--gold)}
+.qc-result-sub{color:#c3d0e4;margin-top:.3rem}
+.qc-result-note{color:#7d8ca3;font-size:.85rem;margin-top:.6rem}
+.qc-breakdown{color:#c3d0e4;line-height:1.7}
+.qc-diag{color:#9fb0c9;max-width:60ch}
+.qc-wrong{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.9rem;margin-bottom:.6rem}
+.qc-wrong-head{margin-bottom:.4rem}
+.qc-wrong-truth{margin:.5rem 0;padding:.5rem;background:#0b1220;border-radius:6px}
+.qc-wrong-why{color:#9fb0c9;font-size:.85rem;line-height:1.6}
+.qc-tax{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;margin-bottom:.75rem;max-width:60rem}
+.qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
+.qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+@media (max-width:900px){
+  .qc-panes{grid-template-columns:1fr}
+  .qc-pane-list{max-height:16rem}
+}
+
 </style>
 </head>
 <body>
@@ -1441,6 +1499,7 @@ tr:nth-child(even) td{background:#0d162080}
     <button onclick="nav('reference')">📚 Reference</button>
     <button onclick="nav('flashcards')">🃏 Flash Cards</button>
     <button onclick="nav('quiz')">✏️ Quiz</button>
+    <button onclick="nav('qc')">🔎 QC Track</button>
     <button onclick="nav('leaderboard')">🏆 Leaderboard</button>
     <button onclick="nav('escalation')">🔺 Escalation</button>
     <button onclick="nav('withhold')">⚫ Withhold/Redact</button>
@@ -2853,6 +2912,14 @@ tr:nth-child(even) td{background:#0d162080}
   </div>
 </div>
 
+<div id="page-qc" class="page">
+  <div id="qc-view-home"></div>
+  <div id="qc-view-launch" style="display:none"></div>
+  <div id="qc-view-review" style="display:none"></div>
+  <div id="qc-view-complete" style="display:none"></div>
+  <div id="qc-view-taxonomy" style="display:none"></div>
+</div>
+
 <!-- ══════ AUTH MODAL ══════ -->
 <div class="modal-bg" id="modal-bg">
   <div class="modal">
@@ -3007,6 +3074,7 @@ function nav(p){
   if(p==='admin')loadAdmin();
   if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
+  if(p==='qc'){renderQcHome();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -7601,6 +7669,73 @@ evFilter = function(mode, btn) {
 };
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+// ══════════════════════════════════════════════════════════════════
+// QC TRACK
+// ══════════════════════════════════════════════════════════════════
+
+var QC_CASES = {
+  joba:    { label: 'Joba v. Bukando',                  docs: function () { return REL_DOCS; }, certification: false },
+  firstam: { label: 'TransRidge v. Cascade Headwaters', docs: function () { return FA_DOCS; },  certification: true }
+};
+
+var QC_DEFAULTS = {
+  practice_density: 0.15, practice_batch_size: 50,
+  cert_density: 0.02,     cert_batch_size: 250,
+  target_pace_docs_per_hour: 60, max_defects_per_1000: 1, response_window_minutes: 2
+};
+
+var qcProjects = {};   // case_key -> config row
+var qcAttempts = [];   // this user's attempts
+var qcState = null;
+
+function qcNav(view) {
+  ['home', 'launch', 'review', 'complete', 'taxonomy'].forEach(function (v) {
+    var el = document.getElementById('qc-view-' + v);
+    if (el) el.style.display = (v === view) ? '' : 'none';
+  });
+}
+
+function qcConfig(caseKey) {
+  var row = qcProjects[caseKey] || {};
+  var out = {};
+  for (var k in QC_DEFAULTS) {
+    if (Object.prototype.hasOwnProperty.call(QC_DEFAULTS, k)) {
+      out[k] = (row[k] == null) ? QC_DEFAULTS[k] : row[k];
+    }
+  }
+  return out;
+}
+
+function renderQcHome() {
+  var roll = QC.rollingAccuracy(qcAttempts, 1000);
+  var pillarText = roll.pillar == null
+    ? 'No certification batches yet'
+    : Math.round(roll.pillar) + ' / 100';
+  var rateText = roll.documents
+    ? roll.defectsPer1000.toFixed(1) + ' defects per 1,000 · ' +
+      roll.defects + ' in ' + roll.documents + ' documents' + (roll.partial ? ' so far' : '')
+    : 'Certify on a case to start measuring';
+
+  var html = '' +
+    '<h2>QC Track</h2>' +
+    '<p class="qc-lede">Review documents another reviewer already coded. Catch what they got wrong — ' +
+      'without changing what they got right.</p>' +
+    '<div class="qc-dial">' +
+      '<div class="qc-dial-label">Accuracy</div>' +
+      '<div class="qc-dial-value">' + esc(pillarText) + '</div>' +
+      '<div class="qc-dial-sub">' + esc(rateText) + '</div>' +
+      '<div class="qc-dial-bar">Bar to clear: 2 defects per 1,000 documents</div>' +
+    '</div>' +
+    '<div class="qc-actions">' +
+      '<button onclick="renderQcLaunch()">Start a batch</button> ' +
+      '<button onclick="renderQcTaxonomy()">Error taxonomy</button>' +
+    '</div>';
+
+  document.getElementById('qc-view-home').innerHTML = html;
+  qcNav('home');
+}
+
 </script>
 
 <!-- ══ SHELLS (fixed position, outside all page divs) ══ -->
