@@ -7689,7 +7689,10 @@ var qcProjects = {};   // case_key -> config row
 var qcAttempts = [];   // this user's attempts
 var qcState = null;
 
+var qcCurrentView = 'home';
+
 function qcNav(view) {
+  qcCurrentView = view;
   ['home', 'launch', 'review', 'complete', 'taxonomy'].forEach(function (v) {
     var el = document.getElementById('qc-view-' + v);
     if (el) el.style.display = (v === view) ? '' : 'none';
@@ -8126,8 +8129,45 @@ function loadQcData() {
       encodeURIComponent(email) + '&order=completed_at.desc');
   }).then(function (r) {
     if (r && r.data) { qcAttempts = r.data; }
-    renderQcHome();
+    // Only refresh the dial if the user is still looking at it. This resolves
+    // after an unknown delay, and re-rendering home would otherwise interrupt
+    // whatever they navigated to in the meantime.
+    if (qcCurrentView === 'home') renderQcHome();
   }).catch(function () { /* QC_DEFAULTS and local storage still apply */ });
+}
+
+
+function renderQcTaxonomy() {
+  var html = '<h2>QC error taxonomy</h2>' +
+    '<p class="qc-lede">The defects seeded into your batches, and the defects real QC finds. ' +
+    'They are not equal — the weight column is how much each one costs you.</p>';
+
+  var ordered = QC.PHASE1_TYPES.slice().sort(function (a, b) {
+    return QC.ERROR_TYPES[b].weight - QC.ERROR_TYPES[a].weight;
+  });
+
+  for (var i = 0; i < ordered.length; i++) {
+    var t = QC.ERROR_TYPES[ordered[i]];
+    html += '<div class="qc-tax">' +
+      '<h3>' + esc(t.label) + ' <span class="qc-tax-weight">weight ' + esc(String(t.weight)) + '</span></h3>' +
+      '<p>' + esc(t.blurb) + '</p>' +
+      '<p class="qc-tax-spot"><strong>How to spot it:</strong> ' + esc(t.spot) + '</p>' +
+      '</div>';
+  }
+
+  html += '<div class="qc-tax">' +
+    '<h3>Two defects you can commit yourself</h3>' +
+    '<p>Everything above is a mistake the prior reviewer made. These two are yours. ' +
+    '<strong>False correction</strong> — changing a document that was already right — ' +
+    'costs the same as a weight-2 error, because it is one: the document is now miscoded, ' +
+    'and the team has to re-review the set to find out how far it spread. ' +
+    '<strong>Over-escalation</strong> costs less, but escalating what you should have decided ' +
+    'is how a QC reviewer becomes a bottleneck.</p>' +
+    '</div>';
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-taxonomy').innerHTML = html;
+  qcNav('taxonomy');
 }
 
 </script>
