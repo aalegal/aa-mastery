@@ -8330,6 +8330,13 @@ function saveQcAttempt(score) {
     docs_reviewed: score.docsReviewed,
     defects: score.defects,
     accuracy: QC.accuracyPillar(score.defectsPer1000),
+    pace: QC.pacePillar(
+      QC.paceStats(qcState.marks).docsPerHour,
+      QC.accuracyPillar(score.defectsPer1000),
+      qcConfig(qcState.caseKey).target_pace_docs_per_hour),
+    responsiveness: QC.responsivenessScore(
+      qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
+    consistency: score.diagnostics.familyAgreement,
     detail: { counts: score.counts, diagnostics: score.diagnostics }
   };
 
