@@ -401,6 +401,77 @@
     return 100 * Math.min(1.25, effective / target);
   }
 
+  var FAMILY_VARIANTS = [
+    { suffix: '-A', prefix: 'RE: ' },
+    { suffix: '-B', prefix: 'FW: ' },
+    { suffix: '-C', prefix: 'RE: RE: ' },
+    { suffix: '-D', prefix: 'FW: FW: ' }
+  ];
+
+  function familyMember(base, famId, k) {
+    var copy = {};
+    for (var key in base) {
+      if (Object.prototype.hasOwnProperty.call(base, key)) copy[key] = base[key];
+    }
+    copy.answer = copyAnswer(base.answer || {});
+    copy.familyId = famId;
+    if (k > 0) {
+      var v = FAMILY_VARIANTS[(k - 1) % FAMILY_VARIANTS.length];
+      copy.id = base.id + v.suffix;
+      copy.subject = v.prefix + (base.subject || base.id);
+    }
+    return copy;
+  }
+
+  // Threads, re-sends and forwarded copies are how real productions look, and
+  // coding them differently is a standard QC finding. The corpus has almost no
+  // natural near-duplicates, so they are generated: siblings share ground truth
+  // and differ only in id and subject.
+  function makeFamilies(docs, opts) {
+    opts = opts || {};
+    var rng = opts.rng || makeRng(hashSeed(opts.seed || 'families'));
+    var familySize = opts.familySize || 3;
+    var familyCount = opts.familyCount == null
+      ? Math.max(1, Math.round(docs.length * 0.06))
+      : opts.familyCount;
+
+    var out = docs.slice();
+    var used = {};
+    var familyIds = [];
+
+    function freeSlot() {
+      for (var t = 0; t < 200; t++) {
+        var c = Math.floor(rng() * out.length);
+        if (!used[c]) return c;
+      }
+      for (var i = 0; i < out.length; i++) if (!used[i]) return i;
+      return -1;
+    }
+
+    for (var f = 0; f < familyCount; f++) {
+      var seedIdx = freeSlot();
+      if (seedIdx < 0) break;
+      used[seedIdx] = 1;
+      var base = out[seedIdx];
+      var famId = 'FAM-' + (f + 1);
+      out[seedIdx] = familyMember(base, famId, 0);
+
+      var placed = 1;
+      for (var k = 1; k < familySize; k++) {
+        var slot = freeSlot();
+        if (slot < 0) break;
+        used[slot] = 1;
+        out[slot] = familyMember(base, famId, k);
+        placed++;
+      }
+      // A one-member "family" cannot be inconsistent -- drop it.
+      if (placed < 2) { out[seedIdx] = base; break; }
+      familyIds.push(famId);
+    }
+
+    return { docs: out, familyIds: familyIds };
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -416,6 +487,7 @@
     accuracyPillar: accuracyPillar,
     rollingAccuracy: rollingAccuracy,
     paceStats: paceStats,
-    pacePillar: pacePillar
+    pacePillar: pacePillar,
+    makeFamilies: makeFamilies
   };
 });

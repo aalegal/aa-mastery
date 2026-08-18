@@ -514,3 +514,61 @@ test('pacePillar caps the reward for beating target at 125', function () {
 test('pacePillar returns zero when accuracy has collapsed', function () {
   assert.strictEqual(QC.pacePillar(60, 0, 60), 0);
 });
+
+test('makeFamilies produces the requested number of families', function () {
+  var r = QC.makeFamilies(bigSet(100), { seed: 'f', familyCount: 4, familySize: 3 });
+  assert.strictEqual(r.familyIds.length, 4);
+  var counts = {};
+  r.docs.forEach(function (d) { if (d.familyId) counts[d.familyId] = (counts[d.familyId] || 0) + 1; });
+  r.familyIds.forEach(function (id) {
+    assert.strictEqual(counts[id], 3, id + ' should have 3 members, had ' + counts[id]);
+  });
+});
+
+test('makeFamilies keeps the batch the same length', function () {
+  var docs = bigSet(100);
+  var r = QC.makeFamilies(docs, { seed: 'f', familyCount: 5, familySize: 3 });
+  assert.strictEqual(r.docs.length, docs.length);
+});
+
+test('family members share ground truth but differ in id and subject', function () {
+  var r = QC.makeFamilies(bigSet(100), { seed: 'f', familyCount: 2, familySize: 3 });
+  var byFam = {};
+  r.docs.forEach(function (d) { if (d.familyId) (byFam[d.familyId] = byFam[d.familyId] || []).push(d); });
+  Object.keys(byFam).forEach(function (fid) {
+    var members = byFam[fid];
+    var ids = {}, subjects = {};
+    members.forEach(function (m) { ids[m.id] = 1; subjects[m.subject] = 1; });
+    assert.strictEqual(Object.keys(ids).length, members.length, 'ids must be unique');
+    assert.strictEqual(Object.keys(subjects).length, members.length, 'subjects must differ');
+    for (var i = 1; i < members.length; i++) {
+      assert.deepStrictEqual(members[i].answer, members[0].answer, 'ground truth must match');
+    }
+  });
+});
+
+test('makeFamilies is deterministic for a given seed', function () {
+  var a = QC.makeFamilies(bigSet(100), { seed: 'f', familyCount: 4, familySize: 3 });
+  var b = QC.makeFamilies(bigSet(100), { seed: 'f', familyCount: 4, familySize: 3 });
+  assert.deepStrictEqual(a.docs.map(function (d) { return d.id; }),
+                         b.docs.map(function (d) { return d.id; }));
+});
+
+test('makeFamilies does not mutate the source documents', function () {
+  var docs = bigSet(60);
+  var before = JSON.stringify(docs);
+  QC.makeFamilies(docs, { seed: 'f', familyCount: 3, familySize: 3 });
+  assert.strictEqual(JSON.stringify(docs), before);
+});
+
+test('makeFamilies defaults to roughly 6% of the batch', function () {
+  var r = QC.makeFamilies(bigSet(250), { seed: 'f' });
+  assert.ok(r.familyIds.length >= 12 && r.familyIds.length <= 18,
+    'expected ~15 families, got ' + r.familyIds.length);
+});
+
+test('makeFamilies degrades gracefully on a batch too small to seed', function () {
+  var r = QC.makeFamilies(bigSet(2), { seed: 'f', familyCount: 5, familySize: 3 });
+  assert.strictEqual(r.docs.length, 2);
+  assert.ok(r.familyIds.length <= 1);
+});
