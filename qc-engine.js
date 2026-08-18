@@ -390,8 +390,7 @@
 
   // The denominator is literally 1,000 documents: the pillar IS the client's
   // metric, with no rescaling. Practice batches never contribute.
-  function rollingAccuracy(attempts, windowSize) {
-    var limit = windowSize || 1000;
+  function certificationsNewestFirst(attempts) {
     var certs = [];
     for (var i = 0; i < (attempts || []).length; i++) {
       if (attempts[i] && attempts[i].batch_type === 'certification') certs.push(attempts[i]);
@@ -399,6 +398,25 @@
     certs.sort(function (a, b) {
       return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
     });
+    return certs;
+  }
+
+  // Averages a per-batch pillar across the certification batches inside the same
+  // window the accuracy pillar uses, so every figure describes one stretch of work.
+  function rollingPillar(attempts, field, windowSize) {
+    var limit = windowSize || 1000;
+    var certs = certificationsNewestFirst(attempts);
+    var docs = 0, sum = 0, n = 0;
+    for (var j = 0; j < certs.length && docs < limit; j++) {
+      docs += certs[j].docs_reviewed || 0;
+      if (certs[j][field] != null) { sum += Number(certs[j][field]); n++; }
+    }
+    return n ? (sum / n) : null;
+  }
+
+  function rollingAccuracy(attempts, windowSize) {
+    var limit = windowSize || 1000;
+    var certs = certificationsNewestFirst(attempts);
 
     var documents = 0, defects = 0;
     for (var j = 0; j < certs.length && documents < limit; j++) {
@@ -568,6 +586,67 @@
     return 100 * sum / interrupts.length;
   }
 
+  // One row per person, each carrying the same rolling figures the individual
+  // sees on their own dials. Sorted strongest first, with anyone who has not
+  // certified yet at the bottom rather than scored as zero.
+  function roster(attempts, windowSize) {
+    var byUser = {}, i, k;
+    for (i = 0; i < (attempts || []).length; i++) {
+      var a = attempts[i];
+      if (!a || !a.user_email) continue;
+      if (!byUser[a.user_email]) byUser[a.user_email] = { email: a.user_email, name: null, all: [] };
+      byUser[a.user_email].all.push(a);
+    }
+
+    var rows = [];
+    for (k in byUser) {
+      if (!Object.prototype.hasOwnProperty.call(byUser, k)) continue;
+      var u = byUser[k];
+
+      // Most recently recorded name wins: people change their display name.
+      var named = u.all.slice().sort(function (x, y) {
+        return String(y.completed_at || '').localeCompare(String(x.completed_at || ''));
+      });
+      for (i = 0; i < named.length; i++) {
+        if (named[i].user_name) { u.name = named[i].user_name; break; }
+      }
+
+      var acc = rollingAccuracy(u.all, windowSize);
+      var last = '', certs = 0;
+      for (i = 0; i < u.all.length; i++) {
+        var c = u.all[i].completed_at || '';
+        if (c > last) last = c;
+        if (u.all[i].batch_type === 'certification') certs++;
+      }
+
+      rows.push({
+        email: u.email,
+        name: u.name || String(u.email).split('@')[0],
+        batches: u.all.length,
+        certifications: certs,
+        documents: acc.documents,
+        defects: acc.defects,
+        defectsPer1000: acc.defectsPer1000,
+        accuracy: acc.pillar,
+        partial: acc.partial,
+        pace: rollingPillar(u.all, 'pace', windowSize),
+        responsiveness: rollingPillar(u.all, 'responsiveness', windowSize),
+        consistency: rollingPillar(u.all, 'consistency', windowSize),
+        lastActive: last || null,
+        attempts: u.all
+      });
+    }
+
+    rows.sort(function (a, b) {
+      if (a.accuracy == null && b.accuracy == null) return a.name.localeCompare(b.name);
+      if (a.accuracy == null) return 1;
+      if (b.accuracy == null) return -1;
+      if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
+      return a.name.localeCompare(b.name);
+    });
+    return rows;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -588,6 +667,8 @@
     PHASE2_TYPES: PHASE2_TYPES,
     familyAgreement: familyAgreement,
     applyProtocolChange: applyProtocolChange,
-    responsivenessScore: responsivenessScore
+    responsivenessScore: responsivenessScore,
+    rollingPillar: rollingPillar,
+    roster: roster
   };
 });

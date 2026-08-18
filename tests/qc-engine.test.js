@@ -763,3 +763,100 @@ test('responsivenessScore defaults to a two-minute window', function () {
   assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 2 * MIN }]), 100);
   assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 6 * MIN }]), 0);
 });
+
+function att(email, name, type, docs, defects, when, extra) {
+  var a = { user_email: email, user_name: name, batch_type: type,
+            docs_reviewed: docs, defects: defects, completed_at: when };
+  for (var k in (extra || {})) a[k] = extra[k];
+  return a;
+}
+
+test('rollingPillar averages a field over the certification window', function () {
+  var a = [
+    att('x@y.z', 'X', 'certification', 250, 0, '2026-08-01', { pace: 80 }),
+    att('x@y.z', 'X', 'certification', 250, 0, '2026-08-02', { pace: 100 }),
+    att('x@y.z', 'X', 'practice',      50,  9, '2026-08-03', { pace: 10 })
+  ];
+  assert.strictEqual(QC.rollingPillar(a, 'pace', 1000), 90);
+});
+
+test('rollingPillar returns null when the field is never populated', function () {
+  var a = [att('x@y.z', 'X', 'certification', 250, 0, '2026-08-01', {})];
+  assert.strictEqual(QC.rollingPillar(a, 'responsiveness', 1000), null);
+});
+
+test('roster groups attempts by person', function () {
+  var rows = QC.roster([
+    att('a@x.z', 'Ana', 'certification', 250, 1, '2026-08-02'),
+    att('b@x.z', 'Ben', 'certification', 250, 5, '2026-08-02'),
+    att('a@x.z', 'Ana', 'certification', 250, 0, '2026-08-03')
+  ], 1000);
+  assert.strictEqual(rows.length, 2);
+  var ana = rows.filter(function (r) { return r.email === 'a@x.z'; })[0];
+  assert.strictEqual(ana.batches, 2);
+  assert.strictEqual(ana.documents, 500);
+  assert.strictEqual(ana.defects, 1);
+  assert.strictEqual(ana.defectsPer1000, 2);
+});
+
+test('roster falls back to the email local part when no name was recorded', function () {
+  var rows = QC.roster([att('simon@x.z', null, 'certification', 250, 0, '2026-08-02')], 1000);
+  assert.strictEqual(rows[0].name, 'simon');
+});
+
+test('roster prefers the most recently recorded name', function () {
+  var rows = QC.roster([
+    att('a@x.z', 'Old Name', 'certification', 250, 0, '2026-08-01'),
+    att('a@x.z', 'New Name', 'certification', 250, 0, '2026-08-05')
+  ], 1000);
+  assert.strictEqual(rows[0].name, 'New Name');
+});
+
+test('roster accuracy ignores practice batches', function () {
+  var rows = QC.roster([
+    att('a@x.z', 'Ana', 'practice',      50,  40, '2026-08-01'),
+    att('a@x.z', 'Ana', 'certification', 250, 0,  '2026-08-02')
+  ], 1000);
+  assert.strictEqual(rows[0].documents, 250);
+  assert.strictEqual(rows[0].defects, 0);
+  assert.strictEqual(rows[0].accuracy, 100);
+  assert.strictEqual(rows[0].batches, 2, 'batches counts all work, not just certification');
+  assert.strictEqual(rows[0].certifications, 1);
+});
+
+test('roster sorts strongest first and puts people with no data last', function () {
+  var rows = QC.roster([
+    att('mid@x.z',  'Mid',  'certification', 250, 1, '2026-08-02'),
+    att('none@x.z', 'None', 'practice',      50,  2, '2026-08-02'),
+    att('top@x.z',  'Top',  'certification', 250, 0, '2026-08-02')
+  ], 1000);
+  assert.deepStrictEqual(rows.map(function (r) { return r.name; }), ['Top', 'Mid', 'None']);
+  assert.strictEqual(rows[2].accuracy, null);
+});
+
+test('roster reports the most recent activity date', function () {
+  var rows = QC.roster([
+    att('a@x.z', 'Ana', 'certification', 250, 0, '2026-08-02'),
+    att('a@x.z', 'Ana', 'practice',      50,  0, '2026-08-09')
+  ], 1000);
+  assert.strictEqual(rows[0].lastActive, '2026-08-09');
+});
+
+test('roster carries the per-person attempts for drill-down', function () {
+  var rows = QC.roster([
+    att('a@x.z', 'Ana', 'certification', 250, 0, '2026-08-02'),
+    att('a@x.z', 'Ana', 'practice',      50,  1, '2026-08-03')
+  ], 1000);
+  assert.strictEqual(rows[0].attempts.length, 2);
+});
+
+test('roster flags a partial accuracy window', function () {
+  var rows = QC.roster([att('a@x.z', 'Ana', 'certification', 250, 0, '2026-08-02')], 1000);
+  assert.strictEqual(rows[0].partial, true);
+});
+
+test('roster tolerates empty input and rows without an email', function () {
+  assert.deepStrictEqual(QC.roster([], 1000), []);
+  assert.deepStrictEqual(QC.roster(null, 1000), []);
+  assert.strictEqual(QC.roster([{ batch_type: 'certification', docs_reviewed: 10 }], 1000).length, 0);
+});
