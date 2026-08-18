@@ -154,6 +154,18 @@
         if (!others.length) return { issues: a.issues.slice(0, a.issues.length - 1) };
         return { issues: [pickFrom(others, rng)] };
       }
+    },
+    INCONSISTENCY: {
+      key: 'INCONSISTENCY', weight: 2, freq: 10,
+      label: 'Inconsistency',
+      blurb: 'One member of a near-duplicate family coded differently from its siblings. Threads, re-sends and forwarded copies must land on the same call, or the production contradicts itself and every downstream report inherits the contradiction.',
+      spot: 'Read the subject line for RE: and FW: prefixes, then check what you did with the rest of the family before you decide this one.',
+      applies: function (a, v, doc) { return !!(doc && doc.familyId) && v.conf.length > 1; },
+      apply: function (a, v, rng) {
+        var opts = [];
+        for (var i = 0; i < v.conf.length; i++) if (v.conf[i] !== a.conf) opts.push(v.conf[i]);
+        return { conf: pickFrom(opts, rng) };
+      }
     }
   };
 
@@ -161,6 +173,8 @@
     'MISSED_PRIVILEGE', 'OVER_PRIVILEGE', 'UNDER_DESIGNATION',
     'OVER_DESIGNATION', 'CONFIDENTIALITY', 'WRONG_ISSUES'
   ];
+
+  var PHASE2_TYPES = PHASE1_TYPES.concat(['INCONSISTENCY']);
 
   function copyAnswer(a) {
     var out = {};
@@ -206,7 +220,7 @@
         var candidates = [];
         for (var t = 0; t < allowed.length; t++) {
           var type = ERROR_TYPES[allowed[t]];
-          if (type && type.applies(answer, vocab)) candidates.push(type);
+          if (type && type.applies(answer, vocab, doc)) candidates.push(type);
         }
         if (candidates.length) {
           var picked = pickWeighted(candidates, rng);
@@ -237,6 +251,39 @@
       if ((a[f] || null) !== (b[f] || null)) return false;
     }
     return sameIssues(a.issues, b.issues);
+  }
+
+  // What coding the document actually ends up with once the reviewer is done.
+  // Escalated documents have no resolved coding: they went up instead.
+  function resultingCoding(entry, decision) {
+    if (!decision) return null;
+    if (decision.action === 'correct') return decision.coding;
+    if (decision.action === 'agree') return entry.priorCoding;
+    return null;
+  }
+
+  function familyAgreement(entries, decisions) {
+    var byFam = {}, i;
+    for (i = 0; i < entries.length; i++) {
+      var fid = entries[i].doc.familyId;
+      if (!fid) continue;
+      if (!byFam[fid]) byFam[fid] = [];
+      var c = resultingCoding(entries[i], (decisions || [])[i]);
+      if (c) byFam[fid].push(c);
+    }
+    var total = 0, agreed = 0;
+    for (var f in byFam) {
+      if (!Object.prototype.hasOwnProperty.call(byFam, f)) continue;
+      var list = byFam[f];
+      if (list.length < 2) continue;
+      total++;
+      var same = true;
+      for (i = 1; i < list.length; i++) {
+        if (!codingMatches(list[0], list[i])) { same = false; break; }
+      }
+      if (same) agreed++;
+    }
+    return total ? (agreed / total) : null;
   }
 
   var DEFECT_WEIGHTS = { FALSE_CORRECTION: 2, MISSED_ESCALATION: 2, OVER_ESCALATION: 1 };
@@ -304,7 +351,7 @@
       diagnostics: {
         catchRate: seededWeight ? (caughtWeight / seededWeight) : null,
         falseCorrectionRate: cleanDocs ? (falseCorrections / cleanDocs) : null,
-        familyAgreement: null   // Phase 2 — requires near-duplicate families
+        familyAgreement: familyAgreement(entries, decisions)
       }
     };
   }
@@ -488,6 +535,8 @@
     rollingAccuracy: rollingAccuracy,
     paceStats: paceStats,
     pacePillar: pacePillar,
-    makeFamilies: makeFamilies
+    makeFamilies: makeFamilies,
+    PHASE2_TYPES: PHASE2_TYPES,
+    familyAgreement: familyAgreement
   };
 });

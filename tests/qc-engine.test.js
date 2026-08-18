@@ -572,3 +572,80 @@ test('makeFamilies degrades gracefully on a batch too small to seed', function (
   assert.strictEqual(r.docs.length, 2);
   assert.ok(r.familyIds.length <= 1);
 });
+
+test('PHASE2_TYPES adds inconsistency to the Phase 1 set', function () {
+  assert.strictEqual(QC.PHASE2_TYPES.length, 7);
+  assert.notStrictEqual(QC.PHASE2_TYPES.indexOf('INCONSISTENCY'), -1);
+  QC.PHASE1_TYPES.forEach(function (t) {
+    assert.notStrictEqual(QC.PHASE2_TYPES.indexOf(t), -1, t + ' missing from Phase 2 set');
+  });
+});
+
+test('inconsistency only applies to documents in a family', function () {
+  var v = QC.buildVocabulary(JSON_SET);
+  var t = QC.ERROR_TYPES.INCONSISTENCY;
+  assert.strictEqual(t.applies(JSON_SET[0].answer, v, { id: 'X' }), false);
+  assert.strictEqual(t.applies(JSON_SET[0].answer, v, { id: 'X', familyId: 'FAM-1' }), true);
+});
+
+test('inconsistency carries reference copy and weight 2', function () {
+  var t = QC.ERROR_TYPES.INCONSISTENCY;
+  assert.strictEqual(t.weight, 2);
+  assert.ok(t.blurb.length > 40);
+  assert.ok(t.spot.length > 20);
+});
+
+test('seedErrors passes the document to applies()', function () {
+  var docs = QC.makeFamilies(bigSet(120), { seed: 'f', familyCount: 6, familySize: 3 }).docs;
+  var seeded = QC.seedErrors(docs, { seed: 's', density: 1, allowedTypes: ['INCONSISTENCY'] });
+  seeded.forEach(function (e) {
+    if (e.seededError) {
+      assert.ok(e.doc.familyId, 'inconsistency seeded on a non-family document ' + e.doc.id);
+    }
+  });
+  assert.ok(seeded.filter(function (e) { return e.seededError; }).length > 0, 'nothing seeded');
+});
+
+function famEntries(codings) {
+  return codings.map(function (c, i) {
+    return { doc: { id: 'F' + i, familyId: 'FAM-1', answer: c }, priorCoding: c, seededError: null };
+  });
+}
+var C1 = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+var C2 = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'aeo', issues: ['issue1'] };
+
+test('familyAgreement is 1 when every member ends up coded the same', function () {
+  var e = famEntries([C1, C1, C1]);
+  var d = [{ action: 'agree' }, { action: 'agree' }, { action: 'agree' }];
+  assert.strictEqual(QC.familyAgreement(e, d), 1);
+});
+
+test('familyAgreement is 0 when a member is left coded differently', function () {
+  var e = famEntries([C1, C1, C2]);
+  var d = [{ action: 'agree' }, { action: 'agree' }, { action: 'agree' }];
+  assert.strictEqual(QC.familyAgreement(e, d), 0);
+});
+
+test('familyAgreement counts a correction that realigns the family', function () {
+  var e = famEntries([C1, C1, C2]);
+  var d = [{ action: 'agree' }, { action: 'agree' }, { action: 'correct', coding: C1 }];
+  assert.strictEqual(QC.familyAgreement(e, d), 1);
+});
+
+test('familyAgreement ignores escalated members rather than counting them wrong', function () {
+  var e = famEntries([C1, C1, C2]);
+  var d = [{ action: 'agree' }, { action: 'agree' }, { action: 'escalate' }];
+  assert.strictEqual(QC.familyAgreement(e, d), 1);
+});
+
+test('familyAgreement returns null when the batch has no families', function () {
+  var e = [{ doc: { id: 'X', answer: C1 }, priorCoding: C1, seededError: null }];
+  assert.strictEqual(QC.familyAgreement(e, [{ action: 'agree' }]), null);
+});
+
+test('scoreBatch reports familyAgreement instead of null', function () {
+  var e = famEntries([C1, C1, C2]);
+  var d = [{ action: 'agree' }, { action: 'agree' }, { action: 'agree' }];
+  var s = QC.scoreBatch(e, d, {});
+  assert.strictEqual(s.diagnostics.familyAgreement, 0);
+});
