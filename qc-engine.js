@@ -360,6 +360,47 @@
     };
   }
 
+  // marks[0] is the batch start; every later mark is one recorded decision.
+  function paceStats(marks) {
+    var empty = { docsPerHour: 0, thirds: [0, 0, 0], fade: null, elapsedMs: 0, decisions: 0 };
+    if (!marks || marks.length < 2) return empty;
+
+    var n = marks.length - 1;
+    var elapsed = marks[n] - marks[0];
+    var dph = elapsed > 0 ? (n / (elapsed / 3600000)) : 0;
+
+    var size = Math.floor(n / 3);
+    var thirds = [0, 0, 0];
+    if (size > 0) {
+      for (var t = 0; t < 3; t++) {
+        var lo = 1 + t * size;
+        var hi = (t === 2) ? n : (t + 1) * size;
+        var span = marks[hi] - marks[lo - 1];
+        var cnt = hi - lo + 1;
+        thirds[t] = span > 0 ? (cnt / (span / 3600000)) : 0;
+      }
+    }
+
+    return {
+      docsPerHour: dph,
+      thirds: thirds,
+      fade: thirds[0] > 0 ? (thirds[2] / thirds[0]) : null,
+      elapsedMs: elapsed,
+      decisions: n
+    };
+  }
+
+  // Pace is never scored alone. Throughput is discounted by the square of the
+  // quality it was bought at, so 75 docs/hr at a collapsed accuracy scores below
+  // 60 docs/hr done properly. That is the whole point.
+  function pacePillar(docsPerHour, accuracyPillarValue, targetPace) {
+    var target = targetPace || 60;
+    var q = Math.max(0, Math.min(1, (accuracyPillarValue || 0) / 100));
+    var effective = (docsPerHour || 0) * q * q;
+    if (target <= 0) return 0;
+    return 100 * Math.min(1.25, effective / target);
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -373,6 +414,8 @@
     scoreBatch: scoreBatch,
     ACCURACY_ANCHORS: ACCURACY_ANCHORS,
     accuracyPillar: accuracyPillar,
-    rollingAccuracy: rollingAccuracy
+    rollingAccuracy: rollingAccuracy,
+    paceStats: paceStats,
+    pacePillar: pacePillar
   };
 });

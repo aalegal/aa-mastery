@@ -449,3 +449,68 @@ test('rollingAccuracy converts one defect in a thousand to the tolerance line', 
   assert.strictEqual(r.defectsPer1000, 1);
   assert.strictEqual(r.pillar, 95);
 });
+
+var HOUR = 3600000;
+
+test('paceStats reports docs per hour from the mark stream', function () {
+  var marks = [0];
+  for (var i = 1; i <= 30; i++) marks.push(i * (HOUR / 60));
+  var s = QC.paceStats(marks);
+  assert.strictEqual(s.decisions, 30);
+  assert.strictEqual(Math.round(s.docsPerHour), 60);
+  assert.strictEqual(s.elapsedMs, HOUR / 2);
+});
+
+test('paceStats splits the batch into thirds', function () {
+  var marks = [0], t = 0, i;
+  for (i = 0; i < 20; i++) { t += HOUR / 60; marks.push(t); }
+  for (i = 0; i < 10; i++) { t += HOUR / 30; marks.push(t); }
+  var s = QC.paceStats(marks);
+  assert.strictEqual(s.thirds.length, 3);
+  assert.ok(Math.round(s.thirds[0]) === 60, 'first third ~60, got ' + s.thirds[0]);
+  assert.ok(Math.round(s.thirds[2]) === 30, 'final third ~30, got ' + s.thirds[2]);
+});
+
+test('paceStats fade is the ratio of final third to first third', function () {
+  var marks = [0], t = 0, i;
+  for (i = 0; i < 20; i++) { t += HOUR / 60; marks.push(t); }
+  for (i = 0; i < 10; i++) { t += HOUR / 30; marks.push(t); }
+  var s = QC.paceStats(marks);
+  assert.ok(s.fade > 0.45 && s.fade < 0.55, 'expected ~0.5 fade, got ' + s.fade);
+});
+
+test('paceStats handles a batch with no decisions', function () {
+  var s = QC.paceStats([0]);
+  assert.strictEqual(s.decisions, 0);
+  assert.strictEqual(s.docsPerHour, 0);
+  assert.strictEqual(s.fade, null);
+});
+
+test('paceStats tolerates an empty or missing mark stream', function () {
+  assert.strictEqual(QC.paceStats([]).docsPerHour, 0);
+  assert.strictEqual(QC.paceStats(null).docsPerHour, 0);
+});
+
+test('pacePillar scores 100 at target pace with perfect accuracy', function () {
+  assert.strictEqual(QC.pacePillar(60, 100, 60), 100);
+});
+
+test('pacePillar squares the accuracy discount', function () {
+  assert.strictEqual(Math.round(QC.pacePillar(60, 90, 60)), 81);
+});
+
+test('pacePillar makes rushing strictly worse than working properly', function () {
+  var rushing  = QC.pacePillar(75, 60, 60);
+  var careful  = QC.pacePillar(60, 100, 60);
+  assert.ok(rushing < careful, 'rushing ' + rushing + ' should score below careful ' + careful);
+  assert.strictEqual(Math.round(rushing), 45);
+});
+
+test('pacePillar caps the reward for beating target at 125', function () {
+  assert.strictEqual(QC.pacePillar(200, 100, 60), 125);
+  assert.strictEqual(QC.pacePillar(75, 100, 60), 125);
+});
+
+test('pacePillar returns zero when accuracy has collapsed', function () {
+  assert.strictEqual(QC.pacePillar(60, 0, 60), 0);
+});
