@@ -7688,8 +7688,11 @@ function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()
 // ══════════════════════════════════════════════════════════════════
 
 var QC_CASES = {
-  joba:    { label: 'Joba v. Bukando',                  docs: function () { return REL_DOCS; }, certification: false },
-  firstam: { label: 'TransRidge v. Cascade Headwaters', docs: function () { return FA_DOCS; },  certification: true }
+  joba:    { label: 'Joba v. Bukando',                  docs: function () { return REL_DOCS; },  certification: false },
+  firstam: { label: 'TransRidge v. Cascade Headwaters', docs: function () { return FA_DOCS; },   certification: true },
+  p3:      { label: 'Veridian Bank \u2014 GDPR / AI',       docs: function () { return P3_DOCS; },   certification: true },
+  p4:      { label: 'Project 4',                        docs: function () { return P4_DOCS; },   certification: true },
+  ptbr:    { label: 'Cade Brazil \u2014 Portuguese',        docs: function () { return PTBR_DOCS; }, certification: false }
 };
 
 var QC_DEFAULTS = {
@@ -7887,6 +7890,27 @@ function renderQcHome() {
 }
 
 
+// A document someone has already reviewed cannot measure them again -- they
+// remember it, whatever errors get reseeded. The rolling 1,000-document window
+// therefore needs 1,000 distinct documents, which no single case holds.
+function qcSeenDocIds() {
+  var seen = {};
+  for (var i = 0; i < qcAttempts.length; i++) {
+    var ids = qcAttempts[i].detail && qcAttempts[i].detail.docIds;
+    if (!ids) continue;
+    for (var j = 0; j < ids.length; j++) seen[ids[j]] = 1;
+  }
+  return seen;
+}
+
+function qcFreshCount(caseKey) {
+  var seen = qcSeenDocIds();
+  var docs = QC_CASES[caseKey].docs() || [];
+  var n = 0;
+  for (var i = 0; i < docs.length; i++) if (!seen[docs[i].id]) n++;
+  return n;
+}
+
 function qcNextBatchNo(caseKey, batchType) {
   var n = 0;
   for (var i = 0; i < qcAttempts.length; i++) {
@@ -7909,7 +7933,8 @@ function renderQcLaunch() {
 
     html += '<div class="qc-case">' +
       '<h3>' + esc(c.label) + '</h3>' +
-      '<div class="qc-case-meta">' + esc(String(available)) + ' documents</div>' +
+      '<div class="qc-case-meta">' + esc(String(available)) + ' documents \u00b7 ' +
+        esc(String(qcFreshCount(key))) + ' not yet certified against</div>' +
       '<button onclick="startQcBatch(\'' + escAttr(key) + '\',\'practice\')">' +
         'Practice · ' + esc(String(cfg.practice_batch_size)) + ' docs</button> ';
 
@@ -7941,6 +7966,20 @@ function startQcBatch(caseKey, batchType) {
   // is as reproducible as which of them carry errors.
   var rng = QC.makeRng(QC.hashSeed(seed + '|draw'));
   var pool = all.slice();
+  if (batchType === 'certification') {
+    var seen = qcSeenDocIds();
+    var fresh = [];
+    for (var s = 0; s < pool.length; s++) if (!seen[pool[s].id]) fresh.push(pool[s]);
+    if (fresh.length >= size) {
+      pool = fresh;
+    } else {
+      alert('Only ' + fresh.length + ' unreviewed documents remain in ' +
+            QC_CASES[caseKey].label + ' -- not enough for a ' + size +
+            '-document certification batch. Pick another case to keep the window honest.');
+      renderQcLaunch();
+      return;
+    }
+  }
   for (var i = pool.length - 1; i > 0; i--) {
     var j = Math.floor(rng() * (i + 1));
     var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
@@ -8164,7 +8203,10 @@ var QC_AMBIGUOUS = {
   //
   // These five are the genuine close calls: the only FA documents with both a
   // uniquely hand-authored explanation and an fa-flag coding.
-  firstam: ['FA-0002', 'FA-0003', 'FA-0004', 'FA-0010', 'FA-0011']
+  firstam: ['FA-0002', 'FA-0003', 'FA-0004', 'FA-0010', 'FA-0011'],
+  p3: [],
+  p4: [],
+  ptbr: []
 };
 
 function qcAmbiguousIds(caseKey) {
@@ -8172,6 +8214,9 @@ function qcAmbiguousIds(caseKey) {
 }
 
 function finishQcBatch() {
+  // Idempotent: a double-click on Finish, or a stale call after the launcher
+  // refused a batch, must not record the same work twice.
+  if (!qcState || qcState.completedAt) return;
   qcStopClock();
   var score = QC.scoreBatch(qcState.entries, qcState.decisions, {
     ambiguousIds: qcAmbiguousIds(qcState.caseKey)
@@ -8301,6 +8346,17 @@ function renderQcComplete(score) {
 // Persistence. Uses the existing SB.req() wrapper rather than new SB methods:
 // it already builds auth headers via SB.hdr() and normalises errors to
 // {data, error}, so the auth-critical SB object needs no edits.
+// Family variants carry derived ids (JB-0050-A); record the source document so
+// a sibling is never served back as if it were new.
+function qcDrawnDocIds() {
+  var out = [], seen = {};
+  for (var i = 0; i < qcState.entries.length; i++) {
+    var base = String(qcState.entries[i].doc.id).replace(/-[A-D]$/, '');
+    if (!seen[base]) { seen[base] = 1; out.push(base); }
+  }
+  return out;
+}
+
 function saveQcAttempt(score) {
   var email = (SB.user && SB.user.email) || null;
 
@@ -8311,7 +8367,18 @@ function saveQcAttempt(score) {
     local.push({
       case_key: qcState.caseKey, batch_type: qcState.batchType,
       batch_no: qcState.batchNo, docs_reviewed: score.docsReviewed,
-      defects: score.defects, completed_at: qcState.completedAt
+      defects: score.defects, completed_at: qcState.completedAt,
+      accuracy: QC.accuracyPillar(score.defectsPer1000),
+      pace: QC.pacePillar(
+        QC.paceStats(qcState.marks).docsPerHour,
+        QC.accuracyPillar(score.defectsPer1000),
+        qcConfig(qcState.caseKey).target_pace_docs_per_hour),
+      responsiveness: QC.responsivenessScore(
+        qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
+      consistency: score.diagnostics.familyAgreement,
+      // docIds must be here too, not only on the Supabase row: the no-repeat
+      // guard reads qcAttempts, which is the local list when signed out.
+      detail: { docIds: qcDrawnDocIds() }
     });
     localStorage.setItem('qc_attempts', JSON.stringify(local));
     qcAttempts = local.slice();
@@ -8337,7 +8404,11 @@ function saveQcAttempt(score) {
     responsiveness: QC.responsivenessScore(
       qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
     consistency: score.diagnostics.familyAgreement,
-    detail: { counts: score.counts, diagnostics: score.diagnostics }
+    detail: {
+      counts: score.counts,
+      diagnostics: score.diagnostics,
+      docIds: qcDrawnDocIds()
+    }
   };
 
   SB.req('POST', '/rest/v1/qc_attempts', row).then(function (r) {
