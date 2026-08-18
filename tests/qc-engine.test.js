@@ -649,3 +649,79 @@ test('scoreBatch reports familyAgreement instead of null', function () {
   var s = QC.scoreBatch(e, d, {});
   assert.strictEqual(s.diagnostics.familyAgreement, 0);
 });
+
+var CHANGE = {
+  label: 'Vendor comms with counsel copied are now privileged.',
+  when: { privilege: 'not-privileged' },
+  then: { privilege: 'acp-wpp', action: 'withhold' }
+};
+
+function plainEntries(n, answer) {
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    out.push({ doc: { id: 'P' + i, answer: answer }, priorCoding: answer, seededError: null });
+  }
+  return out;
+}
+var CLEAN = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+
+test('applyProtocolChange only touches documents at or after the change point', function () {
+  var e = QC.applyProtocolChange(plainEntries(10, CLEAN), CHANGE, 5);
+  for (var i = 0; i < 5; i++) assert.strictEqual(e[i].effectiveAnswer, undefined, 'index ' + i);
+  for (var j = 5; j < 10; j++) assert.ok(e[j].effectiveAnswer, 'index ' + j + ' should be amended');
+});
+
+test('applyProtocolChange applies the amended coding', function () {
+  var e = QC.applyProtocolChange(plainEntries(6, CLEAN), CHANGE, 3);
+  assert.strictEqual(e[4].effectiveAnswer.privilege, 'acp-wpp');
+  assert.strictEqual(e[4].effectiveAnswer.action, 'withhold');
+  assert.strictEqual(e[4].effectiveAnswer.responsive, 'responsive', 'untouched fields survive');
+  assert.strictEqual(e[4].instructionChanged, true);
+});
+
+test('applyProtocolChange skips documents that do not match the predicate', function () {
+  var priv = { responsive: 'responsive', privilege: 'acp', action: 'withhold', conf: 'standard', issues: [] };
+  var e = QC.applyProtocolChange(plainEntries(6, priv), CHANGE, 0);
+  e.forEach(function (x) { assert.strictEqual(x.effectiveAnswer, undefined); });
+});
+
+test('applyProtocolChange leaves the source answer untouched', function () {
+  var e = plainEntries(4, CLEAN);
+  QC.applyProtocolChange(e, CHANGE, 0);
+  assert.strictEqual(e[0].doc.answer.privilege, 'not-privileged');
+});
+
+test('agreeing after a protocol change is instruction drift at weight 3', function () {
+  var e = QC.applyProtocolChange(plainEntries(4, CLEAN), CHANGE, 0);
+  var r = QC.classifyDecision(e[1], { action: 'agree' }, false);
+  assert.strictEqual(r.defect, 'INSTRUCTION_DRIFT');
+  assert.strictEqual(r.weight, 3);
+});
+
+test('applying the protocol change correctly is scored correct', function () {
+  var e = QC.applyProtocolChange(plainEntries(4, CLEAN), CHANGE, 0);
+  var r = QC.classifyDecision(e[1], { action: 'correct', coding: e[1].effectiveAnswer }, false);
+  assert.strictEqual(r.correct, true);
+});
+
+test('agreeing before the change point stays correct', function () {
+  var e = QC.applyProtocolChange(plainEntries(8, CLEAN), CHANGE, 4);
+  assert.strictEqual(QC.classifyDecision(e[0], { action: 'agree' }, false).correct, true);
+});
+
+test('scoreBatch counts instruction drift', function () {
+  var e = QC.applyProtocolChange(plainEntries(10, CLEAN), CHANGE, 5);
+  var d = []; for (var i = 0; i < 10; i++) d.push({ action: 'agree' });
+  var s = QC.scoreBatch(e, d, {});
+  assert.strictEqual(s.counts.INSTRUCTION_DRIFT, 5);
+  assert.strictEqual(s.defects, 7.5);
+});
+
+test('post-change compliance is reported as a diagnostic', function () {
+  var e = QC.applyProtocolChange(plainEntries(10, CLEAN), CHANGE, 5);
+  var d = []; for (var i = 0; i < 10; i++) {
+    d.push(i >= 5 && i < 8 ? { action: 'correct', coding: e[i].effectiveAnswer } : { action: 'agree' });
+  }
+  var s = QC.scoreBatch(e, d, {});
+  assert.strictEqual(s.diagnostics.postChangeCompliance, 3 / 5);
+});

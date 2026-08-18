@@ -286,7 +286,7 @@
     return total ? (agreed / total) : null;
   }
 
-  var DEFECT_WEIGHTS = { FALSE_CORRECTION: 2, MISSED_ESCALATION: 2, OVER_ESCALATION: 1 };
+  var DEFECT_WEIGHTS = { FALSE_CORRECTION: 2, MISSED_ESCALATION: 2, OVER_ESCALATION: 1, INSTRUCTION_DRIFT: 3 };
 
   function ok() { return { correct: true, defect: null, weight: 0 }; }
   function bad(defect, weight) { return { correct: false, defect: defect, weight: weight }; }
@@ -295,7 +295,7 @@
   // (FALSE_CORRECTION) are both real ways people lose a QC seat, so both cost.
   function classifyDecision(entry, decision, isAmbiguous) {
     var action = decision && decision.action;
-    var truth = entry.doc.answer || {};
+    var truth = entry.effectiveAnswer || entry.doc.answer || {};
 
     if (isAmbiguous) {
       return action === 'escalate' ? ok() : bad('MISSED_ESCALATION', DEFECT_WEIGHTS.MISSED_ESCALATION);
@@ -307,11 +307,17 @@
     var seeded = entry.seededError;
     if (action === 'correct') {
       if (codingMatches(decision.coding, truth)) return ok();
-      return seeded
-        ? bad('BAD_FIX', seeded.weight / 2)
-        : bad('FALSE_CORRECTION', DEFECT_WEIGHTS.FALSE_CORRECTION);
+      if (seeded) return bad('BAD_FIX', seeded.weight / 2);
+      // Tried to apply the change and got it wrong: a real attempt, half the
+      // cost of not trying at all.
+      if (entry.instructionChanged) return bad('BAD_FIX', DEFECT_WEIGHTS.INSTRUCTION_DRIFT / 2);
+      return bad('FALSE_CORRECTION', DEFECT_WEIGHTS.FALSE_CORRECTION);
     }
-    return seeded ? bad('MISS', seeded.weight) : ok();
+    if (seeded) return bad('MISS', seeded.weight);
+    if (entry.instructionChanged && !codingMatches(entry.priorCoding, truth)) {
+      return bad('INSTRUCTION_DRIFT', DEFECT_WEIGHTS.INSTRUCTION_DRIFT);
+    }
+    return ok();
   }
 
   function scoreBatch(entries, decisions, opts) {
@@ -319,8 +325,9 @@
     var ambiguous = {};
     (opts.ambiguousIds || []).forEach(function (id) { ambiguous[id] = 1; });
 
-    var counts = { MISS: 0, BAD_FIX: 0, FALSE_CORRECTION: 0, MISSED_ESCALATION: 0, OVER_ESCALATION: 0, CORRECT: 0 };
+    var counts = { MISS: 0, BAD_FIX: 0, FALSE_CORRECTION: 0, MISSED_ESCALATION: 0, OVER_ESCALATION: 0, INSTRUCTION_DRIFT: 0, CORRECT: 0 };
     var weighted = 0, cleanDocs = 0, falseCorrections = 0;
+    var changedDocs = 0, changedRight = 0;
     var seededWeight = 0, caughtWeight = 0;
 
     for (var i = 0; i < entries.length; i++) {
@@ -340,6 +347,7 @@
           if (r.defect === 'FALSE_CORRECTION') falseCorrections++;
         }
       }
+      if (e.instructionChanged) { changedDocs++; if (r.correct) changedRight++; }
     }
 
     var defects = weighted / 2;
@@ -351,7 +359,8 @@
       diagnostics: {
         catchRate: seededWeight ? (caughtWeight / seededWeight) : null,
         falseCorrectionRate: cleanDocs ? (falseCorrections / cleanDocs) : null,
-        familyAgreement: familyAgreement(entries, decisions)
+        familyAgreement: familyAgreement(entries, decisions),
+        postChangeCompliance: changedDocs ? (changedRight / changedDocs) : null
       }
     };
   }
@@ -519,6 +528,29 @@
     return { docs: out, familyIds: familyIds };
   }
 
+  // A mid-batch instruction change does not create a "mistake" by the prior
+  // reviewer: it changes what correct means from this point on. Documents after
+  // the change point are scored against the amended rule, so agreeing with
+  // coding that predates it is instruction drift.
+  function applyProtocolChange(entries, change, fromIndex) {
+    for (var i = fromIndex; i < entries.length; i++) {
+      var a = entries[i].doc.answer || {};
+      var hit = true, k;
+      for (k in change.when) {
+        if (!Object.prototype.hasOwnProperty.call(change.when, k)) continue;
+        if (a[k] !== change.when[k]) { hit = false; break; }
+      }
+      if (!hit) continue;
+      var eff = copyAnswer(a);
+      for (k in change.then) {
+        if (Object.prototype.hasOwnProperty.call(change.then, k)) eff[k] = change.then[k];
+      }
+      entries[i].effectiveAnswer = eff;
+      entries[i].instructionChanged = true;
+    }
+    return entries;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -537,6 +569,7 @@
     pacePillar: pacePillar,
     makeFamilies: makeFamilies,
     PHASE2_TYPES: PHASE2_TYPES,
-    familyAgreement: familyAgreement
+    familyAgreement: familyAgreement,
+    applyProtocolChange: applyProtocolChange
   };
 });
