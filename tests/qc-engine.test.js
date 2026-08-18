@@ -725,3 +725,41 @@ test('post-change compliance is reported as a diagnostic', function () {
   var s = QC.scoreBatch(e, d, {});
   assert.strictEqual(s.diagnostics.postChangeCompliance, 3 / 5);
 });
+
+var MIN = 60000;
+
+test('responsivenessScore gives full credit inside the window', function () {
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 1 * MIN }], 2), 100);
+});
+
+test('responsivenessScore gives full credit exactly at the window', function () {
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 2 * MIN }], 2), 100);
+});
+
+test('responsivenessScore decays linearly to zero at three windows', function () {
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 4 * MIN }], 2), 50);
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 6 * MIN }], 2), 0);
+});
+
+test('responsivenessScore scores an unacknowledged interrupt zero', function () {
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: null }], 2), 0);
+});
+
+test('responsivenessScore averages across interrupts', function () {
+  var s = QC.responsivenessScore([
+    { firedAt: 0, ackAt: 1 * MIN },
+    { firedAt: 0, ackAt: 4 * MIN },
+    { firedAt: 0, ackAt: null }
+  ], 2);
+  assert.strictEqual(Math.round(s), 50);
+});
+
+test('responsivenessScore returns null when no interrupts fired', function () {
+  assert.strictEqual(QC.responsivenessScore([], 2), null);
+  assert.strictEqual(QC.responsivenessScore(null, 2), null);
+});
+
+test('responsivenessScore defaults to a two-minute window', function () {
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 2 * MIN }]), 100);
+  assert.strictEqual(QC.responsivenessScore([{ firedAt: 0, ackAt: 6 * MIN }]), 0);
+});

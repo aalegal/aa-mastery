@@ -551,6 +551,23 @@
     return entries;
   }
 
+  // Full credit inside the window, linear decay to nothing at three windows.
+  // At the calibrated W of 2 minutes that is: everything up to 2 min, nothing
+  // past 6 -- two documents' work at target pace, and six.
+  function responsivenessScore(interrupts, windowMinutes) {
+    if (!interrupts || !interrupts.length) return null;
+    var W = (windowMinutes || 2) * 60000;
+    var sum = 0;
+    for (var i = 0; i < interrupts.length; i++) {
+      var it = interrupts[i];
+      if (!it || it.ackAt == null) continue;
+      var d = it.ackAt - it.firedAt;
+      if (d <= W) sum += 1;
+      else if (d <= 3 * W) sum += 1 - (d - W) / (2 * W);
+    }
+    return 100 * sum / interrupts.length;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -570,6 +587,7 @@
     makeFamilies: makeFamilies,
     PHASE2_TYPES: PHASE2_TYPES,
     familyAgreement: familyAgreement,
-    applyProtocolChange: applyProtocolChange
+    applyProtocolChange: applyProtocolChange,
+    responsivenessScore: responsivenessScore
   };
 });
