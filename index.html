@@ -1399,6 +1399,9 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;margin-bottom:.75rem}
+.qc-admin-grid label{display:flex;flex-direction:column;gap:.2rem;font-size:.78rem;color:#9fb0c9}
+.qc-admin-check{flex-direction:row!important;align-items:center;gap:.4rem!important}
 .qc-card-alert{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
 .qc-badge{background:var(--gold);color:#0b1220;border-radius:999px;padding:.05rem .4rem;font-size:.7rem}
 .qc-msg{border-bottom:1px solid #16203a;padding:.5rem 0;font-size:.82rem}
@@ -2931,6 +2934,7 @@ tr:nth-child(even) td{background:#0d162080}
   <div id="qc-view-review" style="display:none"></div>
   <div id="qc-view-complete" style="display:none"></div>
   <div id="qc-view-taxonomy" style="display:none"></div>
+  <div id="qc-view-admin" style="display:none"></div>
 </div>
 
 <!-- ══════ AUTH MODAL ══════ -->
@@ -7709,7 +7713,7 @@ var qcCurrentView = 'home';
 
 function qcNav(view) {
   qcCurrentView = view;
-  ['home', 'launch', 'review', 'complete', 'taxonomy'].forEach(function (v) {
+  ['home', 'launch', 'review', 'complete', 'taxonomy', 'admin'].forEach(function (v) {
     var el = document.getElementById('qc-view-' + v);
     if (el) el.style.display = (v === view) ? '' : 'none';
   });
@@ -7883,6 +7887,9 @@ function renderQcHome() {
     '<div class="qc-actions">' +
       '<button onclick="renderQcLaunch()">Start a batch</button> ' +
       '<button onclick="renderQcTaxonomy()">Error taxonomy</button>' +
+      (isLeadership(SB.user)
+        ? ' <button onclick="renderQcAdmin()">Project targets</button>'
+        : '') +
     '</div>';
 
   document.getElementById('qc-view-home').innerHTML = html;
@@ -8440,6 +8447,73 @@ function loadQcData() {
   }).catch(function () { /* QC_DEFAULTS and local storage still apply */ });
 }
 
+
+function renderQcAdmin() {
+  if (!isLeadership(SB.user)) { renderQcHome(); return; }
+
+  var html = '<h2>QC project targets</h2>' +
+    '<p class="qc-lede">These are the numbers every drill is scored against. ' +
+    'Changing them changes what the bar means, so change them because a client ' +
+    'changed, not because a batch felt hard.</p>';
+
+  for (var key in QC_CASES) {
+    if (!Object.prototype.hasOwnProperty.call(QC_CASES, key)) continue;
+    var cfg = qcConfig(key);
+    var row = qcProjects[key] || {};
+    html += '<div class="qc-case">' +
+      '<h3>' + esc(QC_CASES[key].label) + '</h3>' +
+      '<div class="qc-admin-grid">' +
+        '<label>Target pace (docs/hr)<input type="number" min="1" max="500" ' +
+          'id="qcp-pace-' + escAttr(key) + '" value="' + escAttr(String(cfg.target_pace_docs_per_hour)) + '"></label>' +
+        '<label>Response window (min)<input type="number" min="1" max="120" ' +
+          'id="qcp-resp-' + escAttr(key) + '" value="' + escAttr(String(cfg.response_window_minutes)) + '"></label>' +
+        '<label>Max defects per 1,000<input type="number" min="0" max="100" step="0.5" ' +
+          'id="qcp-tol-' + escAttr(key) + '" value="' + escAttr(String(cfg.max_defects_per_1000)) + '"></label>' +
+        '<label>Certification batch size<input type="number" min="25" max="1000" ' +
+          'id="qcp-size-' + escAttr(key) + '" value="' + escAttr(String(cfg.cert_batch_size)) + '"></label>' +
+        '<label class="qc-admin-check"><input type="checkbox" ' +
+          'id="qcp-cert-' + escAttr(key) + '"' + (row.supports_certification ? ' checked' : '') +
+          '> Available for certification</label>' +
+      '</div>' +
+      '<button onclick="qcSaveProject(\'' + escAttr(key) + '\')">Save ' +
+        esc(QC_CASES[key].label) + '</button>' +
+      '<span id="qcp-status-' + escAttr(key) + '" class="qc-note"></span>' +
+      '</div>';
+  }
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-admin').innerHTML = html;
+  qcNav('admin');
+}
+
+function qcSaveProject(caseKey) {
+  var status = document.getElementById('qcp-status-' + caseKey);
+  var body = {
+    target_pace_docs_per_hour: Number(document.getElementById('qcp-pace-' + caseKey).value),
+    response_window_minutes: Number(document.getElementById('qcp-resp-' + caseKey).value),
+    max_defects_per_1000: Number(document.getElementById('qcp-tol-' + caseKey).value),
+    cert_batch_size: Number(document.getElementById('qcp-size-' + caseKey).value),
+    supports_certification: document.getElementById('qcp-cert-' + caseKey).checked,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!(body.target_pace_docs_per_hour > 0) || !(body.response_window_minutes > 0) ||
+      !(body.cert_batch_size >= 25)) {
+    status.textContent = 'Check the numbers - pace and window must be above zero, batch size at least 25.';
+    return;
+  }
+
+  status.textContent = 'Saving...';
+  SB.req('PATCH', '/rest/v1/qc_projects?case_key=eq.' + encodeURIComponent(caseKey), body)
+    .then(function (r) {
+      if (r && r.error) { status.textContent = 'Save failed.'; return; }
+      qcProjects[caseKey] = qcProjects[caseKey] || { case_key: caseKey };
+      for (var k in body) {
+        if (Object.prototype.hasOwnProperty.call(body, k)) qcProjects[caseKey][k] = body[k];
+      }
+      status.textContent = 'Saved.';
+    });
+}
 
 function renderQcTaxonomy() {
   var html = '<h2>QC error taxonomy</h2>' +
