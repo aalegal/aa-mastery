@@ -7866,23 +7866,8 @@ function qcStopClock() {
   if (qcState && qcState.clockTimer) { clearInterval(qcState.clockTimer); qcState.clockTimer = null; }
 }
 
-// Averages a per-batch pillar across the certification batches that make up the
-// rolling accuracy window, so all three dials describe the same stretch of work.
 function qcRollingPillar(field, windowSize) {
-  var limit = windowSize || 1000;
-  var certs = [];
-  for (var i = 0; i < qcAttempts.length; i++) {
-    if (qcAttempts[i].batch_type === 'certification') certs.push(qcAttempts[i]);
-  }
-  certs.sort(function (a, b) {
-    return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
-  });
-  var docs = 0, sum = 0, n = 0;
-  for (var j = 0; j < certs.length && docs < limit; j++) {
-    docs += certs[j].docs_reviewed || 0;
-    if (certs[j][field] != null) { sum += Number(certs[j][field]); n++; }
-  }
-  return n ? (sum / n) : null;
+  return QC.rollingPillar(qcAttempts, field, windowSize);
 }
 
 function renderQcHome() {
@@ -8397,6 +8382,13 @@ function renderQcComplete(score) {
 // {data, error}, so the auth-critical SB object needs no edits.
 // Family variants carry derived ids (JB-0050-A); record the source document so
 // a sibling is never served back as if it were new.
+// Display metadata only. Never used for authorisation - see the migration note.
+function qcDisplayName() {
+  var u = SB.user || {};
+  var meta = u.user_metadata || {};
+  return meta.display_name || (u.email ? String(u.email).split('@')[0] : null);
+}
+
 function qcDrawnDocIds() {
   var out = [], seen = {};
   for (var i = 0; i < qcState.entries.length; i++) {
@@ -8425,6 +8417,7 @@ function saveQcAttempt(score) {
       responsiveness: QC.responsivenessScore(
         qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
       consistency: score.diagnostics.familyAgreement,
+      user_name: qcDisplayName(),
       // docIds must be here too, not only on the Supabase row: the no-repeat
       // guard reads qcAttempts, which is the local list when signed out.
       detail: { docIds: qcDrawnDocIds() }
@@ -8437,6 +8430,7 @@ function saveQcAttempt(score) {
 
   var row = {
     user_email: email,
+    user_name: qcDisplayName(),
     case_key: qcState.caseKey,
     batch_no: qcState.batchNo,
     batch_type: qcState.batchType,
