@@ -3074,7 +3074,7 @@ function nav(p){
   if(p==='admin')loadAdmin();
   if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
-  if(p==='qc'){renderQcHome();}
+  if(p==='qc'){loadQcData();renderQcHome();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -7973,17 +7973,21 @@ function qcSubmitCorrection() {
 // roughly 5% of a case — beyond that, escalation stops being a judgment call and
 // becomes the safe default.
 var QC_AMBIGUOUS = {
-  joba: []
+  joba: [],
+  // NOT derived from fa-flag. 219 of TransRidge's 500 documents carry fa-flag,
+  // because it is the ordinary coding for First Amendment qualified privilege —
+  // not a marker of a close call — and those 219 share only 8 generated
+  // explanations between them. Treating them all as escalation targets demanded
+  // escalating 103 documents in a 250-document batch, which makes escalation the
+  // safe default rather than a judgment call.
+  //
+  // These five are the genuine close calls: the only FA documents with both a
+  // uniquely hand-authored explanation and an fa-flag coding.
+  firstam: ['FA-0002', 'FA-0003', 'FA-0004', 'FA-0010', 'FA-0011']
 };
 
 function qcAmbiguousIds(caseKey) {
-  if (QC_AMBIGUOUS[caseKey]) return QC_AMBIGUOUS[caseKey];
-  var ids = [];
-  var docs = QC_CASES[caseKey].docs();
-  for (var i = 0; i < docs.length; i++) {
-    if (docs[i].answer && docs[i].answer.privilege === 'fa-flag') ids.push(docs[i].id);
-  }
-  return ids;
+  return QC_AMBIGUOUS[caseKey] || [];
 }
 
 function finishQcBatch() {
@@ -8062,6 +8066,68 @@ function renderQcComplete(score) {
   html += '<div class="qc-actions"><button onclick="renderQcHome()">Back to QC Track</button></div>';
   document.getElementById('qc-view-complete').innerHTML = html;
   qcNav('complete');
+}
+
+
+// Persistence. Uses the existing SB.req() wrapper rather than new SB methods:
+// it already builds auth headers via SB.hdr() and normalises errors to
+// {data, error}, so the auth-critical SB object needs no edits.
+function saveQcAttempt(score) {
+  var email = (SB.user && SB.user.email) || null;
+
+  // localStorage first, mirroring the existing progress pattern: the score
+  // survives a lost connection, and a signed-out trainee still sees their work.
+  try {
+    var local = JSON.parse(localStorage.getItem('qc_attempts') || '[]');
+    local.push({
+      case_key: qcState.caseKey, batch_type: qcState.batchType,
+      batch_no: qcState.batchNo, docs_reviewed: score.docsReviewed,
+      defects: score.defects, completed_at: qcState.completedAt
+    });
+    localStorage.setItem('qc_attempts', JSON.stringify(local));
+    qcAttempts = local.slice();
+  } catch (e) { /* storage full or disabled — the Supabase write still stands */ }
+
+  if (!email || !SB.token) return;
+
+  var row = {
+    user_email: email,
+    case_key: qcState.caseKey,
+    batch_no: qcState.batchNo,
+    batch_type: qcState.batchType,
+    seed: qcState.seed,
+    started_at: qcState.startedAt,
+    completed_at: qcState.completedAt,
+    docs_reviewed: score.docsReviewed,
+    defects: score.defects,
+    accuracy: QC.accuracyPillar(score.defectsPer1000),
+    detail: { counts: score.counts, diagnostics: score.diagnostics }
+  };
+
+  SB.req('POST', '/rest/v1/qc_attempts', row).then(function (r) {
+    if (r && r.error) { console.error('QC attempt save failed', r.error); return; }
+    qcAttempts.unshift(row);
+  });
+}
+
+function loadQcData() {
+  return SB.req('GET', '/rest/v1/qc_projects?select=*').then(function (r) {
+    if (r && r.data && r.data.length) {
+      qcProjects = {};
+      for (var i = 0; i < r.data.length; i++) qcProjects[r.data[i].case_key] = r.data[i];
+    }
+    var email = (SB.user && SB.user.email) || null;
+    if (!email || !SB.token) {
+      try { qcAttempts = JSON.parse(localStorage.getItem('qc_attempts') || '[]'); }
+      catch (e) { qcAttempts = []; }
+      return null;
+    }
+    return SB.req('GET', '/rest/v1/qc_attempts?select=*&user_email=eq.' +
+      encodeURIComponent(email) + '&order=completed_at.desc');
+  }).then(function (r) {
+    if (r && r.data) { qcAttempts = r.data; }
+    renderQcHome();
+  }).catch(function () { /* QC_DEFAULTS and local storage still apply */ });
 }
 
 </script>
