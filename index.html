@@ -1399,6 +1399,25 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-roster-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.35rem}
+.qc-roster-warn{color:#e0a56a;font-size:.78rem;margin:0 0 .75rem}
+.qc-roster{width:100%;border-collapse:collapse;font-size:.85rem}
+.qc-roster th{text-align:left;color:#9fb0c9;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #1c2740;padding:.45rem .5rem}
+.qc-roster td{padding:.5rem;border-bottom:1px solid #16203a;color:#dbe4f0;vertical-align:top}
+.qc-roster-row{cursor:pointer}
+.qc-roster-row:hover{background:#131c2e}
+.qc-roster-email{color:#7d8ca3;font-size:.72rem}
+.qc-caret{color:#7d8ca3;display:inline-block;width:.8em}
+.qc-r{text-align:right;font-variant-numeric:tabular-nums}
+.qc-ok{color:#4fd1b5}
+.qc-mid{color:var(--gold)}
+.qc-low{color:#e5737b}
+.qc-none{color:#7d8ca3}
+.qc-roster-detail td{background:#0b1220;padding:.6rem}
+.qc-roster-sub{width:100%;border-collapse:collapse;font-size:.78rem}
+.qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
+.qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
+.qc-roster-foot{font-size:.75rem;margin-top:.6rem}
 .qc-dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.75rem}
 .qc-dials .qc-dial{max-width:none}
 .qc-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;margin-bottom:.75rem}
@@ -2154,6 +2173,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div class="rtabs" id="admin-tabs">
       <button type="button" class="rtab active" onclick="showAdminTab('jobs',this)">📋 Job Leads</button>
       <button type="button" class="rtab" onclick="showAdminTab('users',this)">👥 Users &amp; Scores</button>
+      <button type="button" class="rtab" onclick="showAdminTab('qcmetrics',this)">📊 QC Metrics</button>
       <button type="button" class="rtab" onclick="showAdminTab('security',this)">🛡️ Security</button>
       <button type="button" class="rtab" onclick="showAdminTab('wellbeing',this)">💚 Supervisor Wellbeing</button>
     </div>
@@ -2205,6 +2225,13 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
       <div id="wb-admin-status" class="lead-status"></div>
       <div id="wb-admin-body"></div>
+    </div>
+  </div>
+
+  <div id="apane-qcmetrics" class="rpane">
+    <div class="card">
+      <h3 style="margin:0 0 6px">QC Metrics by Person</h3>
+      <div id="qc-roster-admin"></div>
     </div>
   </div>
 
@@ -2844,6 +2871,7 @@ tr:nth-child(even) td{background:#0d162080}
       <button class="rtab active" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
       <button class="rtab" onclick="showLead('payments',this)">💵 Payments</button>
       <button class="rtab" onclick="showLead('wellbeing',this)">💚 Team Wellbeing</button>
+      <button class="rtab" onclick="showLead('qcmetrics',this)">📊 QC Metrics</button>
       <button class="rtab" onclick="showLead('other',this)">📦 Other Stuff</button>
     </div>
 
@@ -2880,6 +2908,12 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
       <div id="wb-lead-status" class="lead-status"></div>
       <div id="wb-lead-body"></div>
+    </div>
+
+    <!-- QC METRICS -->
+    <div id="lpane-qcmetrics" class="lpane">
+      <h3 style="margin:0 0 6px">QC Metrics by Person</h3>
+      <div id="qc-roster-lead"></div>
     </div>
 
     <div id="lpane-other" class="lpane">
@@ -3123,6 +3157,7 @@ function showLead(id,btn){
   if(id==='payments')loadPayments();
   if(id==='meetings')loadTactical();
   if(id==='wellbeing')loadWellbeing();
+  if(id==='qcmetrics')loadQcRoster('qc-roster-lead');
 }
 function showTime(id,btn){
   document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
@@ -3624,6 +3659,7 @@ function showAdminTab(id,btn){
   var pane=document.getElementById('apane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
   if(id==='wellbeing')loadSupervisorWellbeing();
+  if(id==='qcmetrics')loadQcRoster('qc-roster-admin');
 }
 async function loadAdmin(){
   var u=SB.user;
@@ -8582,6 +8618,160 @@ function renderQcTaxonomy() {
   html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
   document.getElementById('qc-view-taxonomy').innerHTML = html;
   qcNav('taxonomy');
+}
+
+
+// ==================================================================
+// QC TEAM ROSTER (leadership + admin)
+// ==================================================================
+
+var QC_ROSTER = [];
+var qcRosterOpen = {};
+
+function qcRosterAllowed() {
+  return !!(SB.user && SB.user.email === ADMIN_EMAIL);
+}
+
+function loadQcRoster(mountId) {
+  var mount = document.getElementById(mountId);
+  if (!mount) return;
+
+  // The client-side check only decides what to draw. The real gate is the
+  // leadership_select_qc_attempts policy, which keys on the JWT email claim.
+  if (!qcRosterAllowed()) {
+    mount.innerHTML = '<p class="muted">Team QC metrics are restricted to the site administrator. ' +
+      'Your own figures are on the QC Track page.</p>';
+    return;
+  }
+
+  mount.innerHTML = '<p class="muted">Loading\u2026</p>';
+  SB.req('GET', '/rest/v1/qc_attempts?select=*&order=completed_at.desc').then(function (r) {
+    if (r && r.error) {
+      mount.innerHTML = '<p style="color:var(--red)">Could not load QC metrics: ' +
+        esc(String(r.error)) + '</p>';
+      return;
+    }
+    QC_ROSTER = QC.roster(r.data || [], 1000);
+    renderQcRoster(mountId);
+  });
+}
+
+function qcNum(v) { return v == null ? '\u2014' : String(Math.round(v)); }
+function qcDate(v) { return v ? String(v).slice(0, 10) : '\u2014'; }
+
+function qcRosterRowDetail(row) {
+  var h = '<table class="qc-roster-sub"><thead><tr>' +
+    '<th>Completed</th><th>Case</th><th>Type</th><th>Docs</th><th>Defects</th>' +
+    '<th>Accuracy</th><th>Pace</th><th>Resp.</th><th>Consist.</th></tr></thead><tbody>';
+  var list = row.attempts.slice().sort(function (a, b) {
+    return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
+  });
+  for (var i = 0; i < list.length; i++) {
+    var a = list[i];
+    h += '<tr>' +
+      '<td>' + esc(qcDate(a.completed_at)) + '</td>' +
+      '<td>' + esc(String(a.case_key || '')) + '</td>' +
+      '<td>' + esc(String(a.batch_type || '')) + '</td>' +
+      '<td class="qc-r">' + esc(String(a.docs_reviewed == null ? '' : a.docs_reviewed)) + '</td>' +
+      '<td class="qc-r">' + esc(String(a.defects == null ? '' : a.defects)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.accuracy)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.pace)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.responsiveness)) + '</td>' +
+      '<td class="qc-r">' + esc(a.consistency == null ? '\u2014' : Math.round(a.consistency * 100) + '%') + '</td>' +
+      '</tr>';
+  }
+  return h + '</tbody></table>';
+}
+
+function renderQcRoster(mountId) {
+  var mount = document.getElementById(mountId);
+  if (!mount) return;
+
+  if (!QC_ROSTER.length) {
+    mount.innerHTML = '<p class="muted">No QC batches recorded yet. Figures appear here once ' +
+      'people start certifying on the QC Track page.</p>';
+    return;
+  }
+
+  var h = '<div class="qc-roster-head">' +
+    '<span class="muted">Rolling over each person\u2019s last 1,000 certification documents. ' +
+    'Practice batches do not count toward Accuracy.</span>' +
+    '<button class="btn btn-outline btn-sm" onclick="qcRosterCsv()">\u2b07\ufe0f Export CSV</button>' +
+    '</div>' +
+    '<p class="qc-roster-warn">A CSV leaves this app\u2019s access controls behind \u2014 it is named ' +
+    'performance data in a file that can be forwarded anywhere.</p>' +
+    '<table class="qc-roster"><thead><tr>' +
+      '<th>Person</th><th>Defects / 1,000</th><th>Accuracy</th><th>Pace</th>' +
+      '<th>Resp.</th><th>Consist.</th><th>Certified docs</th><th>Batches</th><th>Last active</th>' +
+    '</tr></thead><tbody>';
+
+  for (var i = 0; i < QC_ROSTER.length; i++) {
+    var r = QC_ROSTER[i];
+    var open = !!qcRosterOpen[r.email];
+    var cls = r.accuracy == null ? 'qc-none' : (r.accuracy >= 90 ? 'qc-ok' : (r.accuracy >= 70 ? 'qc-mid' : 'qc-low'));
+    h += '<tr class="qc-roster-row" onclick="qcRosterToggle(\'' + escAttr(r.email) + '\',\'' + escAttr(mountId) + '\')">' +
+      '<td><span class="qc-caret">' + (open ? '\u25be' : '\u25b8') + '</span> ' + esc(r.name) +
+        '<div class="qc-roster-email">' + esc(r.email) + '</div></td>' +
+      '<td class="qc-r ' + cls + '">' +
+        (r.accuracy == null ? '\u2014' : esc(r.defectsPer1000.toFixed(1)) + (r.partial ? ' *' : '')) + '</td>' +
+      '<td class="qc-r ' + cls + '">' + esc(qcNum(r.accuracy)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(r.pace)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(r.responsiveness)) + '</td>' +
+      '<td class="qc-r">' + esc(r.consistency == null ? '\u2014' : Math.round(r.consistency * 100) + '%') + '</td>' +
+      '<td class="qc-r">' + esc(String(r.documents)) + '</td>' +
+      '<td class="qc-r">' + esc(String(r.batches)) + '</td>' +
+      '<td>' + esc(qcDate(r.lastActive)) + '</td>' +
+      '</tr>';
+    if (open) {
+      h += '<tr class="qc-roster-detail"><td colspan="9">' + qcRosterRowDetail(r) + '</td></tr>';
+    }
+  }
+
+  h += '</tbody></table>' +
+    '<p class="muted qc-roster-foot">* fewer than 1,000 certification documents so far, so the ' +
+    'rate is over a shorter run. Bar to clear: 2 defects per 1,000.</p>';
+
+  mount.innerHTML = h;
+}
+
+function qcRosterToggle(email, mountId) {
+  qcRosterOpen[email] = !qcRosterOpen[email];
+  renderQcRoster(mountId);
+}
+
+function qcCsvCell(v) {
+  var t = (v == null) ? '' : String(v);
+  return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+}
+
+function qcRosterCsv() {
+  var head = ['Name', 'Email', 'Defects per 1000', 'Accuracy', 'Pace', 'Responsiveness',
+              'Consistency %', 'Certified documents', 'Partial window', 'Batches',
+              'Certifications', 'Last active'];
+  var rows = [head.join(',')];
+  for (var i = 0; i < QC_ROSTER.length; i++) {
+    var r = QC_ROSTER[i];
+    rows.push([
+      r.name, r.email,
+      r.accuracy == null ? '' : r.defectsPer1000.toFixed(2),
+      r.accuracy == null ? '' : Math.round(r.accuracy),
+      r.pace == null ? '' : Math.round(r.pace),
+      r.responsiveness == null ? '' : Math.round(r.responsiveness),
+      r.consistency == null ? '' : Math.round(r.consistency * 100),
+      r.documents, r.partial ? 'yes' : 'no', r.batches, r.certifications,
+      qcDate(r.lastActive)
+    ].map(qcCsvCell).join(','));
+  }
+
+  var blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'qc-metrics-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
 }
 
 </script>
