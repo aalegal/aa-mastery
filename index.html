@@ -1399,6 +1399,15 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-card-alert{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.qc-badge{background:var(--gold);color:#0b1220;border-radius:999px;padding:.05rem .4rem;font-size:.7rem}
+.qc-msg{border-bottom:1px solid #16203a;padding:.5rem 0;font-size:.82rem}
+.qc-msg:last-child{border-bottom:0}
+.qc-msg-new{border-left:3px solid var(--gold);padding-left:.5rem}
+.qc-msg-head{color:#c3d0e4;margin-bottom:.25rem}
+.qc-msg-body{color:#9fb0c9;line-height:1.5;margin-bottom:.4rem}
+.qc-msg-ack{color:#4fd1b5;font-size:.75rem}
+.qc-msg-empty{color:#7d8ca3;font-size:.82rem}
 .qc-fam{font-size:.62rem;background:#2a2140;color:#b9a6f0;padding:.05rem .35rem;border-radius:999px;margin-left:.3rem}
 .qc-clock{margin-left:auto;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;white-space:nowrap}
 .qc-clock-ok{background:#0d3b34;color:#4fd1b5}
@@ -7714,6 +7723,106 @@ function qcConfig(caseKey) {
   return out;
 }
 
+var QC_INTERRUPT_COUNT = 3;
+
+// Three kinds, per the spec. 'ack' measures response time alone. 'change'
+// additionally amends what correct means for every document after it.
+// 'feedback' names an error type the reviewer was weak on last batch.
+var QC_INTERRUPTS = {
+  joba: [
+    { type: 'ack', from: 'Project Manager',
+      subject: 'Batch check-in',
+      body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
+    { type: 'change', from: 'Outside Counsel',
+      subject: 'PROTOCOL CHANGE \u2014 confidentiality tier',
+      body: 'Client has revised the confidentiality call. Any document currently coded standard confidentiality is to be treated as highly confidential from this point forward. Apply going forward; do not go back and re-code what you have already submitted.',
+      change: { label: 'Standard confidentiality is now highly confidential.',
+                when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
+    { type: 'feedback', from: 'QC Lead',
+      subject: 'Note on your last batch',
+      body: 'You over-designated on responsiveness last batch \u2014 several non-responsive documents were coded responsive. Responsiveness needs a link to a specific issue, not just a mention of the company.' }
+  ],
+  firstam: [
+    { type: 'ack', from: 'Project Manager',
+      subject: 'Batch check-in',
+      body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
+    { type: 'change', from: 'Outside Counsel',
+      subject: 'PROTOCOL CHANGE \u2014 First Amendment flag',
+      body: 'The court has narrowed the qualified privilege. From this point forward, documents currently coded not-privileged are to be flagged for escalation instead: code them fa-flag and withhold.',
+      change: { label: 'Not-privileged documents are now fa-flag and withheld.',
+                when: { privilege: 'not-privileged' }, then: { privilege: 'fa-flag', action: 'withhold' } } },
+    { type: 'feedback', from: 'QC Lead',
+      subject: 'Note on your last batch',
+      body: 'Two privileged documents went out coded not-privileged last batch. Read the participants before the text \u2014 counsel on the From, To or CC line changes the analysis of everything below it.' }
+  ]
+};
+
+function qcBuildInterrupts(caseKey, total, rng) {
+  var script = QC_INTERRUPTS[caseKey] || [];
+  var n = Math.min(QC_INTERRUPT_COUNT, script.length);
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    // Spread firing points across the batch, avoiding the first and last 10%.
+    var lo = Math.floor(total * 0.1);
+    var span = Math.floor(total * 0.8);
+    var at = lo + Math.floor((span / n) * i + rng() * (span / n));
+    out.push({
+      atIndex: Math.min(at, total - 1),
+      type: script[i].type, from: script[i].from,
+      subject: script[i].subject, body: script[i].body,
+      change: script[i].change || null,
+      firedAt: null, ackAt: null
+    });
+  }
+  return out;
+}
+
+function qcCheckInterrupts() {
+  if (!qcState || !qcState.interrupts) return;
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt == null && qcState.currentIdx >= it.atIndex) {
+      it.firedAt = Date.now();
+      // A protocol change amends what correct means from here on, including the
+      // document currently on screen.
+      if (it.change) QC.applyProtocolChange(qcState.entries, it.change, qcState.currentIdx);
+    }
+  }
+}
+
+function qcUnackedCount() {
+  if (!qcState || !qcState.interrupts) return 0;
+  var n = 0;
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt != null && it.ackAt == null) n++;
+  }
+  return n;
+}
+
+function qcAckInterrupt(i) {
+  var it = qcState.interrupts[i];
+  if (!it || it.firedAt == null || it.ackAt != null) return;
+  it.ackAt = Date.now();
+  renderQcReview();
+}
+
+function qcRenderInbox() {
+  var html = '';
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt == null) continue;
+    html += '<div class="qc-msg' + (it.ackAt == null ? ' qc-msg-new' : '') + '">' +
+      '<div class="qc-msg-head"><strong>' + esc(it.from) + '</strong> \u00b7 ' + esc(it.subject) + '</div>' +
+      '<div class="qc-msg-body">' + esc(it.body) + '</div>' +
+      (it.ackAt == null
+        ? '<button onclick="qcAckInterrupt(' + i + ')">Acknowledge</button>'
+        : '<span class="qc-msg-ack">acknowledged</span>') +
+      '</div>';
+  }
+  return html || '<div class="qc-msg-empty">No messages.</div>';
+}
+
 function qcMark() {
   if (qcState && qcState.marks) qcState.marks.push(Date.now());
 }
@@ -7844,6 +7953,8 @@ function startQcBatch(caseKey, batchType) {
   var entries = QC.seedErrors(fam.docs, {
     seed: seed, density: density, allowedTypes: QC.PHASE2_TYPES
   });
+  var interrupts = qcBuildInterrupts(caseKey, entries.length,
+    QC.makeRng(QC.hashSeed(seed + '|int')));
 
   qcState = {
     caseKey: caseKey,
@@ -7854,6 +7965,7 @@ function startQcBatch(caseKey, batchType) {
     marks: [Date.now()],
     entries: entries,
     familyIds: fam.familyIds,
+    interrupts: interrupts,
     decisions: [],
     currentIdx: 0
   };
@@ -7891,6 +8003,7 @@ function qcStatusChip(idx) {
 }
 
 function renderQcReview() {
+  qcCheckInterrupts();
   var idx = qcState.currentIdx;
   var entry = qcState.entries[idx];
   var doc = entry.doc;
@@ -7946,6 +8059,12 @@ function renderQcReview() {
           thread +
         '</div>' +
         '<div class="qc-pane-decide">' +
+          '<div class="qc-card' + (qcUnackedCount() ? ' qc-card-alert' : '') + '">' +
+            '<h4>Inbox' + (qcUnackedCount()
+              ? ' <span class="qc-badge">' + esc(String(qcUnackedCount())) + '</span>'
+              : '') + '</h4>' +
+            qcRenderInbox() +
+          '</div>' +
           '<div class="qc-card">' +
             '<h4>Prior reviewer coding</h4>' + qcCodingRows(entry.priorCoding) +
           '</div>' +
@@ -8111,6 +8230,25 @@ function renderQcComplete(score) {
       '<div class="qc-result-note">Threads, re-sends and forwarded copies have to land on ' +
         'the same call. Where they do not, the production contradicts itself.</div>' +
     '</div>';
+  }
+
+  var resp = QC.responsivenessScore(qcState.interrupts, cfg.response_window_minutes);
+  if (resp != null) {
+    var fired = qcState.interrupts.filter(function (x) { return x.firedAt != null; }).length;
+    var acked = qcState.interrupts.filter(function (x) { return x.ackAt != null; }).length;
+    html += '<h3>Responsiveness</h3><div class="qc-result">' +
+      '<div class="qc-result-headline">' + esc(String(Math.round(resp))) + ' / 100</div>' +
+      '<div class="qc-result-sub">' + esc(String(acked)) + ' of ' + esc(String(fired)) +
+        ' messages acknowledged \u00b7 window ' + esc(String(cfg.response_window_minutes)) +
+        ' minutes</div>' +
+      '<div class="qc-result-note">Full credit inside the window, nothing after three times it. ' +
+        'On a live project this is the number a PM notices first.</div>' +
+    '</div>';
+  }
+  if (score.diagnostics.postChangeCompliance != null) {
+    html += '<p class="qc-diag">After the protocol change you applied the new rule to ' +
+      esc(String(Math.round(score.diagnostics.postChangeCompliance * 100))) +
+      '% of the documents it affected.</p>';
   }
 
   html += '<h3>Where the defects were</h3><ul class="qc-breakdown">' +
