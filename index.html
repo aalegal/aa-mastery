@@ -7812,6 +7812,160 @@ function startQcBatch(caseKey, batchType) {
   renderQcReview();
 }
 
+
+var QC_FIELD_LABELS = {
+  responsive: 'Responsiveness', privilege: 'Privilege',
+  action: 'Action', conf: 'Confidentiality', issues: 'Issues'
+};
+
+function qcCodingRows(coding) {
+  var rows = '';
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    if (coding[f] == null) return;
+    rows += '<div class="qc-code-row"><span>' + esc(QC_FIELD_LABELS[f]) + '</span>' +
+            '<strong>' + esc(String(coding[f])) + '</strong></div>';
+  });
+  var iss = (coding.issues || []).join(', ') || '—';
+  rows += '<div class="qc-code-row"><span>' + esc(QC_FIELD_LABELS.issues) + '</span>' +
+          '<strong>' + esc(iss) + '</strong></div>';
+  return rows;
+}
+
+function qcStatusChip(idx) {
+  var d = qcState.decisions[idx];
+  if (!d) return '<span class="qc-chip qc-chip-none">unreviewed</span>';
+  if (d.action === 'agree')    return '<span class="qc-chip qc-chip-agree">agreed</span>';
+  if (d.action === 'correct')  return '<span class="qc-chip qc-chip-correct">corrected</span>';
+  return '<span class="qc-chip qc-chip-esc">escalated</span>';
+}
+
+function renderQcReview() {
+  var idx = qcState.currentIdx;
+  var entry = qcState.entries[idx];
+  var doc = entry.doc;
+  var done = 0;
+  for (var i = 0; i < qcState.decisions.length; i++) if (qcState.decisions[i]) done++;
+
+  var list = '';
+  for (var j = 0; j < qcState.entries.length; j++) {
+    list += '<div class="qc-list-row' + (j === idx ? ' qc-list-row-active' : '') + '" ' +
+      'onclick="qcSelectDoc(' + j + ')">' +
+      '<span class="qc-list-id">' + esc(qcState.entries[j].doc.id) + '</span>' +
+      qcStatusChip(j) + '</div>';
+  }
+
+  var thread = '';
+  if (doc.thread && doc.thread.length) {
+    for (var t = 0; t < doc.thread.length; t++) {
+      thread += '<div class="qc-thread-item"><div class="qc-thread-meta">' +
+        esc(doc.thread[t].from || '') + ' · ' + esc(doc.thread[t].date || '') +
+        '</div><div>' + esc(doc.thread[t].text || '') + '</div></div>';
+    }
+  }
+
+  var html = '' +
+    '<div class="qc-shell">' +
+      '<div class="qc-shell-bar">' +
+        '<strong>' + esc(QC_CASES[qcState.caseKey].label) + '</strong> · ' +
+        esc(qcState.batchType) + ' batch ' + esc(String(qcState.batchNo)) + ' · ' +
+        esc(String(done)) + ' of ' + esc(String(qcState.entries.length)) + ' reviewed' +
+        (done === qcState.entries.length
+          ? ' <button onclick="finishQcBatch()">Finish batch</button>'
+          : '') +
+      '</div>' +
+      '<div class="qc-panes">' +
+        '<div class="qc-pane-list">' + list + '</div>' +
+        '<div class="qc-pane-doc">' +
+          '<div class="qc-doc-meta">' +
+            '<div><strong>' + esc(doc.subject || doc.id) + '</strong></div>' +
+            '<div>' + esc(doc.from || '') + '</div>' +
+            '<div>' + esc(doc.to || '') + '</div>' +
+            '<div>' + esc(doc.date || '') + '</div>' +
+          '</div>' +
+          '<pre class="qc-doc-body">' + esc(doc.body || '') + '</pre>' +
+          thread +
+        '</div>' +
+        '<div class="qc-pane-decide">' +
+          '<div class="qc-card">' +
+            '<h4>Prior reviewer coding</h4>' + qcCodingRows(entry.priorCoding) +
+          '</div>' +
+          '<div class="qc-card">' +
+            '<h4>Your QC decision</h4>' +
+            '<button onclick="qcDecide(\'agree\')">Agree</button> ' +
+            '<button onclick="qcDecide(\'correct\')">Correct</button> ' +
+            '<button onclick="qcDecide(\'escalate\')">Escalate</button>' +
+            '<div id="qc-correction"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('qc-view-review').innerHTML = html;
+  qcNav('review');
+}
+
+function qcSelectDoc(idx) {
+  qcState.currentIdx = idx;
+  renderQcReview();
+}
+
+function qcAdvance() {
+  for (var i = qcState.currentIdx + 1; i < qcState.entries.length; i++) {
+    if (!qcState.decisions[i]) { qcState.currentIdx = i; renderQcReview(); return; }
+  }
+  for (var j = 0; j < qcState.entries.length; j++) {
+    if (!qcState.decisions[j]) { qcState.currentIdx = j; renderQcReview(); return; }
+  }
+  renderQcReview();   // all reviewed — the Finish button is now shown
+}
+
+function qcDecide(action) {
+  if (action === 'correct') { qcRenderCorrectionForm(); return; }
+  qcState.decisions[qcState.currentIdx] = { action: action };
+  qcAdvance();
+}
+
+function qcRenderCorrectionForm() {
+  var entry = qcState.entries[qcState.currentIdx];
+  var vocab = QC.buildVocabulary(QC_CASES[qcState.caseKey].docs());
+  var html = '<div class="qc-correct-form"><h5>Corrected coding</h5>';
+
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    if (entry.priorCoding[f] == null) return;
+    html += '<label>' + esc(QC_FIELD_LABELS[f]) + '<select id="qc-fix-' + escAttr(f) + '">';
+    vocab[f].forEach(function (v) {
+      html += '<option value="' + escAttr(v) + '"' +
+        (v === entry.priorCoding[f] ? ' selected' : '') + '>' + esc(v) + '</option>';
+    });
+    html += '</select></label>';
+  });
+
+  html += '<label>' + esc(QC_FIELD_LABELS.issues) + '<span class="qc-issue-list">';
+  vocab.issues.forEach(function (v) {
+    var on = (entry.priorCoding.issues || []).indexOf(v) !== -1;
+    html += '<label class="qc-issue"><input type="checkbox" value="' + escAttr(v) + '"' +
+      (on ? ' checked' : '') + '> ' + esc(v) + '</label>';
+  });
+  html += '</span></label>';
+
+  html += '<button onclick="qcSubmitCorrection()">Submit correction</button></div>';
+  document.getElementById('qc-correction').innerHTML = html;
+}
+
+function qcSubmitCorrection() {
+  var coding = {};
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    var el = document.getElementById('qc-fix-' + f);
+    if (el) coding[f] = el.value;
+  });
+  coding.issues = [];
+  var boxes = document.querySelectorAll('#qc-correction .qc-issue input:checked');
+  for (var i = 0; i < boxes.length; i++) coding.issues.push(boxes[i].value);
+
+  qcState.decisions[qcState.currentIdx] = { action: 'correct', coding: coding };
+  qcAdvance();
+}
+
 </script>
 
 <!-- ══ SHELLS (fixed position, outside all page divs) ══ -->
