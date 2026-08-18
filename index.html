@@ -1399,6 +1399,8 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.75rem}
+.qc-dials .qc-dial{max-width:none}
 .qc-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;margin-bottom:.75rem}
 .qc-admin-grid label{display:flex;flex-direction:column;gap:.2rem;font-size:.78rem;color:#9fb0c9}
 .qc-admin-check{flex-direction:row!important;align-items:center;gap:.4rem!important}
@@ -7864,6 +7866,25 @@ function qcStopClock() {
   if (qcState && qcState.clockTimer) { clearInterval(qcState.clockTimer); qcState.clockTimer = null; }
 }
 
+// Averages a per-batch pillar across the certification batches that make up the
+// rolling accuracy window, so all three dials describe the same stretch of work.
+function qcRollingPillar(field, windowSize) {
+  var limit = windowSize || 1000;
+  var certs = [];
+  for (var i = 0; i < qcAttempts.length; i++) {
+    if (qcAttempts[i].batch_type === 'certification') certs.push(qcAttempts[i]);
+  }
+  certs.sort(function (a, b) {
+    return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
+  });
+  var docs = 0, sum = 0, n = 0;
+  for (var j = 0; j < certs.length && docs < limit; j++) {
+    docs += certs[j].docs_reviewed || 0;
+    if (certs[j][field] != null) { sum += Number(certs[j][field]); n++; }
+  }
+  return n ? (sum / n) : null;
+}
+
 function renderQcHome() {
   var roll = QC.rollingAccuracy(qcAttempts, 1000);
   var pillarText = roll.pillar == null
@@ -7874,16 +7895,37 @@ function renderQcHome() {
       roll.defects + ' in ' + roll.documents + ' documents' + (roll.partial ? ' so far' : '')
     : 'Certify on a case to start measuring';
 
+  var paceP = qcRollingPillar('pace', 1000);
+  var respP = qcRollingPillar('responsiveness', 1000);
+
+  function dial(label, value, sub, bar) {
+    return '<div class="qc-dial">' +
+      '<div class="qc-dial-label">' + esc(label) + '</div>' +
+      '<div class="qc-dial-value">' + esc(value) + '</div>' +
+      '<div class="qc-dial-sub">' + esc(sub) + '</div>' +
+      '<div class="qc-dial-bar">' + esc(bar) + '</div>' +
+    '</div>';
+  }
+
   var html = '' +
     '<h2>QC Track</h2>' +
     '<p class="qc-lede">Review documents another reviewer already coded. Catch what they got wrong — ' +
       'without changing what they got right.</p>' +
-    '<div class="qc-dial">' +
-      '<div class="qc-dial-label">Accuracy</div>' +
-      '<div class="qc-dial-value">' + esc(pillarText) + '</div>' +
-      '<div class="qc-dial-sub">' + esc(rateText) + '</div>' +
-      '<div class="qc-dial-bar">Bar to clear: 2 defects per 1,000 documents</div>' +
+    '<div class="qc-dials">' +
+      dial('Accuracy', pillarText, rateText,
+           'Bar to clear: 2 defects per 1,000 documents') +
+      dial('Pace',
+           paceP == null ? 'No data yet' : Math.round(paceP) + ' / 100',
+           paceP == null ? 'Certify on a case to start measuring'
+                         : 'Throughput discounted by accuracy',
+           'Bar to clear: 60 docs/hr, held at accuracy') +
+      dial('Responsiveness',
+           respP == null ? 'No data yet' : Math.round(respP) + ' / 100',
+           respP == null ? 'Certify on a case to start measuring'
+                         : 'Acknowledgement times across batches',
+           'Bar to clear: acknowledge inside 2 minutes') +
     '</div>' +
+    '<p class="qc-diag">Judgment and Reliability arrive with the live-project loop.</p>' +
     '<div class="qc-actions">' +
       '<button onclick="renderQcLaunch()">Start a batch</button> ' +
       '<button onclick="renderQcTaxonomy()">Error taxonomy</button>' +
