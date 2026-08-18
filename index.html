@@ -7736,6 +7736,82 @@ function renderQcHome() {
   qcNav('home');
 }
 
+
+function qcNextBatchNo(caseKey, batchType) {
+  var n = 0;
+  for (var i = 0; i < qcAttempts.length; i++) {
+    if (qcAttempts[i].case_key === caseKey && qcAttempts[i].batch_type === batchType) n++;
+  }
+  return n + 1;
+}
+
+function renderQcLaunch() {
+  var html = '<h2>Start a batch</h2>' +
+    '<p class="qc-lede">Practice batches are dense with errors so you can learn the patterns. ' +
+    'Certification batches are realistic — almost everything is clean, which is exactly why ' +
+    'people stop looking. Only certification counts toward your Accuracy score.</p>';
+
+  for (var key in QC_CASES) {
+    if (!Object.prototype.hasOwnProperty.call(QC_CASES, key)) continue;
+    var c = QC_CASES[key];
+    var cfg = qcConfig(key);
+    var available = c.docs() ? c.docs().length : 0;
+
+    html += '<div class="qc-case">' +
+      '<h3>' + esc(c.label) + '</h3>' +
+      '<div class="qc-case-meta">' + esc(String(available)) + ' documents</div>' +
+      '<button onclick="startQcBatch(\'' + escAttr(key) + '\',\'practice\')">' +
+        'Practice · ' + esc(String(cfg.practice_batch_size)) + ' docs</button> ';
+
+    if (c.certification && available >= cfg.cert_batch_size) {
+      html += '<button onclick="startQcBatch(\'' + escAttr(key) + '\',\'certification\')">' +
+        'Certify · ' + esc(String(cfg.cert_batch_size)) + ' docs</button>';
+    } else {
+      html += '<span class="qc-note">Too few documents to certify — needs ' +
+        esc(String(cfg.cert_batch_size)) + '</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-launch').innerHTML = html;
+  qcNav('launch');
+}
+
+function startQcBatch(caseKey, batchType) {
+  var cfg = qcConfig(caseKey);
+  var all = QC_CASES[caseKey].docs();
+  var size = batchType === 'certification' ? cfg.cert_batch_size : cfg.practice_batch_size;
+  var density = batchType === 'certification' ? cfg.cert_density : cfg.practice_density;
+  var batchNo = qcNextBatchNo(caseKey, batchType);
+  var email = (SB.user && SB.user.email) || 'anonymous';
+  var seed = email + '|' + caseKey + '|' + batchType + '|' + batchNo;
+
+  // Draw the batch itself from the same seeded stream, so which documents appear
+  // is as reproducible as which of them carry errors.
+  var rng = QC.makeRng(QC.hashSeed(seed + '|draw'));
+  var pool = all.slice();
+  for (var i = pool.length - 1; i > 0; i--) {
+    var j = Math.floor(rng() * (i + 1));
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  var drawn = pool.slice(0, Math.min(size, pool.length));
+
+  qcState = {
+    caseKey: caseKey,
+    batchType: batchType,
+    batchNo: batchNo,
+    seed: seed,
+    startedAt: new Date().toISOString(),
+    entries: QC.seedErrors(drawn, { seed: seed, density: density }),
+    decisions: [],
+    currentIdx: 0
+  };
+  for (var k = 0; k < qcState.entries.length; k++) qcState.decisions.push(null);
+
+  renderQcReview();
+}
+
 </script>
 
 <!-- ══ SHELLS (fixed position, outside all page divs) ══ -->
