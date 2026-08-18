@@ -1399,6 +1399,7 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-fam{font-size:.62rem;background:#2a2140;color:#b9a6f0;padding:.05rem .35rem;border-radius:999px;margin-left:.3rem}
 .qc-clock{margin-left:auto;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;white-space:nowrap}
 .qc-clock-ok{background:#0d3b34;color:#4fd1b5}
 .qc-clock-slow{background:#3d2413;color:#e0a56a}
@@ -7837,6 +7838,13 @@ function startQcBatch(caseKey, batchType) {
   }
   var drawn = pool.slice(0, Math.min(size, pool.length));
 
+  // Families are built before seeding so the inconsistency type has something
+  // to attach to, and so a family's members are drawn as one unit.
+  var fam = QC.makeFamilies(drawn, { seed: seed + '|fam' });
+  var entries = QC.seedErrors(fam.docs, {
+    seed: seed, density: density, allowedTypes: QC.PHASE2_TYPES
+  });
+
   qcState = {
     caseKey: caseKey,
     batchType: batchType,
@@ -7844,7 +7852,8 @@ function startQcBatch(caseKey, batchType) {
     seed: seed,
     startedAt: new Date().toISOString(),
     marks: [Date.now()],
-    entries: QC.seedErrors(drawn, { seed: seed, density: density }),
+    entries: entries,
+    familyIds: fam.familyIds,
     decisions: [],
     currentIdx: 0
   };
@@ -7893,7 +7902,11 @@ function renderQcReview() {
   for (var j = 0; j < qcState.entries.length; j++) {
     list += '<div class="qc-list-row' + (j === idx ? ' qc-list-row-active' : '') + '" ' +
       'onclick="qcSelectDoc(' + j + ')">' +
-      '<span class="qc-list-id">' + esc(qcState.entries[j].doc.id) + '</span>' +
+      '<span class="qc-list-id">' + esc(qcState.entries[j].doc.id) +
+        (qcState.entries[j].doc.familyId
+          ? ' <span class="qc-fam">' + esc(qcState.entries[j].doc.familyId) + '</span>'
+          : '') +
+      '</span>' +
       qcStatusChip(j) + '</div>';
   }
 
@@ -8087,6 +8100,18 @@ function renderQcComplete(score) {
           '% of your opening pace.'
         : '') +
     '</div></div>';
+
+  if (score.diagnostics.familyAgreement != null) {
+    var fa = Math.round(score.diagnostics.familyAgreement * 100);
+    html += '<h3>Consistency</h3><div class="qc-result">' +
+      '<div class="qc-result-headline">' + esc(String(fa)) + '% of families coded alike</div>' +
+      '<div class="qc-result-sub">' +
+        esc(String((qcState.familyIds || []).length)) +
+        ' near-duplicate families in this batch</div>' +
+      '<div class="qc-result-note">Threads, re-sends and forwarded copies have to land on ' +
+        'the same call. Where they do not, the production contradicts itself.</div>' +
+    '</div>';
+  }
 
   html += '<h3>Where the defects were</h3><ul class="qc-breakdown">' +
     '<li>Missed errors: ' + esc(String(score.counts.MISS)) + '</li>' +
