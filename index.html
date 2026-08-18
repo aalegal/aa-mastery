@@ -7966,6 +7966,104 @@ function qcSubmitCorrection() {
   qcAdvance();
 }
 
+
+// Documents that are genuine close calls and should be escalated rather than
+// silently resolved. In TransRidge these already exist in the data: any document
+// coded fa-flag (Flag & Escalate). Other cases list ids explicitly. Keep this to
+// roughly 5% of a case — beyond that, escalation stops being a judgment call and
+// becomes the safe default.
+var QC_AMBIGUOUS = {
+  joba: []
+};
+
+function qcAmbiguousIds(caseKey) {
+  if (QC_AMBIGUOUS[caseKey]) return QC_AMBIGUOUS[caseKey];
+  var ids = [];
+  var docs = QC_CASES[caseKey].docs();
+  for (var i = 0; i < docs.length; i++) {
+    if (docs[i].answer && docs[i].answer.privilege === 'fa-flag') ids.push(docs[i].id);
+  }
+  return ids;
+}
+
+function finishQcBatch() {
+  var score = QC.scoreBatch(qcState.entries, qcState.decisions, {
+    ambiguousIds: qcAmbiguousIds(qcState.caseKey)
+  });
+  qcState.completedAt = new Date().toISOString();
+  qcState.score = score;
+  // Persistence arrives in Task 11. Guarded so this task stands alone.
+  if (typeof saveQcAttempt === 'function') saveQcAttempt(score);
+  renderQcComplete(score);
+}
+
+function renderQcComplete(score) {
+  var pillar = QC.accuracyPillar(score.defectsPer1000);
+  var counted = qcState.batchType === 'certification';
+
+  var html = '<h2>Batch complete</h2>' +
+    '<div class="qc-result">' +
+      '<div class="qc-result-headline">' +
+        esc(score.defectsPer1000.toFixed(1)) + ' defects per 1,000 documents' +
+      '</div>' +
+      '<div class="qc-result-sub">' +
+        esc(String(score.defects)) + ' defect units across ' +
+        esc(String(score.docsReviewed)) + ' documents · ' +
+        'Accuracy ' + esc(String(Math.round(pillar))) + ' / 100' +
+      '</div>' +
+      '<div class="qc-result-note">' +
+        (counted
+          ? 'This batch counts toward your rolling Accuracy score.'
+          : 'Practice batch — this does not count toward your Accuracy score.') +
+      '</div>' +
+    '</div>';
+
+  html += '<h3>Where the defects were</h3><ul class="qc-breakdown">' +
+    '<li>Missed errors: ' + esc(String(score.counts.MISS)) + '</li>' +
+    '<li>Corrected to the wrong value: ' + esc(String(score.counts.BAD_FIX)) + '</li>' +
+    '<li>Changed a document that was already right: ' + esc(String(score.counts.FALSE_CORRECTION)) + '</li>' +
+    '<li>Should have escalated: ' + esc(String(score.counts.MISSED_ESCALATION)) + '</li>' +
+    '<li>Escalated something clear: ' + esc(String(score.counts.OVER_ESCALATION)) + '</li>' +
+    '</ul>';
+
+  if (score.diagnostics.catchRate != null) {
+    html += '<p class="qc-diag">You caught ' +
+      esc(String(Math.round(score.diagnostics.catchRate * 100))) +
+      '% of the errors that were there, and changed ' +
+      esc(String(Math.round((score.diagnostics.falseCorrectionRate || 0) * 100))) +
+      '% of the documents that were already correct.</p>';
+  }
+
+  html += '<h3>Every document you got wrong</h3>';
+  var anyWrong = false;
+  var ambiguous = {};
+  qcAmbiguousIds(qcState.caseKey).forEach(function (id) { ambiguous[id] = 1; });
+
+  for (var i = 0; i < qcState.entries.length; i++) {
+    var e = qcState.entries[i];
+    var r = QC.classifyDecision(e, qcState.decisions[i] || { action: 'agree' }, !!ambiguous[e.doc.id]);
+    if (r.correct) continue;
+    anyWrong = true;
+    var seededLabel = e.seededError
+      ? QC.ERROR_TYPES[e.seededError.type].label
+      : 'No error was present';
+    html += '<div class="qc-wrong">' +
+      '<div class="qc-wrong-head"><strong>' + esc(e.doc.id) + '</strong> · ' +
+        esc(e.doc.subject || '') + '</div>' +
+      '<div>You: <strong>' + esc((qcState.decisions[i] || {}).action || 'agree') + '</strong> · ' +
+        'Defect: <strong>' + esc(r.defect) + '</strong> · ' +
+        'Seeded: ' + esc(seededLabel) + '</div>' +
+      '<div class="qc-wrong-truth">Correct coding: ' + qcCodingRows(e.doc.answer) + '</div>' +
+      '<div class="qc-wrong-why">' + esc(e.doc.explanation || '') + '</div>' +
+      '</div>';
+  }
+  if (!anyWrong) html += '<p>Nothing. A clean batch.</p>';
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back to QC Track</button></div>';
+  document.getElementById('qc-view-complete').innerHTML = html;
+  qcNav('complete');
+}
+
 </script>
 
 <!-- ══ SHELLS (fixed position, outside all page divs) ══ -->
