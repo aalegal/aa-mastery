@@ -86,7 +86,7 @@ test('makeRng is roughly uniform', function () {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: FAIL — `Cannot find module '../qc-engine.js'`
@@ -144,7 +144,7 @@ Create `qc-engine.js`:
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 4 tests.
@@ -298,7 +298,7 @@ test('apply() returns a patch that actually changes the coding', function () {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: FAIL — `QC.buildVocabulary is not a function`
@@ -440,7 +440,7 @@ Add to the returned object: `isPrivileged: isPrivileged, buildVocabulary: buildV
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 14 tests.
@@ -593,7 +593,7 @@ test('over-designation appears more often than missed privilege', function () {
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: FAIL — `QC.seedErrors is not a function`
@@ -669,7 +669,7 @@ Add `seedErrors: seedErrors` to the returned object.
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 25 tests.
@@ -837,7 +837,7 @@ test('scoreBatch handles an unreviewed batch without dividing by zero', function
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: FAIL — `QC.codingMatches is not a function`
@@ -939,7 +939,7 @@ Add `codingMatches: codingMatches, classifyDecision: classifyDecision, scoreBatc
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 40 tests.
@@ -1045,7 +1045,7 @@ test('rollingAccuracy converts one defect in a thousand to the tolerance line', 
 - [ ] **Step 2: Run test to verify it fails**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: FAIL — `QC.ACCURACY_ANCHORS is undefined`
@@ -1112,7 +1112,7 @@ Add `ACCURACY_ANCHORS: ACCURACY_ANCHORS, accuracyPillar: accuracyPillar, rolling
 - [ ] **Step 4: Run test to verify it passes**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 49 tests.
@@ -2103,7 +2103,7 @@ Expected: six entries ordered heaviest first, starting with Missed privilege (we
 - [ ] **Step 3: Run the full test suite**
 
 ```bash
-cd ~/Documents/aa-mastery && node --test tests/
+cd ~/Documents/aa-mastery && node --test
 ```
 
 Expected: PASS, 49 tests, 0 failures.
