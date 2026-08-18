@@ -1793,17 +1793,21 @@ Add to the QC TRACK section:
 // roughly 5% of a case — beyond that, escalation stops being a judgment call and
 // becomes the safe default.
 var QC_AMBIGUOUS = {
-  joba: []
+  joba: [],
+  // NOT derived from fa-flag. 219 of TransRidge's 500 documents carry fa-flag,
+  // because it is the ordinary coding for First Amendment qualified privilege —
+  // not a marker of a close call — and those 219 share only 8 generated
+  // explanations between them. Treating them all as escalation targets demanded
+  // escalating 103 documents in a 250-document batch, which makes escalation the
+  // safe default rather than a judgment call.
+  //
+  // These five are the genuine close calls: the only FA documents with both a
+  // uniquely hand-authored explanation and an fa-flag coding.
+  firstam: ['FA-0002', 'FA-0003', 'FA-0004', 'FA-0010', 'FA-0011']
 };
 
 function qcAmbiguousIds(caseKey) {
-  if (QC_AMBIGUOUS[caseKey]) return QC_AMBIGUOUS[caseKey];
-  var ids = [];
-  var docs = QC_CASES[caseKey].docs();
-  for (var i = 0; i < docs.length; i++) {
-    if (docs[i].answer && docs[i].answer.privilege === 'fa-flag') ids.push(docs[i].id);
-  }
-  return ids;
+  return QC_AMBIGUOUS[caseKey] || [];
 }
 
 function finishQcBatch() {

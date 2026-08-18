@@ -177,12 +177,23 @@ whose ground truth is not privileged.
 - **Correct** — it is wrong; supply the right coding via the existing coding panel
 - **Escalate** — this is a genuine close call that should go up, not be quietly changed
 
-Documents flagged `ambiguous: true` are the escalation targets. In `FA_DOCS` these already
-exist — any document whose `answer.privilege` is `fa-flag` (Flag & Escalate). For other
-cases the track carries a per-case array of document IDs, `QC_AMBIGUOUS[case_key] = [...]`,
-selected by hand from documents whose `explanation` already reads as a close call. Roughly
-5% of a batch should be genuinely ambiguous; more than that and escalation stops being a
-judgment call and becomes the safe default.
+Escalation targets are named explicitly, per case, in `QC_AMBIGUOUS[case_key]`.
+
+**Corrected during implementation, 2026-08-17.** This spec originally proposed deriving
+them in TransRidge from `answer.privilege === 'fa-flag'` (Flag & Escalate). That is wrong:
+**219 of TransRidge's 500 documents carry `fa-flag`**, because it is the ordinary coding for
+First Amendment qualified privilege rather than a marker of a close call — and those 219
+share only 8 generated explanations between them. Using it demanded escalating 103 documents
+in a 250-document batch, which makes escalation the safe default instead of a judgment call,
+the precise failure this rule exists to prevent.
+
+The corrected selection is the five documents that are genuinely close calls: the only FA
+documents carrying both a uniquely hand-authored `explanation` and an `fa-flag` coding
+(FA-0002, FA-0003, FA-0004, FA-0010, FA-0011). A 250-document batch draws about three of
+them, or 1.2%.
+
+Ambiguous documents should stay rare — on the order of a few percent of a batch. Past that,
+escalating everything becomes the rational strategy and the signal is lost.
 
 ### Scoring — two-sided
 
