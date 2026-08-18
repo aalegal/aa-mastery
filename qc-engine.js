@@ -162,12 +162,73 @@
     'OVER_DESIGNATION', 'CONFIDENTIALITY', 'WRONG_ISSUES'
   ];
 
+  function copyAnswer(a) {
+    var out = {};
+    for (var k in a) {
+      if (!Object.prototype.hasOwnProperty.call(a, k)) continue;
+      out[k] = Object.prototype.toString.call(a[k]) === '[object Array]' ? a[k].slice() : a[k];
+    }
+    return out;
+  }
+
+  function pickWeighted(candidates, rng) {
+    var total = 0, i;
+    for (i = 0; i < candidates.length; i++) total += candidates[i].freq;
+    var roll = rng() * total;
+    for (i = 0; i < candidates.length; i++) {
+      roll -= candidates[i].freq;
+      if (roll <= 0) return candidates[i];
+    }
+    return candidates[candidates.length - 1];
+  }
+
+  // Produces the coding a prior reviewer "submitted": either the correct answer,
+  // or the answer mutated into a plausible mistake. Source documents are never
+  // modified — priorCoding is always a fresh object.
+  function seedErrors(docs, opts) {
+    opts = opts || {};
+    var density = opts.density == null ? 0.15 : opts.density;
+    var vocab = opts.vocabulary || buildVocabulary(docs);
+    var allowed = opts.allowedTypes || PHASE1_TYPES;
+    var rng = opts.rng || makeRng(hashSeed(opts.seed || 'default'));
+    var out = [];
+
+    for (var i = 0; i < docs.length; i++) {
+      var doc = docs[i];
+      var answer = doc.answer || {};
+      var prior = copyAnswer(answer);
+      var seeded = null;
+
+      // Draw for every document, error or not, so the stream stays aligned and
+      // the batch remains reproducible from the seed alone.
+      var roll = rng();
+      if (roll < density) {
+        var candidates = [];
+        for (var t = 0; t < allowed.length; t++) {
+          var type = ERROR_TYPES[allowed[t]];
+          if (type && type.applies(answer, vocab)) candidates.push(type);
+        }
+        if (candidates.length) {
+          var picked = pickWeighted(candidates, rng);
+          var patch = picked.apply(answer, vocab, rng);
+          for (var f in patch) {
+            if (Object.prototype.hasOwnProperty.call(patch, f)) prior[f] = patch[f];
+          }
+          seeded = { type: picked.key, weight: picked.weight, patch: patch };
+        }
+      }
+      out.push({ doc: doc, priorCoding: prior, seededError: seeded });
+    }
+    return out;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
     isPrivileged: isPrivileged,
     buildVocabulary: buildVocabulary,
     ERROR_TYPES: ERROR_TYPES,
-    PHASE1_TYPES: PHASE1_TYPES
+    PHASE1_TYPES: PHASE1_TYPES,
+    seedErrors: seedErrors
   };
 });

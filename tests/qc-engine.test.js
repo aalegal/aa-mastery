@@ -125,3 +125,123 @@ test('apply() returns a patch that actually changes the coding', function () {
   var patch2 = QC.ERROR_TYPES.CONFIDENTIALITY.apply(JSON_SET[0].answer, v, rng);
   assert.notStrictEqual(patch2.conf, JSON_SET[0].answer.conf);
 });
+
+function bigSet(n) {
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    var privileged = i % 7 === 0;
+    var responsive = i % 3 !== 0;
+    out.push({
+      id: 'D' + i,
+      answer: {
+        responsive: responsive ? 'responsive' : 'non-responsive',
+        privilege: privileged ? 'acp' : 'not-privileged',
+        action: privileged ? 'withhold' : 'produce',
+        conf: ['standard', 'highly-conf', 'aeo'][i % 3],
+        issues: responsive ? ['issue' + (1 + (i % 3))] : []
+      }
+    });
+  }
+  return out;
+}
+
+test('seedErrors is deterministic for the same seed', function () {
+  var docs = bigSet(200);
+  var a = QC.seedErrors(docs, { seed: 'u|firstam|1', density: 0.15 });
+  var b = QC.seedErrors(docs, { seed: 'u|firstam|1', density: 0.15 });
+  assert.deepStrictEqual(
+    a.map(function (e) { return e.seededError && e.seededError.type; }),
+    b.map(function (e) { return e.seededError && e.seededError.type; })
+  );
+});
+
+test('seedErrors differs across seeds', function () {
+  var docs = bigSet(200);
+  var a = QC.seedErrors(docs, { seed: 'u|firstam|1', density: 0.15 });
+  var b = QC.seedErrors(docs, { seed: 'u|firstam|2', density: 0.15 });
+  var sameCount = 0;
+  for (var i = 0; i < a.length; i++) {
+    var ta = a[i].seededError && a[i].seededError.type;
+    var tb = b[i].seededError && b[i].seededError.type;
+    if (ta === tb) sameCount++;
+  }
+  assert.ok(sameCount < a.length, 'two seeds produced identical batches');
+});
+
+test('seedErrors respects practice density within tolerance', function () {
+  var docs = bigSet(1000);
+  var seeded = QC.seedErrors(docs, { seed: 's', density: 0.15 });
+  var n = seeded.filter(function (e) { return e.seededError; }).length;
+  assert.ok(n > 110 && n < 190, 'expected ~150 errors, got ' + n);
+});
+
+test('seedErrors respects certification density within tolerance', function () {
+  var docs = bigSet(1000);
+  var seeded = QC.seedErrors(docs, { seed: 's', density: 0.02 });
+  var n = seeded.filter(function (e) { return e.seededError; }).length;
+  assert.ok(n > 8 && n < 40, 'expected ~20 errors, got ' + n);
+});
+
+test('seedErrors never seeds an error a document cannot carry', function () {
+  var docs = bigSet(500);
+  QC.seedErrors(docs, { seed: 's', density: 0.5 }).forEach(function (e) {
+    if (!e.seededError) return;
+    var t = QC.ERROR_TYPES[e.seededError.type];
+    assert.strictEqual(t.applies(e.doc.answer, QC.buildVocabulary(docs)), true,
+      e.seededError.type + ' seeded on an ineligible document ' + e.doc.id);
+  });
+});
+
+test('seedErrors leaves the source document untouched', function () {
+  var docs = bigSet(50);
+  var before = JSON.stringify(docs);
+  QC.seedErrors(docs, { seed: 's', density: 0.9 });
+  assert.strictEqual(JSON.stringify(docs), before, 'source documents were mutated');
+});
+
+test('priorCoding equals the answer when no error is seeded', function () {
+  var docs = bigSet(100);
+  QC.seedErrors(docs, { seed: 's', density: 0.15 }).forEach(function (e) {
+    if (e.seededError) return;
+    assert.deepStrictEqual(e.priorCoding, e.doc.answer);
+  });
+});
+
+test('priorCoding differs from the answer when an error is seeded', function () {
+  var docs = bigSet(300);
+  var any = false;
+  QC.seedErrors(docs, { seed: 's', density: 0.4 }).forEach(function (e) {
+    if (!e.seededError) return;
+    any = true;
+    assert.notDeepStrictEqual(e.priorCoding, e.doc.answer, e.doc.id + ' unchanged');
+  });
+  assert.ok(any, 'no errors were seeded at all');
+});
+
+test('seedErrors honours allowedTypes', function () {
+  var docs = bigSet(400);
+  QC.seedErrors(docs, { seed: 's', density: 0.5, allowedTypes: ['WRONG_ISSUES'] })
+    .forEach(function (e) {
+      if (e.seededError) assert.strictEqual(e.seededError.type, 'WRONG_ISSUES');
+    });
+});
+
+test('seedErrors defaults to the Phase 1 type set', function () {
+  var docs = bigSet(400);
+  QC.seedErrors(docs, { seed: 's', density: 0.5 }).forEach(function (e) {
+    if (e.seededError) {
+      assert.notStrictEqual(QC.PHASE1_TYPES.indexOf(e.seededError.type), -1,
+        'seeded a non-Phase-1 type: ' + e.seededError.type);
+    }
+  });
+});
+
+test('over-designation appears more often than missed privilege', function () {
+  var docs = bigSet(2000);
+  var counts = {};
+  QC.seedErrors(docs, { seed: 'freq', density: 0.5 }).forEach(function (e) {
+    if (e.seededError) counts[e.seededError.type] = (counts[e.seededError.type] || 0) + 1;
+  });
+  assert.ok((counts.OVER_DESIGNATION || 0) > (counts.MISSED_PRIVILEGE || 0),
+    'frequency weighting not applied');
+});
