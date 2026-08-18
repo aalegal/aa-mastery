@@ -376,3 +376,76 @@ test('scoreBatch handles an unreviewed batch without dividing by zero', function
   assert.strictEqual(s.defectsPer1000, 0);
   assert.strictEqual(s.diagnostics.catchRate, null);
 });
+
+test('accuracyPillar hits every published anchor exactly', function () {
+  QC.ACCURACY_ANCHORS.forEach(function (pair) {
+    assert.strictEqual(QC.accuracyPillar(pair[0]), pair[1], 'anchor ' + pair[0]);
+  });
+});
+
+test('accuracyPillar interpolates between anchors and is monotonic', function () {
+  assert.strictEqual(QC.accuracyPillar(1.5), 92.5);
+  var prev = 101;
+  [0, 0.5, 1, 2, 3, 5, 8, 10, 15, 20, 30, 40, 50, 60, 200].forEach(function (x) {
+    var y = QC.accuracyPillar(x);
+    assert.ok(y <= prev, 'pillar rose at ' + x);
+    assert.ok(y >= 0 && y <= 100, 'pillar out of range at ' + x);
+    prev = y;
+  });
+});
+
+test('the QC-Ready floor of 90 means 2 defects per 1,000', function () {
+  assert.strictEqual(QC.accuracyPillar(2), 90);
+  assert.ok(QC.accuracyPillar(2.1) < 90);
+});
+
+test('accuracyPillar floors at zero beyond the last anchor', function () {
+  assert.strictEqual(QC.accuracyPillar(60), 0);
+  assert.strictEqual(QC.accuracyPillar(500), 0);
+});
+
+test('rollingAccuracy ignores practice batches entirely', function () {
+  var r = QC.rollingAccuracy([
+    { batch_type: 'practice', docs_reviewed: 50, defects: 20, completed_at: '2026-08-01' },
+    { batch_type: 'certification', docs_reviewed: 250, defects: 1, completed_at: '2026-08-02' }
+  ], 1000);
+  assert.strictEqual(r.documents, 250);
+  assert.strictEqual(r.defects, 1);
+});
+
+test('rollingAccuracy fills the window newest-first and stops at the limit', function () {
+  var attempts = [];
+  for (var i = 1; i <= 8; i++) {
+    attempts.push({ batch_type: 'certification', docs_reviewed: 250, defects: i, completed_at: '2026-08-0' + i });
+  }
+  var r = QC.rollingAccuracy(attempts, 1000);
+  assert.strictEqual(r.documents, 1000);
+  assert.strictEqual(r.defects, 8 + 7 + 6 + 5, 'should take the four newest');
+  assert.strictEqual(r.partial, false);
+});
+
+test('rollingAccuracy reports a partial window honestly', function () {
+  var r = QC.rollingAccuracy([
+    { batch_type: 'certification', docs_reviewed: 250, defects: 1, completed_at: '2026-08-02' },
+    { batch_type: 'certification', docs_reviewed: 250, defects: 2, completed_at: '2026-08-03' }
+  ], 1000);
+  assert.strictEqual(r.documents, 500);
+  assert.strictEqual(r.defects, 3);
+  assert.strictEqual(r.defectsPer1000, 6);
+  assert.strictEqual(r.partial, true);
+});
+
+test('rollingAccuracy with no certification data returns a null pillar', function () {
+  var r = QC.rollingAccuracy([{ batch_type: 'practice', docs_reviewed: 50, defects: 0, completed_at: '2026-08-01' }], 1000);
+  assert.strictEqual(r.documents, 0);
+  assert.strictEqual(r.pillar, null);
+  assert.strictEqual(r.partial, true);
+});
+
+test('rollingAccuracy converts one defect in a thousand to the tolerance line', function () {
+  var r = QC.rollingAccuracy([
+    { batch_type: 'certification', docs_reviewed: 1000, defects: 1, completed_at: '2026-08-05' }
+  ], 1000);
+  assert.strictEqual(r.defectsPer1000, 1);
+  assert.strictEqual(r.pillar, 95);
+});

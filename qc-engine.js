@@ -309,6 +309,57 @@
     };
   }
 
+  // Calibration, not a derived law. Held in one table so it can be retuned once
+  // real QC-Recognized outcomes accumulate. 2 defects/1,000 == pillar 90 is the
+  // QC-Ready floor and matches the stated 1-in-1,000 tolerance plus headroom for
+  // a single low-severity slip.
+  var ACCURACY_ANCHORS = [
+    [0, 100], [1, 95], [2, 90], [5, 78], [10, 60], [20, 35], [40, 10], [60, 0]
+  ];
+
+  function accuracyPillar(defectsPer1000) {
+    var x = defectsPer1000;
+    if (!(x > 0)) return 100;
+    var last = ACCURACY_ANCHORS[ACCURACY_ANCHORS.length - 1];
+    if (x >= last[0]) return 0;
+    for (var i = 1; i < ACCURACY_ANCHORS.length; i++) {
+      if (x <= ACCURACY_ANCHORS[i][0]) {
+        var x0 = ACCURACY_ANCHORS[i - 1][0], y0 = ACCURACY_ANCHORS[i - 1][1];
+        var x1 = ACCURACY_ANCHORS[i][0], y1 = ACCURACY_ANCHORS[i][1];
+        return y0 + (y1 - y0) * (x - x0) / (x1 - x0);
+      }
+    }
+    return 0;
+  }
+
+  // The denominator is literally 1,000 documents: the pillar IS the client's
+  // metric, with no rescaling. Practice batches never contribute.
+  function rollingAccuracy(attempts, windowSize) {
+    var limit = windowSize || 1000;
+    var certs = [];
+    for (var i = 0; i < (attempts || []).length; i++) {
+      if (attempts[i] && attempts[i].batch_type === 'certification') certs.push(attempts[i]);
+    }
+    certs.sort(function (a, b) {
+      return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
+    });
+
+    var documents = 0, defects = 0;
+    for (var j = 0; j < certs.length && documents < limit; j++) {
+      documents += certs[j].docs_reviewed || 0;
+      defects += certs[j].defects || 0;
+    }
+
+    var rate = documents ? (1000 * defects / documents) : 0;
+    return {
+      documents: documents,
+      defects: defects,
+      defectsPer1000: rate,
+      pillar: documents ? accuracyPillar(rate) : null,
+      partial: documents < limit
+    };
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -319,6 +370,9 @@
     seedErrors: seedErrors,
     codingMatches: codingMatches,
     classifyDecision: classifyDecision,
-    scoreBatch: scoreBatch
+    scoreBatch: scoreBatch,
+    ACCURACY_ANCHORS: ACCURACY_ANCHORS,
+    accuracyPillar: accuracyPillar,
+    rollingAccuracy: rollingAccuracy
   };
 });
