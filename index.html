@@ -1399,6 +1399,9 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-clock{margin-left:auto;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;white-space:nowrap}
+.qc-clock-ok{background:#0d3b34;color:#4fd1b5}
+.qc-clock-slow{background:#3d2413;color:#e0a56a}
 @media (max-width:900px){
   .qc-panes{grid-template-columns:1fr}
   .qc-pane-list{max-height:16rem}
@@ -7710,6 +7713,40 @@ function qcConfig(caseKey) {
   return out;
 }
 
+function qcMark() {
+  if (qcState && qcState.marks) qcState.marks.push(Date.now());
+}
+
+function qcLivePace() {
+  var cfg = qcConfig(qcState.caseKey);
+  var s = QC.paceStats(qcState.marks);
+  var target = cfg.target_pace_docs_per_hour;
+  return {
+    docsPerHour: s.docsPerHour,
+    target: target,
+    onTarget: s.docsPerHour >= target,
+    elapsedMin: Math.floor(s.elapsedMs / 60000)
+  };
+}
+
+// The readout must move while the reviewer reads, not only when they decide --
+// otherwise a stall is invisible, which is the thing pace exists to expose.
+function qcStartClock() {
+  qcStopClock();
+  qcState.clockTimer = setInterval(function () {
+    var el = document.querySelector('.qc-clock');
+    if (!el || !qcState) return;
+    var pace = qcLivePace();
+    el.className = 'qc-clock ' + (pace.onTarget ? 'qc-clock-ok' : 'qc-clock-slow');
+    el.textContent = pace.docsPerHour.toFixed(0) + ' / ' + pace.target +
+                     ' docs per hour \u00b7 ' + pace.elapsedMin + ' min';
+  }, 5000);
+}
+
+function qcStopClock() {
+  if (qcState && qcState.clockTimer) { clearInterval(qcState.clockTimer); qcState.clockTimer = null; }
+}
+
 function renderQcHome() {
   var roll = QC.rollingAccuracy(qcAttempts, 1000);
   var pillarText = roll.pillar == null
@@ -7806,12 +7843,14 @@ function startQcBatch(caseKey, batchType) {
     batchNo: batchNo,
     seed: seed,
     startedAt: new Date().toISOString(),
+    marks: [Date.now()],
     entries: QC.seedErrors(drawn, { seed: seed, density: density }),
     decisions: [],
     currentIdx: 0
   };
   for (var k = 0; k < qcState.entries.length; k++) qcState.decisions.push(null);
 
+  qcStartClock();
   renderQcReview();
 }
 
@@ -7848,6 +7887,7 @@ function renderQcReview() {
   var doc = entry.doc;
   var done = 0;
   for (var i = 0; i < qcState.decisions.length; i++) if (qcState.decisions[i]) done++;
+  var pace = qcLivePace();
 
   var list = '';
   for (var j = 0; j < qcState.entries.length; j++) {
@@ -7872,6 +7912,10 @@ function renderQcReview() {
         '<strong>' + esc(QC_CASES[qcState.caseKey].label) + '</strong> · ' +
         esc(qcState.batchType) + ' batch ' + esc(String(qcState.batchNo)) + ' · ' +
         esc(String(done)) + ' of ' + esc(String(qcState.entries.length)) + ' reviewed' +
+        '<span class="qc-clock' + (pace.onTarget ? ' qc-clock-ok' : ' qc-clock-slow') + '">' +
+          esc(pace.docsPerHour.toFixed(0)) + ' / ' + esc(String(pace.target)) + ' docs per hour' +
+          ' \u00b7 ' + esc(String(pace.elapsedMin)) + ' min' +
+        '</span>' +
         (done === qcState.entries.length
           ? ' <button onclick="finishQcBatch()">Finish batch</button>'
           : '') +
@@ -7925,6 +7969,7 @@ function qcAdvance() {
 function qcDecide(action) {
   if (action === 'correct') { qcRenderCorrectionForm(); return; }
   qcState.decisions[qcState.currentIdx] = { action: action };
+  qcMark();
   qcAdvance();
 }
 
@@ -7966,6 +8011,7 @@ function qcSubmitCorrection() {
   for (var i = 0; i < boxes.length; i++) coding.issues.push(boxes[i].value);
 
   qcState.decisions[qcState.currentIdx] = { action: 'correct', coding: coding };
+  qcMark();
   qcAdvance();
 }
 
@@ -7994,6 +8040,7 @@ function qcAmbiguousIds(caseKey) {
 }
 
 function finishQcBatch() {
+  qcStopClock();
   var score = QC.scoreBatch(qcState.entries, qcState.decisions, {
     ambiguousIds: qcAmbiguousIds(qcState.caseKey)
   });
@@ -8024,6 +8071,22 @@ function renderQcComplete(score) {
           : 'Practice batch — this does not count toward your Accuracy score.') +
       '</div>' +
     '</div>';
+
+  var cfg = qcConfig(qcState.caseKey);
+  var pstats = QC.paceStats(qcState.marks);
+  var ppillar = QC.pacePillar(pstats.docsPerHour, pillar, cfg.target_pace_docs_per_hour);
+  html += '<h3>Pace</h3><div class="qc-result">' +
+    '<div class="qc-result-headline">' + esc(pstats.docsPerHour.toFixed(0)) +
+      ' docs per hour</div>' +
+    '<div class="qc-result-sub">Target ' + esc(String(cfg.target_pace_docs_per_hour)) +
+      ' \u00b7 sustainable pace ' + esc(String(Math.round(ppillar))) + ' / 100</div>' +
+    '<div class="qc-result-note">Throughput is discounted by the square of your accuracy. ' +
+      'Speed bought with mistakes is not speed.' +
+      (pstats.fade != null && pstats.fade < 0.8
+        ? ' Your final third ran at ' + esc(String(Math.round(pstats.fade * 100))) +
+          '% of your opening pace.'
+        : '') +
+    '</div></div>';
 
   html += '<h3>Where the defects were</h3><ul class="qc-breakdown">' +
     '<li>Missed errors: ' + esc(String(score.counts.MISS)) + '</li>' +
