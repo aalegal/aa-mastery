@@ -245,3 +245,134 @@ test('over-designation appears more often than missed privilege', function () {
   assert.ok((counts.OVER_DESIGNATION || 0) > (counts.MISSED_PRIVILEGE || 0),
     'frequency weighting not applied');
 });
+
+function entryWith(answer, prior, seeded) {
+  return { doc: { id: 'T1', answer: answer }, priorCoding: prior, seededError: seeded };
+}
+var ANS = { responsive: 'responsive', privilege: 'acp', action: 'withhold', conf: 'standard', issues: ['issue1'] };
+
+test('codingMatches ignores key order and issue order', function () {
+  assert.strictEqual(QC.codingMatches(
+    { responsive: 'responsive', issues: ['a', 'b'] },
+    { issues: ['b', 'a'], responsive: 'responsive' }
+  ), true);
+  assert.strictEqual(QC.codingMatches({ issues: ['a'] }, { issues: ['a', 'b'] }), false);
+  assert.strictEqual(QC.codingMatches({ conf: 'standard' }, { conf: 'aeo' }), false);
+});
+
+test('agreeing with a clean document is correct', function () {
+  var e = entryWith(ANS, ANS, null);
+  var r = QC.classifyDecision(e, { action: 'agree' }, false);
+  assert.strictEqual(r.correct, true);
+  assert.strictEqual(r.defect, null);
+});
+
+test('agreeing with a seeded error is a miss at the error weight', function () {
+  var prior = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+  var e = entryWith(ANS, prior, { type: 'MISSED_PRIVILEGE', weight: 5, patch: {} });
+  var r = QC.classifyDecision(e, { action: 'agree' }, false);
+  assert.strictEqual(r.correct, false);
+  assert.strictEqual(r.defect, 'MISS');
+  assert.strictEqual(r.weight, 5);
+});
+
+test('correcting a seeded error to the right value is correct', function () {
+  var prior = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+  var e = entryWith(ANS, prior, { type: 'MISSED_PRIVILEGE', weight: 5, patch: {} });
+  var r = QC.classifyDecision(e, { action: 'correct', coding: ANS }, false);
+  assert.strictEqual(r.correct, true);
+});
+
+test('correcting a seeded error to a wrong value is a bad fix at half weight', function () {
+  var prior = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+  var e = entryWith(ANS, prior, { type: 'MISSED_PRIVILEGE', weight: 5, patch: {} });
+  var wrong = { responsive: 'responsive', privilege: 'acp', action: 'withhold', conf: 'aeo', issues: ['issue1'] };
+  var r = QC.classifyDecision(e, { action: 'correct', coding: wrong }, false);
+  assert.strictEqual(r.defect, 'BAD_FIX');
+  assert.strictEqual(r.weight, 2.5);
+});
+
+test('changing a clean document is a false correction at weight 2', function () {
+  var e = entryWith(ANS, ANS, null);
+  var changed = { responsive: 'non-responsive', privilege: 'acp', action: 'withhold', conf: 'standard', issues: [] };
+  var r = QC.classifyDecision(e, { action: 'correct', coding: changed }, false);
+  assert.strictEqual(r.defect, 'FALSE_CORRECTION');
+  assert.strictEqual(r.weight, 2);
+});
+
+test('submitting an identical coding as a correction is not a defect', function () {
+  var e = entryWith(ANS, ANS, null);
+  var r = QC.classifyDecision(e, { action: 'correct', coding: ANS }, false);
+  assert.strictEqual(r.correct, true);
+});
+
+test('escalating an ambiguous document is correct', function () {
+  var e = entryWith(ANS, ANS, null);
+  assert.strictEqual(QC.classifyDecision(e, { action: 'escalate' }, true).correct, true);
+});
+
+test('resolving an ambiguous document instead of escalating is a defect', function () {
+  var e = entryWith(ANS, ANS, null);
+  var r = QC.classifyDecision(e, { action: 'agree' }, true);
+  assert.strictEqual(r.defect, 'MISSED_ESCALATION');
+  assert.strictEqual(r.weight, 2);
+});
+
+test('escalating a clear document is over-escalation at weight 1', function () {
+  var e = entryWith(ANS, ANS, null);
+  var r = QC.classifyDecision(e, { action: 'escalate' }, false);
+  assert.strictEqual(r.defect, 'OVER_ESCALATION');
+  assert.strictEqual(r.weight, 1);
+});
+
+test('scoreBatch normalises defects against weight 2', function () {
+  var priorMissed = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+  var entries = [
+    entryWith(ANS, priorMissed, { type: 'MISSED_PRIVILEGE', weight: 5, patch: {} }),
+    entryWith(ANS, ANS, null)
+  ];
+  var decisions = [{ action: 'agree' }, { action: 'agree' }];
+  var s = QC.scoreBatch(entries, decisions, {});
+  assert.strictEqual(s.docsReviewed, 2);
+  assert.strictEqual(s.defects, 2.5);
+  assert.strictEqual(s.defectsPer1000, 1250);
+  assert.strictEqual(s.counts.MISS, 1);
+});
+
+test('a flawless batch scores zero defects', function () {
+  var entries = [entryWith(ANS, ANS, null), entryWith(ANS, ANS, null)];
+  var s = QC.scoreBatch(entries, [{ action: 'agree' }, { action: 'agree' }], {});
+  assert.strictEqual(s.defects, 0);
+  assert.strictEqual(s.defectsPer1000, 0);
+});
+
+test('scoreBatch reports catch rate and false-correction rate as diagnostics', function () {
+  var priorMissed = { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] };
+  var entries = [
+    entryWith(ANS, priorMissed, { type: 'MISSED_PRIVILEGE', weight: 5, patch: {} }),
+    entryWith(ANS, ANS, null),
+    entryWith(ANS, ANS, null)
+  ];
+  var decisions = [
+    { action: 'correct', coding: ANS },
+    { action: 'agree' },
+    { action: 'correct', coding: { responsive: 'non-responsive', privilege: 'acp', action: 'withhold', conf: 'standard', issues: [] } }
+  ];
+  var s = QC.scoreBatch(entries, decisions, {});
+  assert.strictEqual(s.diagnostics.catchRate, 1);
+  assert.strictEqual(s.diagnostics.falseCorrectionRate, 0.5);
+  assert.strictEqual(s.diagnostics.familyAgreement, null);
+});
+
+test('scoreBatch treats listed ids as ambiguous', function () {
+  var e = { doc: { id: 'AMB1', answer: ANS }, priorCoding: ANS, seededError: null };
+  var s = QC.scoreBatch([e], [{ action: 'escalate' }], { ambiguousIds: ['AMB1'] });
+  assert.strictEqual(s.defects, 0);
+});
+
+test('scoreBatch handles an unreviewed batch without dividing by zero', function () {
+  var s = QC.scoreBatch([], [], {});
+  assert.strictEqual(s.docsReviewed, 0);
+  assert.strictEqual(s.defectsPer1000, 0);
+  assert.strictEqual(s.diagnostics.catchRate, null);
+});

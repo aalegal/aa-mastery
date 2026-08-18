@@ -222,6 +222,93 @@
     return out;
   }
 
+  function sameIssues(a, b) {
+    var x = (a || []).slice().sort();
+    var y = (b || []).slice().sort();
+    if (x.length !== y.length) return false;
+    for (var i = 0; i < x.length; i++) if (x[i] !== y[i]) return false;
+    return true;
+  }
+
+  function codingMatches(a, b) {
+    a = a || {}; b = b || {};
+    for (var i = 0; i < CODING_FIELDS.length; i++) {
+      var f = CODING_FIELDS[i];
+      if ((a[f] || null) !== (b[f] || null)) return false;
+    }
+    return sameIssues(a.issues, b.issues);
+  }
+
+  var DEFECT_WEIGHTS = { FALSE_CORRECTION: 2, MISSED_ESCALATION: 2, OVER_ESCALATION: 1 };
+
+  function ok() { return { correct: true, defect: null, weight: 0 }; }
+  function bad(defect, weight) { return { correct: false, defect: defect, weight: weight }; }
+
+  // Two-sided by design. Rubber-stamping (MISS) and over-correcting
+  // (FALSE_CORRECTION) are both real ways people lose a QC seat, so both cost.
+  function classifyDecision(entry, decision, isAmbiguous) {
+    var action = decision && decision.action;
+    var truth = entry.doc.answer || {};
+
+    if (isAmbiguous) {
+      return action === 'escalate' ? ok() : bad('MISSED_ESCALATION', DEFECT_WEIGHTS.MISSED_ESCALATION);
+    }
+    if (action === 'escalate') {
+      return bad('OVER_ESCALATION', DEFECT_WEIGHTS.OVER_ESCALATION);
+    }
+
+    var seeded = entry.seededError;
+    if (action === 'correct') {
+      if (codingMatches(decision.coding, truth)) return ok();
+      return seeded
+        ? bad('BAD_FIX', seeded.weight / 2)
+        : bad('FALSE_CORRECTION', DEFECT_WEIGHTS.FALSE_CORRECTION);
+    }
+    return seeded ? bad('MISS', seeded.weight) : ok();
+  }
+
+  function scoreBatch(entries, decisions, opts) {
+    opts = opts || {};
+    var ambiguous = {};
+    (opts.ambiguousIds || []).forEach(function (id) { ambiguous[id] = 1; });
+
+    var counts = { MISS: 0, BAD_FIX: 0, FALSE_CORRECTION: 0, MISSED_ESCALATION: 0, OVER_ESCALATION: 0, CORRECT: 0 };
+    var weighted = 0, cleanDocs = 0, falseCorrections = 0;
+    var seededWeight = 0, caughtWeight = 0;
+
+    for (var i = 0; i < entries.length; i++) {
+      var e = entries[i];
+      var isAmb = !!ambiguous[e.doc.id];
+      var r = classifyDecision(e, decisions[i] || { action: 'agree' }, isAmb);
+
+      if (r.defect) { counts[r.defect]++; weighted += r.weight; } else { counts.CORRECT++; }
+
+      if (!isAmb) {
+        if (e.seededError) {
+          seededWeight += e.seededError.weight;
+          if (r.correct) caughtWeight += e.seededError.weight;
+          else if (r.defect === 'BAD_FIX') caughtWeight += e.seededError.weight * 0.5;
+        } else {
+          cleanDocs++;
+          if (r.defect === 'FALSE_CORRECTION') falseCorrections++;
+        }
+      }
+    }
+
+    var defects = weighted / 2;
+    return {
+      docsReviewed: entries.length,
+      defects: defects,
+      defectsPer1000: entries.length ? (1000 * defects / entries.length) : 0,
+      counts: counts,
+      diagnostics: {
+        catchRate: seededWeight ? (caughtWeight / seededWeight) : null,
+        falseCorrectionRate: cleanDocs ? (falseCorrections / cleanDocs) : null,
+        familyAgreement: null   // Phase 2 — requires near-duplicate families
+      }
+    };
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -229,6 +316,9 @@
     buildVocabulary: buildVocabulary,
     ERROR_TYPES: ERROR_TYPES,
     PHASE1_TYPES: PHASE1_TYPES,
-    seedErrors: seedErrors
+    seedErrors: seedErrors,
+    codingMatches: codingMatches,
+    classifyDecision: classifyDecision,
+    scoreBatch: scoreBatch
   };
 });
