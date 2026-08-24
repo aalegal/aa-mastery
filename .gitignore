@@ -3,3 +3,8 @@
 supabase/.temp/
 .env
 .env.*
+
+# Local tooling and debug output
+.DS_Store
+.claude/
+.playwright-mcp/
