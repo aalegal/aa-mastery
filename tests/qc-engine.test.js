@@ -881,7 +881,7 @@ test('a fresh person is pointed at stage one', function () {
 
 test('exactly one stage is next, always', function () {
   [{}, { marked: { rules: true } },
-   { marked: { rules: true }, firstPassCounts: { joba: 30 } },
+   { marked: { rules: true }, firstPassCounts: { onramp: 30 } },
    { attempts: [{ batch_type: 'certification' }] }
   ].forEach(function (input, i) {
     var n = QC.pathStatus(input).filter(function (x) { return x.status === 'next'; }).length;
@@ -896,8 +896,8 @@ test('marking the rules read completes stage one', function () {
 });
 
 test('stage two completes at the Joba threshold, not before', function () {
-  assert.strictEqual(pstat({ firstPassCounts: { joba: 24 } }).firstpass, 'available');
-  assert.strictEqual(pstat({ firstPassCounts: { joba: 25 } }).firstpass, 'done');
+  assert.strictEqual(pstat({ firstPassCounts: { onramp: 24 } }).firstpass, 'available');
+  assert.strictEqual(pstat({ firstPassCounts: { onramp: 25 } }).firstpass, 'done');
   assert.strictEqual(QC.PATH_THRESHOLDS.firstPass, 25);
 });
 
@@ -922,7 +922,7 @@ test('certifying completes stage four as well as stage five', function () {
 test('readiness is never done - it is a view, not a task', function () {
   var s = pstat({
     marked: { rules: true },
-    firstPassCounts: { joba: 55, scale: 500 },
+    firstPassCounts: { onramp: 55, scale: 500 },
     attempts: [{ batch_type: 'certification' }, { batch_type: 'practice' }]
   });
   assert.strictEqual(s.rules, 'done');

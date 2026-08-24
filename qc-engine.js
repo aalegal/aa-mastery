@@ -670,7 +670,7 @@
 
     var done = {
       rules:      !!marked.rules,
-      firstpass:  (counts.joba || 0) >= PATH_THRESHOLDS.firstPass,
+      firstpass:  (counts.onramp || 0) >= PATH_THRESHOLDS.firstPass,
       scale:      (counts.scale || 0) >= PATH_THRESHOLDS.scale,
       qcpractice: (practice + cert) > 0,
       qccert:     cert > 0,
@@ -692,19 +692,6 @@
   // predicates need testing against the real corpora - so they live here rather than
   // in the page. Three messages per case: acknowledge, protocol change, feedback.
   var INTERRUPTS = {
-    joba: [
-      { type: 'ack', from: 'Project Manager',
-        subject: 'Batch check-in',
-        body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
-      { type: 'change', from: 'Outside Counsel',
-        subject: 'PROTOCOL CHANGE \u2014 confidentiality tier',
-        body: 'Client has revised the confidentiality call. Any document currently coded standard confidentiality is to be treated as highly confidential from this point forward. Apply going forward; do not go back and re-code what you have already submitted.',
-        change: { label: 'Standard confidentiality is now highly confidential.',
-                  when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
-      { type: 'feedback', from: 'QC Lead',
-        subject: 'Note on your last batch',
-        body: 'You over-designated on responsiveness last batch \u2014 several non-responsive documents were coded responsive. Responsiveness needs a link to a specific issue, not just a mention of the company.' }
-    ],
     firstam: [
       { type: 'ack', from: 'Project Manager',
         subject: 'Batch check-in',

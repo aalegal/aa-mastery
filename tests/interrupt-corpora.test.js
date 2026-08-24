@@ -17,14 +17,13 @@ function corpus(name) {
 }
 
 var CORPUS_FOR = {
-  joba: 'REL_DOCS',
   p3:   'P3_DOCS',
   p4:   'P4_DOCS',
   ptbr: 'PTBR_DOCS'
 };
 
 test('every QC-capable case has an interrupt script', function () {
-  ['joba', 'firstam', 'p3', 'p4', 'ptbr'].forEach(function (k) {
+  ['firstam', 'p3', 'p4', 'ptbr'].forEach(function (k) {
     assert.ok(QC.INTERRUPTS[k], k + ' has no interrupt script');
     assert.strictEqual(QC.INTERRUPTS[k].length, 3, k + ' should have 3 messages');
   });
