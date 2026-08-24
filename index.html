@@ -1418,6 +1418,8 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
 .qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
 .qc-roster-foot{font-size:.75rem;margin-top:.6rem}
+.vpane{display:none}
+.vpane.active{display:block}
 .qc-dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.75rem}
 .qc-dials .qc-dial{max-width:none}
 .qc-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;margin-bottom:.75rem}
@@ -1536,15 +1538,12 @@ tr:nth-child(even) td{background:#0d162080}
     <button onclick="nav('reference')">📚 Reference</button>
     <button onclick="nav('flashcards')">🃏 Flash Cards</button>
     <button onclick="nav('quiz')">✏️ Quiz</button>
-    <button onclick="nav('qc')">🔎 QC Track</button>
     <button onclick="nav('leaderboard')">🏆 Leaderboard</button>
     <button onclick="nav('escalation')">🔺 Escalation</button>
     <button onclick="nav('withhold')">⚫ Withhold/Redact</button>
     <button onclick="nav('playbook')">📖 eDiscovery Playbook</button>
     <button onclick="nav('proxy')">📞 Proxy Calls</button>
-    <button onclick="nav('other-projects')">🌐 Other Projects</button>
-    <button onclick="nav('foreign-review')">🇧🇷 Foreign Language</button>
-    <button onclick="nav('projects')">📁 Projects</button>
+    <button onclick="nav('review')">📁 Doc Review Projects &amp; QC Path</button>
     <button onclick="location.href='/accent-trainer/'">🎓 Accent Trainer</button>
     <button onclick="location.href='/wellness/'">💚 Wellness</button>
   </div>
@@ -2964,6 +2963,29 @@ tr:nth-child(even) td{background:#0d162080}
   </div>
 </div>
 
+<div id="page-review" class="page">
+  <div class="card" style="border-color:var(--gold)">
+    <h2 style="margin:0 0 4px">Doc Review Projects &amp; QC Path</h2>
+    <p class="muted" style="margin:0">Every live-style matter in one place, and the route
+      from first-pass review to QC-ready. Nothing is locked &mdash; the path tells you where
+      to go next, the library lets you go anywhere.</p>
+  </div>
+
+  <div id="review-path"></div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px">Case library</h3>
+    <div class="rtabs" id="review-tabs">
+      <button class="rtab active" onclick="showReviewTab('relativity',this)">Relativity</button>
+      <button class="rtab" onclick="showReviewTab('everlaw',this)">Everlaw</button>
+      <button class="rtab" onclick="showReviewTab('casepoint',this)">Casepoint</button>
+    </div>
+    <div id="vpane-relativity" class="vpane active"></div>
+    <div id="vpane-everlaw" class="vpane"></div>
+    <div id="vpane-casepoint" class="vpane"></div>
+  </div>
+</div>
+
 <div id="page-qc" class="page">
   <div id="qc-view-home"></div>
   <div id="qc-view-launch" style="display:none"></div>
@@ -3127,7 +3149,7 @@ function nav(p){
   if(p==='admin')loadAdmin();
   if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
-  if(p==='qc'){loadQcData();renderQcHome();}
+  if(p==='review'){loadQcData();renderReviewPage();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -8562,6 +8584,23 @@ function qcSaveProject(caseKey) {
       }
       status.textContent = 'Saved.';
     });
+}
+
+var reviewCurrentTab = 'relativity';
+
+function showReviewTab(id, btn) {
+  reviewCurrentTab = id;
+  document.querySelectorAll('#page-review .vpane').forEach(function (p) { p.classList.remove('active'); });
+  document.querySelectorAll('#review-tabs .rtab').forEach(function (t) { t.classList.remove('active'); });
+  var pane = document.getElementById('vpane-' + id);
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function renderReviewPage() {
+  if (typeof reviewMoveCards === 'function') reviewMoveCards();
+  document.getElementById('review-path').innerHTML =
+    '<div class="card"><p class="muted">Path renders in Task 6.</p></div>';
 }
 
 function renderQcTaxonomy() {
