@@ -7733,7 +7733,7 @@ var QC_CASES = {
   joba:    { label: 'Joba v. Bukando',                  docs: function () { return REL_DOCS; },  certification: false },
   firstam: { label: 'TransRidge v. Cascade Headwaters', docs: function () { return FA_DOCS; },   certification: true },
   p3:      { label: 'Veridian Bank \u2014 GDPR / AI',       docs: function () { return P3_DOCS; },   certification: true },
-  p4:      { label: 'Project 4',                        docs: function () { return P4_DOCS; },   certification: true },
+  p4:      { label: 'SEC v. QuantumEdge AI',            docs: function () { return P4_DOCS; },   certification: true },
   ptbr:    { label: 'Cade Brazil \u2014 Portuguese',        docs: function () { return PTBR_DOCS; }, certification: false }
 };
 
@@ -8156,7 +8156,9 @@ function renderQcReview() {
             '<h4>Your QC decision</h4>' +
             '<button onclick="qcDecide(\'agree\')">Agree</button> ' +
             '<button onclick="qcDecide(\'correct\')">Correct</button> ' +
-            '<button onclick="qcDecide(\'escalate\')">Escalate</button>' +
+            (qcAmbiguousIds(qcState.caseKey).length
+              ? '<button onclick="qcDecide(\'escalate\')">Escalate</button>'
+              : '') +
             '<div id="qc-correction"></div>' +
           '</div>' +
         '</div>' +
