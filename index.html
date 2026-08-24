@@ -1418,6 +1418,17 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
 .qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
 .qc-roster-foot{font-size:.75rem;margin-top:.6rem}
+.rv-path{display:flex;flex-direction:column;gap:.5rem}
+.rv-stage{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem;border:1px solid #1c2740;border-radius:8px;background:var(--card)}
+.rv-num{flex:0 0 1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;background:#1c2740;color:#9fb0c9}
+.rv-next{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.rv-next .rv-num{background:var(--gold);color:#0b1220}
+.rv-done .rv-num{background:#0d3b34;color:#4fd1b5}
+.rv-title{font-weight:700;color:#dbe4f0;margin-bottom:.2rem}
+.rv-blurb{color:#9fb0c9;font-size:.85rem;margin-bottom:.35rem;max-width:62ch}
+.rv-detail{color:#7d8ca3;font-size:.78rem;margin-bottom:.45rem}
+.rv-flag{background:var(--gold);color:#0b1220;font-size:.68rem;padding:.1rem .45rem;border-radius:999px;margin-left:.35rem}
+.rv-done{color:#4fd1b5;font-size:.72rem;margin-left:.35rem}
 .vpane{display:none}
 .vpane.active{display:block}
 .qc-dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.75rem}
@@ -8591,10 +8602,121 @@ function showReviewTab(id, btn) {
   if (btn) btn.classList.add('active');
 }
 
+function reviewRulesKey() { return getProgressKey() + '_path_rules'; }
+
+function reviewRulesRead() {
+  try { return localStorage.getItem(reviewRulesKey()) === '1'; } catch (e) { return false; }
+}
+
+function reviewToggleRules() {
+  try { localStorage.setItem(reviewRulesKey(), reviewRulesRead() ? '0' : '1'); } catch (e) {}
+  renderReviewPage();
+}
+
+// relCoding / cpCoding / evCoding are objects keyed by document id, maintained by the
+// simulators as people work. Counting keys is the completion signal, so stages 2 and 3
+// self-mark instead of asking anyone to tick a box.
+function reviewCountKeys(obj) {
+  var n = 0;
+  for (var k in (obj || {})) if (Object.prototype.hasOwnProperty.call(obj, k)) n++;
+  return n;
+}
+
+function reviewFirstPassCounts() {
+  var joba = (typeof relCoding !== 'undefined') ? reviewCountKeys(relCoding) : 0;
+  var cp   = (typeof cpCoding  !== 'undefined') ? reviewCountKeys(cpCoding)  : 0;
+  var ev   = (typeof evCoding  !== 'undefined') ? reviewCountKeys(evCoding)  : 0;
+  return { joba: joba, scale: Math.max(cp, ev) };
+}
+
+// A named helper rather than an inline call: the onclick goes through escAttr() into
+// an HTML attribute, and nesting quotes inside that is fragile and hard to read.
+function reviewGoToLibrary() {
+  var firstTab = document.querySelector('#review-tabs .rtab');
+  showReviewTab('relativity', firstTab);
+  var lib = document.getElementById('review-tabs');
+  if (lib) lib.scrollIntoView({ block: 'start' });
+}
+
+var REVIEW_PATH_COPY = {
+  rules: {
+    n: 1, title: 'Know the rules',
+    blurb: 'The review protocol, the eDiscovery playbook, and the eight defects QC looks for.',
+    action: 'Open the error taxonomy', onclick: 'renderQcTaxonomy()'
+  },
+  firstpass: {
+    n: 2, title: 'First-pass review',
+    blurb: 'Joba v. Bukando \u2014 55 documents. The on-ramp: code a real matter end to end.',
+    action: 'Open Joba in Relativity', onclick: 'openCase(1)'
+  },
+  scale: {
+    n: 3, title: 'Review at scale',
+    blurb: 'Any larger matter, on any platform. Volume changes how the work feels.',
+    action: 'Choose a matter', onclick: 'reviewGoToLibrary()'
+  },
+  qcpractice: {
+    n: 4, title: 'QC practice',
+    blurb: 'Review what another reviewer already coded, under dense errors, and learn the patterns.',
+    action: 'Start a practice batch', onclick: 'renderQcLaunch()'
+  },
+  qccert: {
+    n: 5, title: 'QC certification',
+    blurb: 'The real bar: 250 documents at realistic error density, where almost everything is clean.',
+    action: 'Choose a matter to certify on', onclick: 'renderQcLaunch()'
+  },
+  readiness: {
+    n: 6, title: 'Readiness',
+    blurb: 'Your Accuracy, Pace and Responsiveness, and what to practise next.',
+    action: 'View readiness', onclick: 'renderQcHome()'
+  }
+};
+
 function renderReviewPage() {
   if (typeof reviewMoveCards === 'function') reviewMoveCards();
-  document.getElementById('review-path').innerHTML =
-    '<div class="card"><p class="muted">Path renders in Task 6.</p></div>';
+  if (typeof reviewLabelCards === 'function') reviewLabelCards();
+
+  var stages = QC.pathStatus({
+    attempts: qcAttempts,
+    firstPassCounts: reviewFirstPassCounts(),
+    marked: { rules: reviewRulesRead() }
+  });
+
+  var counts = reviewFirstPassCounts();
+  var h = '<div class="card"><h3 style="margin:0 0 4px">Your path to QC</h3>' +
+    '<p class="muted" style="margin:0 0 12px">Nothing is locked. Every stage is open \u2014 ' +
+    'the marker just says where to pick up.</p><div class="rv-path">';
+
+  for (var i = 0; i < stages.length; i++) {
+    var st = stages[i];
+    var c = REVIEW_PATH_COPY[st.key];
+    var detail = '';
+    if (st.key === 'firstpass') {
+      detail = counts.joba + ' of ' + QC.PATH_THRESHOLDS.firstPass + ' documents coded';
+    } else if (st.key === 'scale') {
+      detail = counts.scale + ' of ' + QC.PATH_THRESHOLDS.scale + ' documents coded';
+    }
+
+    h += '<div class="rv-stage rv-' + escAttr(st.status) + '">' +
+      '<div class="rv-num">' + esc(String(c.n)) + '</div>' +
+      '<div class="rv-body">' +
+        '<div class="rv-title">' + esc(c.title) +
+          (st.status === 'next' ? ' <span class="rv-flag">Start here</span>' : '') +
+          (st.status === 'done' ? ' <span class="rv-done">\u2713 done</span>' : '') +
+        '</div>' +
+        '<div class="rv-blurb">' + esc(c.blurb) + '</div>' +
+        (detail ? '<div class="rv-detail">' + esc(detail) + '</div>' : '') +
+        '<button class="btn btn-outline btn-sm" onclick="' + escAttr(c.onclick) + '">' +
+          esc(c.action) + '</button>' +
+        (st.key === 'rules'
+          ? ' <button class="btn btn-outline btn-sm" onclick="reviewToggleRules()">' +
+            (reviewRulesRead() ? 'Mark as unread' : 'Mark as read') + '</button>'
+          : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  h += '</div></div>';
+  document.getElementById('review-path').innerHTML = h;
 }
 
 function renderQcTaxonomy() {
