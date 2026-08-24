@@ -860,3 +860,78 @@ test('roster tolerates empty input and rows without an email', function () {
   assert.deepStrictEqual(QC.roster(null, 1000), []);
   assert.strictEqual(QC.roster([{ batch_type: 'certification', docs_reviewed: 10 }], 1000).length, 0);
 });
+
+function pstat(input) {
+  var out = {};
+  QC.pathStatus(input).forEach(function (s) { out[s.key] = s.status; });
+  return out;
+}
+
+test('PATH_STAGES is the six stages in order', function () {
+  assert.deepStrictEqual(QC.PATH_STAGES,
+    ['rules', 'firstpass', 'scale', 'qcpractice', 'qccert', 'readiness']);
+});
+
+test('a fresh person is pointed at stage one', function () {
+  var s = pstat({});
+  assert.strictEqual(s.rules, 'next');
+  assert.strictEqual(s.firstpass, 'available');
+  assert.strictEqual(s.readiness, 'available');
+});
+
+test('exactly one stage is next, always', function () {
+  [{}, { marked: { rules: true } },
+   { marked: { rules: true }, firstPassCounts: { joba: 30 } },
+   { attempts: [{ batch_type: 'certification' }] }
+  ].forEach(function (input, i) {
+    var n = QC.pathStatus(input).filter(function (x) { return x.status === 'next'; }).length;
+    assert.strictEqual(n, 1, 'input ' + i + ' produced ' + n + ' next stages');
+  });
+});
+
+test('marking the rules read completes stage one', function () {
+  var s = pstat({ marked: { rules: true } });
+  assert.strictEqual(s.rules, 'done');
+  assert.strictEqual(s.firstpass, 'next');
+});
+
+test('stage two completes at the Joba threshold, not before', function () {
+  assert.strictEqual(pstat({ firstPassCounts: { joba: 24 } }).firstpass, 'available');
+  assert.strictEqual(pstat({ firstPassCounts: { joba: 25 } }).firstpass, 'done');
+  assert.strictEqual(QC.PATH_THRESHOLDS.firstPass, 25);
+});
+
+test('stage three completes at the scale threshold, not before', function () {
+  assert.strictEqual(pstat({ firstPassCounts: { scale: 49 } }).scale, 'available');
+  assert.strictEqual(pstat({ firstPassCounts: { scale: 50 } }).scale, 'done');
+  assert.strictEqual(QC.PATH_THRESHOLDS.scale, 50);
+});
+
+test('a practice batch completes stage four', function () {
+  var s = pstat({ attempts: [{ batch_type: 'practice' }] });
+  assert.strictEqual(s.qcpractice, 'done');
+  assert.strictEqual(s.qccert, 'available');
+});
+
+test('certifying completes stage four as well as stage five', function () {
+  var s = pstat({ attempts: [{ batch_type: 'certification' }] });
+  assert.strictEqual(s.qcpractice, 'done', 'certifying proves you can practise');
+  assert.strictEqual(s.qccert, 'done');
+});
+
+test('readiness is never done - it is a view, not a task', function () {
+  var s = pstat({
+    marked: { rules: true },
+    firstPassCounts: { joba: 55, scale: 500 },
+    attempts: [{ batch_type: 'certification' }, { batch_type: 'practice' }]
+  });
+  assert.strictEqual(s.rules, 'done');
+  assert.strictEqual(s.qccert, 'done');
+  assert.strictEqual(s.readiness, 'next', 'with everything else done, readiness is where to go');
+});
+
+test('pathStatus tolerates missing and malformed input', function () {
+  assert.strictEqual(QC.pathStatus().length, 6);
+  assert.strictEqual(QC.pathStatus({ attempts: null, firstPassCounts: null }).length, 6);
+  assert.strictEqual(pstat({ attempts: [null, undefined] }).qcpractice, 'available');
+});

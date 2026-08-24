@@ -647,6 +647,47 @@
     return rows;
   }
 
+  var PATH_STAGES = ['rules', 'firstpass', 'scale', 'qcpractice', 'qccert', 'readiness'];
+
+  // Calibration, not law. They exist so that opening a case and coding two
+  // documents does not read as "done".
+  var PATH_THRESHOLDS = { firstPass: 25, scale: 50 };
+
+  // Advisory only. Nothing here gates anything; the renderer draws every stage
+  // as clickable regardless of status.
+  function pathStatus(input) {
+    input = input || {};
+    var attempts = input.attempts || [];
+    var counts = input.firstPassCounts || {};
+    var marked = input.marked || {};
+
+    var practice = 0, cert = 0;
+    for (var i = 0; i < attempts.length; i++) {
+      if (!attempts[i]) continue;
+      if (attempts[i].batch_type === 'certification') cert++;
+      else if (attempts[i].batch_type === 'practice') practice++;
+    }
+
+    var done = {
+      rules:      !!marked.rules,
+      firstpass:  (counts.joba || 0) >= PATH_THRESHOLDS.firstPass,
+      scale:      (counts.scale || 0) >= PATH_THRESHOLDS.scale,
+      qcpractice: (practice + cert) > 0,
+      qccert:     cert > 0,
+      readiness:  false      // a view, not a task - never completes
+    };
+
+    var out = [], claimed = false;
+    for (var s = 0; s < PATH_STAGES.length; s++) {
+      var key = PATH_STAGES[s], status;
+      if (done[key]) status = 'done';
+      else if (!claimed) { status = 'next'; claimed = true; }
+      else status = 'available';
+      out.push({ key: key, status: status });
+    }
+    return out;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -669,6 +710,9 @@
     applyProtocolChange: applyProtocolChange,
     responsivenessScore: responsivenessScore,
     rollingPillar: rollingPillar,
-    roster: roster
+    roster: roster,
+    PATH_STAGES: PATH_STAGES,
+    PATH_THRESHOLDS: PATH_THRESHOLDS,
+    pathStatus: pathStatus
   };
 });
