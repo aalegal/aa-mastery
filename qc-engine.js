@@ -688,6 +688,77 @@
     return out;
   }
 
+  // Interrupt scripts are configuration, like ERROR_TYPES, and their protocol-change
+  // predicates need testing against the real corpora - so they live here rather than
+  // in the page. Three messages per case: acknowledge, protocol change, feedback.
+  var INTERRUPTS = {
+    joba: [
+      { type: 'ack', from: 'Project Manager',
+        subject: 'Batch check-in',
+        body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
+      { type: 'change', from: 'Outside Counsel',
+        subject: 'PROTOCOL CHANGE \u2014 confidentiality tier',
+        body: 'Client has revised the confidentiality call. Any document currently coded standard confidentiality is to be treated as highly confidential from this point forward. Apply going forward; do not go back and re-code what you have already submitted.',
+        change: { label: 'Standard confidentiality is now highly confidential.',
+                  when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
+      { type: 'feedback', from: 'QC Lead',
+        subject: 'Note on your last batch',
+        body: 'You over-designated on responsiveness last batch \u2014 several non-responsive documents were coded responsive. Responsiveness needs a link to a specific issue, not just a mention of the company.' }
+    ],
+    firstam: [
+      { type: 'ack', from: 'Project Manager',
+        subject: 'Batch check-in',
+        body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
+      { type: 'change', from: 'Outside Counsel',
+        subject: 'PROTOCOL CHANGE \u2014 First Amendment flag',
+        body: 'The court has narrowed the qualified privilege. From this point forward, documents currently coded not-privileged are to be flagged for escalation instead: code them fa-flag and withhold.',
+        change: { label: 'Not-privileged documents are now fa-flag and withheld.',
+                  when: { privilege: 'not-privileged' }, then: { privilege: 'fa-flag', action: 'withhold' } } },
+      { type: 'feedback', from: 'QC Lead',
+        subject: 'Note on your last batch',
+        body: 'Two privileged documents went out coded not-privileged last batch. Read the participants before the text \u2014 counsel on the From, To or CC line changes the analysis of everything below it.' }
+    ],
+    p3: [
+      { type: 'ack', from: 'Project Manager',
+        subject: 'Veridian \u2014 batch check-in',
+        body: 'Confirm you have picked up this batch of the Veridian review and are working it. The ICO liaison call is at four, so I need to know where we stand before then.' },
+      { type: 'change', from: 'Data Protection Counsel',
+        subject: 'PROTOCOL CHANGE \u2014 biometric and financial identifiers',
+        body: 'BaFin has objected to the current designations. Any document presently coded standard confidentiality is to be treated as highly confidential from this point forward \u2014 the supervisory authorities are treating the biometric and account-level identifiers in this population as special category data. Apply going forward only; do not re-code what you have already submitted.',
+        change: { label: 'Standard confidentiality is now highly confidential.',
+                  when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
+      { type: 'feedback', from: 'QC Lead',
+        subject: 'Note on your last Veridian batch',
+        body: 'Your confidentiality calls slipped last batch \u2014 several documents carrying account numbers were left at standard. The tier follows the content, not the sender: a routine-looking email with an account identifier in it is not routine.' }
+    ],
+    p4: [
+      { type: 'ack', from: 'Project Manager',
+        subject: 'QuantumEdge \u2014 batch check-in',
+        body: 'Confirm you have picked up this batch and are working it. The SEC production window is tight on this one and I am tracking throughput hourly.' },
+      { type: 'change', from: 'Securities Counsel',
+        subject: 'PROTOCOL CHANGE \u2014 trading desk material is now AEO',
+        body: 'The protective order has been amended. Material currently coded highly confidential is to be designated attorneys\u2019 eyes only from this point forward \u2014 the trading-desk and position-limit content is commercially sensitive to a degree the previous tier does not cover. Apply going forward; do not re-code submitted work.',
+        change: { label: 'Highly confidential is now attorneys\u2019 eyes only.',
+                  when: { conf: 'highly-conf' }, then: { conf: 'aeo' } } },
+      { type: 'feedback', from: 'QC Lead',
+        subject: 'Note on your last QuantumEdge batch',
+        body: 'Two documents discussing the FINRA certification were coded non-responsive last batch. Check the document against every issue in the protocol, not just the one you are already pattern-matching on \u2014 the certification touches Issue 4 as well as Issue 2.' }
+    ],
+    ptbr: [
+      { type: 'ack', from: 'Gerente de Projeto',
+        subject: 'CADE \u2014 confirma\u00e7\u00e3o de lote',
+        body: 'Confirme que voc\u00ea assumiu este lote e est\u00e1 trabalhando nele. Responda assim que vir esta mensagem. [EN: Confirm you have picked up this batch and are working it. Reply as soon as you see this.]' },
+      { type: 'change', from: 'Advogado Externo',
+        subject: 'MUDAN\u00c7A DE PROTOCOLO \u2014 n\u00edvel de confidencialidade',
+        body: 'O CADE ampliou a prote\u00e7\u00e3o conferida ao material do cartel. Todo documento atualmente codificado como confidencialidade padr\u00e3o deve passar a ser tratado como altamente confidencial a partir de agora. Aplique daqui em diante; n\u00e3o recodifique o que j\u00e1 foi enviado. [EN: CADE has widened the protection given to the cartel material. Any document currently coded standard confidentiality must now be treated as highly confidential from this point forward. Apply going forward; do not re-code what you have already submitted.]',
+        change: { label: 'Confidencialidade padr\u00e3o agora \u00e9 altamente confidencial.',
+                  when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
+      { type: 'feedback', from: 'L\u00edder de QC',
+        subject: 'Observa\u00e7\u00e3o sobre seu \u00faltimo lote',
+        body: 'Voc\u00ea super-designou responsividade no \u00faltimo lote \u2014 v\u00e1rios documentos n\u00e3o responsivos foram codificados como responsivos. A responsividade exige liga\u00e7\u00e3o com uma quest\u00e3o espec\u00edfica. [EN: You over-designated responsiveness last batch - several non-responsive documents were coded responsive. Responsiveness needs a link to a specific issue.]' }
+    ]
+  };
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -713,6 +784,7 @@
     roster: roster,
     PATH_STAGES: PATH_STAGES,
     PATH_THRESHOLDS: PATH_THRESHOLDS,
-    pathStatus: pathStatus
+    pathStatus: pathStatus,
+    INTERRUPTS: INTERRUPTS
   };
 });

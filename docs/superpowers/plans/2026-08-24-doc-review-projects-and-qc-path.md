@@ -317,9 +317,11 @@ Object.keys(CORPUS_FOR).forEach(function (key) {
   });
 });
 
-test('the firstam protocol change matches a meaningful share of FA_DOCS', function () {
-  // FA_DOCS is an array literal, so count its privilege values from the source text.
-  var block = SRC.slice(SRC.indexOf('var FA_DOCS'), SRC.indexOf('// FA-CASE-END'));
+// CORRECTED DURING EXECUTION: FA_DOCS is 15 hand-authored entries plus ~485 pushed by a
+// generator at load time, so static analysis sees only the authored portion. The bar is
+// scaled to that portion; full-corpus proof is the browser check in Step 6.
+test('the firstam protocol change matches the hand-authored FA documents', function () {
+  var block = SRC.slice(SRC.indexOf('var FA_DOCS'), SRC.indexOf('// FA-DATA-END'));
   var change = QC.INTERRUPTS.firstam.filter(function (m) { return m.type === 'change'; })[0].change;
   var field = Object.keys(change.when)[0];
   var needle = new RegExp(field + ':"' + change.when[field] + '"', 'g');

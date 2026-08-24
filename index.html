@@ -7773,34 +7773,9 @@ var QC_INTERRUPT_COUNT = 3;
 // Three kinds, per the spec. 'ack' measures response time alone. 'change'
 // additionally amends what correct means for every document after it.
 // 'feedback' names an error type the reviewer was weak on last batch.
-var QC_INTERRUPTS = {
-  joba: [
-    { type: 'ack', from: 'Project Manager',
-      subject: 'Batch check-in',
-      body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
-    { type: 'change', from: 'Outside Counsel',
-      subject: 'PROTOCOL CHANGE \u2014 confidentiality tier',
-      body: 'Client has revised the confidentiality call. Any document currently coded standard confidentiality is to be treated as highly confidential from this point forward. Apply going forward; do not go back and re-code what you have already submitted.',
-      change: { label: 'Standard confidentiality is now highly confidential.',
-                when: { conf: 'standard' }, then: { conf: 'highly-conf' } } },
-    { type: 'feedback', from: 'QC Lead',
-      subject: 'Note on your last batch',
-      body: 'You over-designated on responsiveness last batch \u2014 several non-responsive documents were coded responsive. Responsiveness needs a link to a specific issue, not just a mention of the company.' }
-  ],
-  firstam: [
-    { type: 'ack', from: 'Project Manager',
-      subject: 'Batch check-in',
-      body: 'Confirm you have picked up this batch and are working it. Reply when you see this.' },
-    { type: 'change', from: 'Outside Counsel',
-      subject: 'PROTOCOL CHANGE \u2014 First Amendment flag',
-      body: 'The court has narrowed the qualified privilege. From this point forward, documents currently coded not-privileged are to be flagged for escalation instead: code them fa-flag and withhold.',
-      change: { label: 'Not-privileged documents are now fa-flag and withheld.',
-                when: { privilege: 'not-privileged' }, then: { privilege: 'fa-flag', action: 'withhold' } } },
-    { type: 'feedback', from: 'QC Lead',
-      subject: 'Note on your last batch',
-      body: 'Two privileged documents went out coded not-privileged last batch. Read the participants before the text \u2014 counsel on the From, To or CC line changes the analysis of everything below it.' }
-  ]
-};
+// Interrupt scripts live in qc-engine.js: they are configuration, and their
+// protocol-change predicates are tested against the real corpora there.
+var QC_INTERRUPTS = QC.INTERRUPTS;
 
 function qcBuildInterrupts(caseKey, total, rng) {
   var script = QC_INTERRUPTS[caseKey] || [];
