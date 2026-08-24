@@ -2290,40 +2290,6 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
     </div><!-- /proj-case-card joba -->
     <!-- CASE 1B: AutoMotriz Patentes (Spanish - Car Patents) -->
-    <div class="proj-case-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div>
-          <div class="proj-case-title">🚗 Grupo Velasco Motors v. TechDrive Automóvil</div>
-          <div class="proj-case-sub">Infracción de Patentes de Motor Eléctrico &amp; Robo de Diseño · Procedimiento ante la OEPM</div>
-          <div class="proj-issues-bar">
-            <span class="proj-issue-tag issue1">Asunto 1: Infracción de Patente</span>
-            <span class="proj-issue-tag issue2">Asunto 2: Robo de Diseño Industrial</span>
-            <span class="proj-issue-tag issue3">Asunto 3: Violación de Acuerdo de Licencia</span>
-            <span class="proj-issue-tag issue4">Asunto 4: Malicia &amp; Daños Trebles</span>
-          </div>
-        </div>
-        <button class="proj-open-btn" onclick="openCase(3)">Abrir en OEPM →</button>
-      </div>
-      <div class="proj-parties">
-        <div class="proj-party">
-          <div class="proj-party-label">Demandante (Nuestro Cliente)</div>
-          <div class="proj-party-name">Grupo Velasco Motors</div>
-          <div class="proj-party-firm">Fernández-Ruiz &amp; Abogados de PI</div>
-        </div>
-        <div class="proj-vs">vs</div>
-        <div class="proj-party">
-          <div class="proj-party-label">Demandada</div>
-          <div class="proj-party-name">TechDrive Automóvil S.L.</div>
-          <div class="proj-party-firm">López Internacional &amp; Partners</div>
-        </div>
-      </div>
-      <div class="proj-stats">
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-total-2">55</div><div class="proj-stat-lbl">Documentos Totales</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-coded-2" style="color:var(--green)">0</div><div class="proj-stat-lbl">Codificados</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-remaining-2">55</div><div class="proj-stat-lbl">Pendientes</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-accuracy-2" style="color:var(--gold-light)">—</div><div class="proj-stat-lbl">Precisión</div></div>
-      </div>
-    </div><!-- /proj-case-card automovil -->
     <!-- CASE 2: NovaCure -->
     <div class="proj-case-card" onclick="openCase(2)" style="margin-top:14px;cursor:pointer;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -8584,6 +8550,34 @@ function qcSaveProject(caseKey) {
       }
       status.textContent = 'Saved.';
     });
+}
+
+// Cards are discrete nodes, so the library is built by moving them rather than by
+// rewriting markup - every inline onclick survives the move untouched.
+var REVIEW_LIBRARY = {
+  relativity: ['openCase(1)', 'openCase(2)', 'openAICase'],
+  everlaw:    ['openEverlawCase', 'openCadeCase'],
+  casepoint:  ['antitrust', 'breach', 'firstam']
+};
+
+// The launcher sits on the card for some matters and on a nested button for others,
+// so match the launcher then walk up to the card.
+function reviewCardFor(needle) {
+  var hit = document.querySelector('[onclick*="' + needle + '"]');
+  return hit ? hit.closest('.proj-case-card, .fl-case-card') : null;
+}
+
+function reviewMoveCards() {
+  for (var group in REVIEW_LIBRARY) {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_LIBRARY, group)) continue;
+    var pane = document.getElementById('vpane-' + group);
+    if (!pane) continue;
+    var needles = REVIEW_LIBRARY[group];
+    for (var i = 0; i < needles.length; i++) {
+      var card = reviewCardFor(needles[i]);
+      if (card && card.parentNode !== pane) pane.appendChild(card);
+    }
+  }
 }
 
 var reviewCurrentTab = 'relativity';
