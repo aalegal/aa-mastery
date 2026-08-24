@@ -1418,6 +1418,7 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
 .qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
 .qc-roster-foot{font-size:.75rem;margin-top:.6rem}
+.qc-backbar{margin-bottom:.6rem}
 .rv-cap{margin-top:.6rem;padding-top:.5rem;border-top:1px solid #1c2740;color:#7d8ca3;font-size:.74rem}
 .rv-path{display:flex;flex-direction:column;gap:.5rem}
 .rv-stage{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem;border:1px solid #1c2740;border-radius:8px;background:var(--card)}
@@ -2951,7 +2952,7 @@ tr:nth-child(even) td{background:#0d162080}
 
   <div id="review-path"></div>
 
-  <div class="card">
+  <div class="card" id="review-library">
     <h3 style="margin:0 0 10px">Case library</h3>
     <div class="rtabs" id="review-tabs">
       <button class="rtab active" onclick="showReviewTab('relativity',this)">Relativity</button>
@@ -2961,6 +2962,14 @@ tr:nth-child(even) td{background:#0d162080}
     <div id="vpane-relativity" class="vpane active"></div>
     <div id="vpane-everlaw" class="vpane"></div>
     <div id="vpane-casepoint" class="vpane"></div>
+  </div>
+
+  <!-- QC drill views are moved in here at runtime. They were authored inside
+       page-qc, which the nav consolidation made unreachable. -->
+  <div id="review-qc-host" style="display:none">
+    <div class="qc-backbar">
+      <button class="btn btn-outline btn-sm" onclick="reviewBackToPath()">&larr; Back to the path</button>
+    </div>
   </div>
 </div>
 
@@ -3127,7 +3136,7 @@ function nav(p){
   if(p==='admin')loadAdmin();
   if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
-  if(p==='review'){loadQcData();renderReviewPage();}
+  if(p==='review'){loadQcData();reviewBackToPath();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -7751,6 +7760,8 @@ var qcCurrentView = 'home';
 
 function qcNav(view) {
   qcCurrentView = view;
+  reviewMoveQcViews();
+  reviewShowPath(false);
   ['home', 'launch', 'review', 'complete', 'taxonomy', 'admin'].forEach(function (v) {
     var el = document.getElementById('qc-view-' + v);
     if (el) el.style.display = (v === view) ? '' : 'none';
@@ -8639,6 +8650,37 @@ function reviewLabelCards() {
   }
 }
 
+// The five qc-view-* divs were authored inside page-qc. Consolidating the nav made
+// that page unreachable, so renderQcLaunch() rendered into an invisible container and
+// the button looked dead. Move them where they can actually be seen.
+function reviewMoveQcViews() {
+  var host = document.getElementById('review-qc-host');
+  if (!host) return;
+  ['home', 'launch', 'review', 'complete', 'taxonomy'].forEach(function (v) {
+    var el = document.getElementById('qc-view-' + v);
+    if (el && el.parentNode !== host) host.appendChild(el);
+  });
+}
+
+function reviewShowPath(show) {
+  ['review-path', 'review-library'].forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.style.display = show ? '' : 'none';
+  });
+  var host = document.getElementById('review-qc-host');
+  if (host) host.style.display = show ? 'none' : '';
+}
+
+function reviewBackToPath() {
+  ['home', 'launch', 'review', 'complete', 'taxonomy'].forEach(function (v) {
+    var el = document.getElementById('qc-view-' + v);
+    if (el) el.style.display = 'none';
+  });
+  qcStopClock();
+  reviewShowPath(true);
+  renderReviewPage();
+}
+
 var reviewCurrentTab = 'relativity';
 
 function showReviewTab(id, btn) {
@@ -8721,6 +8763,7 @@ var REVIEW_PATH_COPY = {
 
 function renderReviewPage() {
   if (typeof reviewMoveCards === 'function') reviewMoveCards();
+  reviewMoveQcViews();
   if (typeof reviewLabelCards === 'function') reviewLabelCards();
 
   var stages = QC.pathStatus({
