@@ -26,7 +26,14 @@ Push to `main` — Vercel auto-deploys. All routes are rewritten to `index.html`
 
 The entire application is a single file: `index.html` (~5,500 lines of inline CSS and JavaScript). No framework, no bundler, no npm — only Axios loaded via CDN.
 
-**Pages (15 total):** Navigation is managed by `nav(p)` (line ~2635), which hides all `page-*` divs and shows the requested one. Page IDs: `home`, `reference`, `flashcards`, `quiz`, `leaderboard`, `escalation`, `withhold`, `playbook`, `proxy`, `other-projects`, `foreign-review`, `projects`, `timesheets`, `leadership`, `admin`.
+**Pages (12 total):** Navigation is managed by `nav(p)` (line ~2635), which hides all `page-*` divs and shows the requested one. Page IDs: `home`, `reference`, `flashcards`, `quiz`, `leaderboard`, `escalation`, `withhold`, `playbook`, `proxy`, `review`, `timesheets`, `leadership`, `admin`.
+
+**Doc Review Projects & QC Path** (`page-review`) is the single entry point for every
+matter and for the QC programme, replacing the former `projects`, `other-projects`,
+`foreign-review` and `qc` tabs. It has a six-stage path at the top (`QC.pathStatus`
+derives stage state) and a case library below, grouped into `.vpane` divs by platform.
+Case cards are moved into those panes at runtime by `reviewMoveCards()` rather than
+being duplicated in markup.
 
 **Backend:** Supabase (PostgreSQL + GoTrue auth). All API calls go through the `SB` object (line ~2590) — ~30 methods wrapping Axios calls to the Supabase REST and Auth APIs. Config constants (`SUPABASE_URL`, `SUPABASE_ANON_KEY`, `ADMIN_EMAIL`, `SITE_URL`, `LEADERSHIP_EMAILS`, `LEADERSHIP_NAMES`) are hardcoded near the top of the `<script>` block.
 
@@ -50,9 +57,10 @@ The entire application is a single file: `index.html` (~5,500 lines of inline CS
 **Simulator cases:** `ACTIVE_CASE` / `ACTIVE_DOCS` switch between the four document sets:
 - Case 1: `REL_DOCS` — Joba v. Bukando (default)
 - Case 2: `CASE2_DOCS`
-- Case 3: `P3_DOCS` — GDPR/AI (Veridian Bank)
-- Case 4: `P4_DOCS` — launched from `other-projects` page; Foreign language review uses `PTBR_DOCS`
-- Casepoint cases (`CP_CASES`, launched from `other-projects` via `openCasepointCase(id)`): `antitrust` (NorthStar/Meridian, `CP_DOCS`), `breach` (St. Aurelius, `SAH_DOCS`), `firstam` (TransRidge v. Cascade Headwaters — First Amendment privilege, `FA_DOCS`, 500 docs: 15 hand-authored + seeded generator)
+- Case 3: removed — was an unbuilt Spanish-language card that fell through to `REL_DOCS`
+- Case 4: `P4_DOCS` — **SEC v. QuantumEdge AI**, launched by `openAICase()` in the Relativity shell.
+  `P3_DOCS` (Veridian Bank, GDPR) is reached via `openEverlawCase()`; foreign-language review uses `PTBR_DOCS` via `openCadeCase()`
+- Casepoint cases (`CP_CASES`, launched from the case library via `openCasepointCase(id)`): `antitrust` (NorthStar/Meridian, `CP_DOCS`), `breach` (St. Aurelius, `SAH_DOCS`), `firstam` (TransRidge v. Cascade Headwaters — First Amendment privilege, `FA_DOCS`, 500 docs: 15 hand-authored + seeded generator)
 
 **Supabase tables:** `quiz_scores`, `timesheets`, `payments`, `tactical`
 
