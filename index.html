@@ -1418,6 +1418,7 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
 .qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
 .qc-roster-foot{font-size:.75rem;margin-top:.6rem}
+.rv-cap{margin-top:.6rem;padding-top:.5rem;border-top:1px solid #1c2740;color:#7d8ca3;font-size:.74rem}
 .rv-path{display:flex;flex-direction:column;gap:.5rem}
 .rv-stage{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem;border:1px solid #1c2740;border-radius:8px;background:var(--card)}
 .rv-num{flex:0 0 1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;background:#1c2740;color:#9fb0c9}
@@ -8588,6 +8589,45 @@ function reviewMoveCards() {
       var card = reviewCardFor(needles[i]);
       if (card && card.parentNode !== pane) pane.appendChild(card);
     }
+  }
+}
+
+var REVIEW_CARD_QCKEY = {
+  'openCase(1)':     'joba',
+  'openCase(2)':     null,
+  'openAICase':      'p4',
+  'openEverlawCase': 'p3',
+  'openCadeCase':    'ptbr',
+  'antitrust':       null,
+  'breach':          null,
+  'firstam':         'firstam'
+};
+
+// Derived from QC_CASES and qc_projects rather than hardcoded, so the label cannot
+// drift out of step with what the drills actually offer.
+function reviewCapabilityText(qcKey) {
+  if (!qcKey || !QC_CASES[qcKey]) return 'First-pass review';
+  var row = qcProjects[qcKey] || {};
+  var certifiable = (row.supports_certification != null)
+    ? row.supports_certification
+    : QC_CASES[qcKey].certification;
+  return certifiable
+    ? 'First-pass review \u00b7 QC practice \u00b7 QC certification'
+    : 'First-pass review \u00b7 QC practice';
+}
+
+function reviewLabelCards() {
+  for (var needle in REVIEW_CARD_QCKEY) {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_CARD_QCKEY, needle)) continue;
+    var card = reviewCardFor(needle);
+    if (!card) continue;
+    var tag = card.querySelector('.rv-cap');
+    if (!tag) {
+      tag = document.createElement('div');
+      tag.className = 'rv-cap';
+      card.appendChild(tag);
+    }
+    tag.textContent = reviewCapabilityText(REVIEW_CARD_QCKEY[needle]);
   }
 }
 
