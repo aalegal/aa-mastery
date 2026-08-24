@@ -25,6 +25,7 @@
 <meta name="twitter:image" content="https://aa-mastery.vercel.app/og-image.png">
 <meta name="twitter:image:alt" content="AA Team Privilege &amp; Coding Mastery – Training Hub">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
+<script src="/qc-engine.js"></script>
 <style>
 /* ══════════════════════════════════════════
    GOLD STANDARD PREMIUM PALETTE
@@ -1345,6 +1346,115 @@ tr:nth-child(even) td{background:#0d162080}
 .fl-tag-i17{color:#f48fb1;border-color:#f06292;background:#f0629210;}
 .fl-tag-i18{color:#ff8a65;border-color:#ff7043;background:#ff704310;}
 
+
+/* ── QC TRACK ─────────────────────────────────────────────── */
+.qc-lede{color:#9fb0c9;max-width:60ch;margin:.5rem 0 1.25rem}
+.qc-actions{margin-top:1.25rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.qc-note{color:#7d8ca3;font-size:.85rem;margin-left:.5rem}
+.qc-dial{background:var(--card);border:1px solid #1c2740;border-radius:10px;padding:1.25rem;max-width:30rem}
+.qc-dial-label{color:#9fb0c9;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem}
+.qc-dial-value{font-size:2.25rem;font-weight:700;color:var(--gold);line-height:1.2}
+.qc-dial-sub{color:#c3d0e4;margin-top:.25rem}
+.qc-dial-bar{color:#7d8ca3;font-size:.85rem;margin-top:.75rem;border-top:1px solid #1c2740;padding-top:.75rem}
+.qc-case{background:var(--card);border:1px solid #1c2740;border-radius:10px;padding:1rem;margin-bottom:.75rem}
+.qc-case h3{margin:0 0 .25rem}
+.qc-case-meta{color:#7d8ca3;font-size:.85rem;margin-bottom:.75rem}
+.qc-shell-bar{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.6rem .9rem;margin-bottom:.75rem;display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.qc-panes{display:grid;grid-template-columns:14rem 1fr 20rem;gap:.75rem;align-items:start}
+.qc-pane-list{max-height:70vh;overflow:auto;background:var(--card);border:1px solid #1c2740;border-radius:8px}
+.qc-pane-doc{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;max-height:70vh;overflow:auto}
+.qc-pane-decide{display:flex;flex-direction:column;gap:.75rem}
+.qc-list-row{display:flex;justify-content:space-between;align-items:center;gap:.5rem;padding:.45rem .65rem;border-bottom:1px solid #16203a;cursor:pointer;font-size:.85rem}
+.qc-list-row:hover{background:#131c2e}
+.qc-list-row-active{background:#16223c;border-left:3px solid var(--gold)}
+.qc-list-id{font-family:ui-monospace,Menlo,monospace;color:#c3d0e4}
+.qc-chip{font-size:.7rem;padding:.1rem .45rem;border-radius:999px;white-space:nowrap}
+.qc-chip-none{background:#1c2740;color:#8b9ab3}
+.qc-chip-agree{background:#0d3b34;color:#4fd1b5}
+.qc-chip-correct{background:#3d3413;color:var(--gold)}
+.qc-chip-esc{background:#3a2033;color:#e58fc0}
+.qc-doc-meta{border-bottom:1px solid #1c2740;padding-bottom:.6rem;margin-bottom:.75rem;color:#9fb0c9;font-size:.85rem}
+.qc-doc-body{white-space:pre-wrap;font-family:ui-monospace,Menlo,monospace;font-size:.82rem;line-height:1.55;color:#dbe4f0;margin:0}
+.qc-thread-item{border-top:1px solid #16203a;margin-top:.75rem;padding-top:.75rem;font-size:.82rem;color:#c3d0e4}
+.qc-thread-meta{color:#7d8ca3;margin-bottom:.25rem}
+.qc-card{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.9rem}
+.qc-card h4{margin:0 0 .6rem;font-size:.8rem;text-transform:uppercase;letter-spacing:.08em;color:#9fb0c9}
+.qc-code-row{display:flex;justify-content:space-between;gap:.75rem;padding:.3rem 0;border-bottom:1px solid #16203a;font-size:.85rem}
+.qc-code-row span{color:#7d8ca3}
+.qc-correct-form{margin-top:.75rem;display:flex;flex-direction:column;gap:.5rem}
+.qc-correct-form label{display:flex;flex-direction:column;gap:.2rem;font-size:.8rem;color:#9fb0c9}
+.qc-issue-list{display:flex;flex-wrap:wrap;gap:.5rem}
+.qc-issue{flex-direction:row!important;align-items:center;gap:.3rem!important;color:#c3d0e4!important}
+.qc-result{background:var(--card);border:1px solid #1c2740;border-left:3px solid var(--gold);border-radius:8px;padding:1.1rem;max-width:36rem}
+.qc-result-headline{font-size:1.5rem;font-weight:700;color:var(--gold)}
+.qc-result-sub{color:#c3d0e4;margin-top:.3rem}
+.qc-result-note{color:#7d8ca3;font-size:.85rem;margin-top:.6rem}
+.qc-breakdown{color:#c3d0e4;line-height:1.7}
+.qc-diag{color:#9fb0c9;max-width:60ch}
+.qc-wrong{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.9rem;margin-bottom:.6rem}
+.qc-wrong-head{margin-bottom:.4rem}
+.qc-wrong-truth{margin:.5rem 0;padding:.5rem;background:#0b1220;border-radius:6px}
+.qc-wrong-why{color:#9fb0c9;font-size:.85rem;line-height:1.6}
+.qc-tax{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;margin-bottom:.75rem;max-width:60rem}
+.qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
+.qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.qc-roster-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.35rem}
+.qc-roster-warn{color:#e0a56a;font-size:.78rem;margin:0 0 .75rem}
+.qc-roster{width:100%;border-collapse:collapse;font-size:.85rem}
+.qc-roster th{text-align:left;color:#9fb0c9;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #1c2740;padding:.45rem .5rem}
+.qc-roster td{padding:.5rem;border-bottom:1px solid #16203a;color:#dbe4f0;vertical-align:top}
+.qc-roster-row{cursor:pointer}
+.qc-roster-row:hover{background:#131c2e}
+.qc-roster-email{color:#7d8ca3;font-size:.72rem}
+.qc-caret{color:#7d8ca3;display:inline-block;width:.8em}
+.qc-r{text-align:right;font-variant-numeric:tabular-nums}
+.qc-ok{color:#4fd1b5}
+.qc-mid{color:var(--gold)}
+.qc-low{color:#e5737b}
+.qc-none{color:#7d8ca3}
+.qc-roster-detail td{background:#0b1220;padding:.6rem}
+.qc-roster-sub{width:100%;border-collapse:collapse;font-size:.78rem}
+.qc-roster-sub th{text-align:left;color:#7d8ca3;font-weight:600;padding:.3rem .45rem;border-bottom:1px solid #1c2740}
+.qc-roster-sub td{padding:.3rem .45rem;border-bottom:1px solid #131c2e;color:#c3d0e4}
+.qc-roster-foot{font-size:.75rem;margin-top:.6rem}
+.rv-cap{margin-top:.6rem;padding-top:.5rem;border-top:1px solid #1c2740;color:#7d8ca3;font-size:.74rem}
+.rv-path{display:flex;flex-direction:column;gap:.5rem}
+.rv-stage{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem;border:1px solid #1c2740;border-radius:8px;background:var(--card)}
+.rv-num{flex:0 0 1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;background:#1c2740;color:#9fb0c9}
+.rv-next{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.rv-next .rv-num{background:var(--gold);color:#0b1220}
+.rv-done .rv-num{background:#0d3b34;color:#4fd1b5}
+.rv-title{font-weight:700;color:#dbe4f0;margin-bottom:.2rem}
+.rv-blurb{color:#9fb0c9;font-size:.85rem;margin-bottom:.35rem;max-width:62ch}
+.rv-detail{color:#7d8ca3;font-size:.78rem;margin-bottom:.45rem}
+.rv-flag{background:var(--gold);color:#0b1220;font-size:.68rem;padding:.1rem .45rem;border-radius:999px;margin-left:.35rem}
+.rv-done{color:#4fd1b5;font-size:.72rem;margin-left:.35rem}
+.vpane{display:none}
+.vpane.active{display:block}
+.qc-dials{display:grid;grid-template-columns:repeat(auto-fit,minmax(17rem,1fr));gap:.75rem}
+.qc-dials .qc-dial{max-width:none}
+.qc-admin-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(11rem,1fr));gap:.6rem;margin-bottom:.75rem}
+.qc-admin-grid label{display:flex;flex-direction:column;gap:.2rem;font-size:.78rem;color:#9fb0c9}
+.qc-admin-check{flex-direction:row!important;align-items:center;gap:.4rem!important}
+.qc-card-alert{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
+.qc-badge{background:var(--gold);color:#0b1220;border-radius:999px;padding:.05rem .4rem;font-size:.7rem}
+.qc-msg{border-bottom:1px solid #16203a;padding:.5rem 0;font-size:.82rem}
+.qc-msg:last-child{border-bottom:0}
+.qc-msg-new{border-left:3px solid var(--gold);padding-left:.5rem}
+.qc-msg-head{color:#c3d0e4;margin-bottom:.25rem}
+.qc-msg-body{color:#9fb0c9;line-height:1.5;margin-bottom:.4rem}
+.qc-msg-ack{color:#4fd1b5;font-size:.75rem}
+.qc-msg-empty{color:#7d8ca3;font-size:.82rem}
+.qc-fam{font-size:.62rem;background:#2a2140;color:#b9a6f0;padding:.05rem .35rem;border-radius:999px;margin-left:.3rem}
+.qc-clock{margin-left:auto;font-size:.8rem;padding:.15rem .55rem;border-radius:999px;white-space:nowrap}
+.qc-clock-ok{background:#0d3b34;color:#4fd1b5}
+.qc-clock-slow{background:#3d2413;color:#e0a56a}
+@media (max-width:900px){
+  .qc-panes{grid-template-columns:1fr}
+  .qc-pane-list{max-height:16rem}
+}
+
 </style>
 </head>
 <body>
@@ -1445,9 +1555,7 @@ tr:nth-child(even) td{background:#0d162080}
     <button onclick="nav('withhold')">⚫ Withhold/Redact</button>
     <button onclick="nav('playbook')">📖 eDiscovery Playbook</button>
     <button onclick="nav('proxy')">📞 Proxy Calls</button>
-    <button onclick="nav('other-projects')">🌐 Other Projects</button>
-    <button onclick="nav('foreign-review')">🇧🇷 Foreign Language</button>
-    <button onclick="nav('projects')">📁 Projects</button>
+    <button onclick="nav('review')">📁 Doc Review Projects &amp; QC Path</button>
     <button onclick="location.href='/accent-trainer/'">🎓 Accent Trainer</button>
     <button onclick="location.href='/wellness/'">💚 Wellness</button>
   </div>
@@ -2076,6 +2184,7 @@ tr:nth-child(even) td{background:#0d162080}
     <div class="rtabs" id="admin-tabs">
       <button type="button" class="rtab active" onclick="showAdminTab('jobs',this)">📋 Job Leads</button>
       <button type="button" class="rtab" onclick="showAdminTab('users',this)">👥 Users &amp; Scores</button>
+      <button type="button" class="rtab" onclick="showAdminTab('qcmetrics',this)">📊 QC Metrics</button>
       <button type="button" class="rtab" onclick="showAdminTab('security',this)">🛡️ Security</button>
       <button type="button" class="rtab" onclick="showAdminTab('wellbeing',this)">💚 Supervisor Wellbeing</button>
     </div>
@@ -2127,6 +2236,13 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
       <div id="wb-admin-status" class="lead-status"></div>
       <div id="wb-admin-body"></div>
+    </div>
+  </div>
+
+  <div id="apane-qcmetrics" class="rpane">
+    <div class="card">
+      <h3 style="margin:0 0 6px">QC Metrics by Person</h3>
+      <div id="qc-roster-admin"></div>
     </div>
   </div>
 
@@ -2186,40 +2302,6 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
     </div><!-- /proj-case-card joba -->
     <!-- CASE 1B: AutoMotriz Patentes (Spanish - Car Patents) -->
-    <div class="proj-case-card">
-      <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
-        <div>
-          <div class="proj-case-title">🚗 Grupo Velasco Motors v. TechDrive Automóvil</div>
-          <div class="proj-case-sub">Infracción de Patentes de Motor Eléctrico &amp; Robo de Diseño · Procedimiento ante la OEPM</div>
-          <div class="proj-issues-bar">
-            <span class="proj-issue-tag issue1">Asunto 1: Infracción de Patente</span>
-            <span class="proj-issue-tag issue2">Asunto 2: Robo de Diseño Industrial</span>
-            <span class="proj-issue-tag issue3">Asunto 3: Violación de Acuerdo de Licencia</span>
-            <span class="proj-issue-tag issue4">Asunto 4: Malicia &amp; Daños Trebles</span>
-          </div>
-        </div>
-        <button class="proj-open-btn" onclick="openCase(3)">Abrir en OEPM →</button>
-      </div>
-      <div class="proj-parties">
-        <div class="proj-party">
-          <div class="proj-party-label">Demandante (Nuestro Cliente)</div>
-          <div class="proj-party-name">Grupo Velasco Motors</div>
-          <div class="proj-party-firm">Fernández-Ruiz &amp; Abogados de PI</div>
-        </div>
-        <div class="proj-vs">vs</div>
-        <div class="proj-party">
-          <div class="proj-party-label">Demandada</div>
-          <div class="proj-party-name">TechDrive Automóvil S.L.</div>
-          <div class="proj-party-firm">López Internacional &amp; Partners</div>
-        </div>
-      </div>
-      <div class="proj-stats">
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-total-2">55</div><div class="proj-stat-lbl">Documentos Totales</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-coded-2" style="color:var(--green)">0</div><div class="proj-stat-lbl">Codificados</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-remaining-2">55</div><div class="proj-stat-lbl">Pendientes</div></div>
-        <div class="proj-stat"><div class="proj-stat-num" id="proj-stat-accuracy-2" style="color:var(--gold-light)">—</div><div class="proj-stat-lbl">Precisión</div></div>
-      </div>
-    </div><!-- /proj-case-card automovil -->
     <!-- CASE 2: NovaCure -->
     <div class="proj-case-card" onclick="openCase(2)" style="margin-top:14px;cursor:pointer;">
       <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
@@ -2766,6 +2848,7 @@ tr:nth-child(even) td{background:#0d162080}
       <button class="rtab active" onclick="showLead('meetings',this)">📝 Tactical Meeting Reports</button>
       <button class="rtab" onclick="showLead('payments',this)">💵 Payments</button>
       <button class="rtab" onclick="showLead('wellbeing',this)">💚 Team Wellbeing</button>
+      <button class="rtab" onclick="showLead('qcmetrics',this)">📊 QC Metrics</button>
       <button class="rtab" onclick="showLead('other',this)">📦 Other Stuff</button>
     </div>
 
@@ -2802,6 +2885,12 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
       <div id="wb-lead-status" class="lead-status"></div>
       <div id="wb-lead-body"></div>
+    </div>
+
+    <!-- QC METRICS -->
+    <div id="lpane-qcmetrics" class="lpane">
+      <h3 style="margin:0 0 6px">QC Metrics by Person</h3>
+      <div id="qc-roster-lead"></div>
     </div>
 
     <div id="lpane-other" class="lpane">
@@ -2850,6 +2939,38 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
     </div>
   </div>
+</div>
+
+<div id="page-review" class="page">
+  <div class="card" style="border-color:var(--gold)">
+    <h2 style="margin:0 0 4px">Doc Review Projects &amp; QC Path</h2>
+    <p class="muted" style="margin:0">Every live-style matter in one place, and the route
+      from first-pass review to QC-ready. Nothing is locked &mdash; the path tells you where
+      to go next, the library lets you go anywhere.</p>
+  </div>
+
+  <div id="review-path"></div>
+
+  <div class="card">
+    <h3 style="margin:0 0 10px">Case library</h3>
+    <div class="rtabs" id="review-tabs">
+      <button class="rtab active" onclick="showReviewTab('relativity',this)">Relativity</button>
+      <button class="rtab" onclick="showReviewTab('everlaw',this)">Everlaw</button>
+      <button class="rtab" onclick="showReviewTab('casepoint',this)">Casepoint</button>
+    </div>
+    <div id="vpane-relativity" class="vpane active"></div>
+    <div id="vpane-everlaw" class="vpane"></div>
+    <div id="vpane-casepoint" class="vpane"></div>
+  </div>
+</div>
+
+<div id="page-qc" class="page">
+  <div id="qc-view-home"></div>
+  <div id="qc-view-launch" style="display:none"></div>
+  <div id="qc-view-review" style="display:none"></div>
+  <div id="qc-view-complete" style="display:none"></div>
+  <div id="qc-view-taxonomy" style="display:none"></div>
+  <div id="qc-view-admin" style="display:none"></div>
 </div>
 
 <!-- ══════ AUTH MODAL ══════ -->
@@ -3006,6 +3127,7 @@ function nav(p){
   if(p==='admin')loadAdmin();
   if(p==='timesheets'){loadTimesheets('bh');loadTimesheets('nbh');}
   if(p==='leadership'){if(typeof loadTactical==='function')loadTactical();}
+  if(p==='review'){loadQcData();renderReviewPage();}
   if(p!=='projects'){
     // Close relativity shell if navigating away
     var shell=document.getElementById('rel-shell');
@@ -3035,6 +3157,7 @@ function showLead(id,btn){
   if(id==='payments')loadPayments();
   if(id==='meetings')loadTactical();
   if(id==='wellbeing')loadWellbeing();
+  if(id==='qcmetrics')loadQcRoster('qc-roster-lead');
 }
 function showTime(id,btn){
   document.querySelectorAll('#lpane-timesheets .tpane').forEach(function(p){p.classList.remove('active');});
@@ -3536,6 +3659,7 @@ function showAdminTab(id,btn){
   var pane=document.getElementById('apane-'+id);if(pane)pane.classList.add('active');
   if(btn)btn.classList.add('active');
   if(id==='wellbeing')loadSupervisorWellbeing();
+  if(id==='qcmetrics')loadQcRoster('qc-roster-admin');
 }
 async function loadAdmin(){
   var u=SB.user;
@@ -3969,11 +4093,11 @@ function closeRelativity(){
   shell.style.display = 'none';
   shell.style.zIndex = '';
   if (ACTIVE_CASE === 4) {
-    nav('other-projects');
+    nav('review');
   } else {
     var pl = document.getElementById('proj-landing');
     if (pl) pl.style.display = 'block';
-    nav('projects');
+    nav('review');
   }
   updateLandingStats();
 }
@@ -5003,7 +5127,7 @@ function closeEverlaw() {
   saveProgress(); // Save before closing
   var shell = document.getElementById('everlaw-shell');
   shell.style.display = 'none';
-  nav('other-projects');
+  nav('review');
   evUpdateLanding();
 }
 
@@ -6500,7 +6624,7 @@ function closeCasepoint() {
   saveProgress();
   var shell = document.getElementById('casepoint-shell');
   shell.style.display = 'none';
-  nav('other-projects');
+  nav('review');
 }
 
 function cpGetVisible() {
@@ -7600,6 +7724,1236 @@ evFilter = function(mode, btn) {
 };
 
 function shuffle(a){for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+
+// ══════════════════════════════════════════════════════════════════
+// QC TRACK
+// ══════════════════════════════════════════════════════════════════
+
+var QC_CASES = {
+  joba:    { label: 'Joba v. Bukando',                  docs: function () { return REL_DOCS; },  certification: false },
+  firstam: { label: 'TransRidge v. Cascade Headwaters', docs: function () { return FA_DOCS; },   certification: true },
+  p3:      { label: 'Veridian Bank \u2014 GDPR / AI',       docs: function () { return P3_DOCS; },   certification: true },
+  p4:      { label: 'SEC v. QuantumEdge AI',            docs: function () { return P4_DOCS; },   certification: true },
+  ptbr:    { label: 'Cade Brazil \u2014 Portuguese',        docs: function () { return PTBR_DOCS; }, certification: false }
+};
+
+var QC_DEFAULTS = {
+  practice_density: 0.15, practice_batch_size: 50,
+  cert_density: 0.02,     cert_batch_size: 250,
+  target_pace_docs_per_hour: 60, max_defects_per_1000: 1, response_window_minutes: 2
+};
+
+var qcProjects = {};   // case_key -> config row
+var qcAttempts = [];   // this user's attempts
+var qcState = null;
+
+var qcCurrentView = 'home';
+
+function qcNav(view) {
+  qcCurrentView = view;
+  ['home', 'launch', 'review', 'complete', 'taxonomy', 'admin'].forEach(function (v) {
+    var el = document.getElementById('qc-view-' + v);
+    if (el) el.style.display = (v === view) ? '' : 'none';
+  });
+}
+
+function qcConfig(caseKey) {
+  var row = qcProjects[caseKey] || {};
+  var out = {};
+  for (var k in QC_DEFAULTS) {
+    if (Object.prototype.hasOwnProperty.call(QC_DEFAULTS, k)) {
+      out[k] = (row[k] == null) ? QC_DEFAULTS[k] : row[k];
+    }
+  }
+  return out;
+}
+
+var QC_INTERRUPT_COUNT = 3;
+
+// Three kinds, per the spec. 'ack' measures response time alone. 'change'
+// additionally amends what correct means for every document after it.
+// 'feedback' names an error type the reviewer was weak on last batch.
+// Interrupt scripts live in qc-engine.js: they are configuration, and their
+// protocol-change predicates are tested against the real corpora there.
+var QC_INTERRUPTS = QC.INTERRUPTS;
+
+function qcBuildInterrupts(caseKey, total, rng) {
+  var script = QC_INTERRUPTS[caseKey] || [];
+  var n = Math.min(QC_INTERRUPT_COUNT, script.length);
+  var out = [];
+  for (var i = 0; i < n; i++) {
+    // Spread firing points across the batch, avoiding the first and last 10%.
+    var lo = Math.floor(total * 0.1);
+    var span = Math.floor(total * 0.8);
+    var at = lo + Math.floor((span / n) * i + rng() * (span / n));
+    out.push({
+      atIndex: Math.min(at, total - 1),
+      type: script[i].type, from: script[i].from,
+      subject: script[i].subject, body: script[i].body,
+      change: script[i].change || null,
+      firedAt: null, ackAt: null
+    });
+  }
+  return out;
+}
+
+function qcCheckInterrupts() {
+  if (!qcState || !qcState.interrupts) return;
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt == null && qcState.currentIdx >= it.atIndex) {
+      it.firedAt = Date.now();
+      // A protocol change amends what correct means from here on, including the
+      // document currently on screen.
+      if (it.change) QC.applyProtocolChange(qcState.entries, it.change, qcState.currentIdx);
+    }
+  }
+}
+
+function qcUnackedCount() {
+  if (!qcState || !qcState.interrupts) return 0;
+  var n = 0;
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt != null && it.ackAt == null) n++;
+  }
+  return n;
+}
+
+function qcAckInterrupt(i) {
+  var it = qcState.interrupts[i];
+  if (!it || it.firedAt == null || it.ackAt != null) return;
+  it.ackAt = Date.now();
+  renderQcReview();
+}
+
+function qcRenderInbox() {
+  var html = '';
+  for (var i = 0; i < qcState.interrupts.length; i++) {
+    var it = qcState.interrupts[i];
+    if (it.firedAt == null) continue;
+    html += '<div class="qc-msg' + (it.ackAt == null ? ' qc-msg-new' : '') + '">' +
+      '<div class="qc-msg-head"><strong>' + esc(it.from) + '</strong> \u00b7 ' + esc(it.subject) + '</div>' +
+      '<div class="qc-msg-body">' + esc(it.body) + '</div>' +
+      (it.ackAt == null
+        ? '<button onclick="qcAckInterrupt(' + i + ')">Acknowledge</button>'
+        : '<span class="qc-msg-ack">acknowledged</span>') +
+      '</div>';
+  }
+  return html || '<div class="qc-msg-empty">No messages.</div>';
+}
+
+function qcMark() {
+  if (qcState && qcState.marks) qcState.marks.push(Date.now());
+}
+
+function qcLivePace() {
+  var cfg = qcConfig(qcState.caseKey);
+  var s = QC.paceStats(qcState.marks);
+  var target = cfg.target_pace_docs_per_hour;
+  return {
+    docsPerHour: s.docsPerHour,
+    target: target,
+    onTarget: s.docsPerHour >= target,
+    elapsedMin: Math.floor(s.elapsedMs / 60000)
+  };
+}
+
+// The readout must move while the reviewer reads, not only when they decide --
+// otherwise a stall is invisible, which is the thing pace exists to expose.
+function qcStartClock() {
+  qcStopClock();
+  qcState.clockTimer = setInterval(function () {
+    var el = document.querySelector('.qc-clock');
+    if (!el || !qcState) return;
+    var pace = qcLivePace();
+    el.className = 'qc-clock ' + (pace.onTarget ? 'qc-clock-ok' : 'qc-clock-slow');
+    el.textContent = pace.docsPerHour.toFixed(0) + ' / ' + pace.target +
+                     ' docs per hour \u00b7 ' + pace.elapsedMin + ' min';
+  }, 5000);
+}
+
+function qcStopClock() {
+  if (qcState && qcState.clockTimer) { clearInterval(qcState.clockTimer); qcState.clockTimer = null; }
+}
+
+function qcRollingPillar(field, windowSize) {
+  return QC.rollingPillar(qcAttempts, field, windowSize);
+}
+
+function renderQcHome() {
+  var roll = QC.rollingAccuracy(qcAttempts, 1000);
+  var pillarText = roll.pillar == null
+    ? 'No certification batches yet'
+    : Math.round(roll.pillar) + ' / 100';
+  var rateText = roll.documents
+    ? roll.defectsPer1000.toFixed(1) + ' defects per 1,000 · ' +
+      roll.defects + ' in ' + roll.documents + ' documents' + (roll.partial ? ' so far' : '')
+    : 'Certify on a case to start measuring';
+
+  var paceP = qcRollingPillar('pace', 1000);
+  var respP = qcRollingPillar('responsiveness', 1000);
+
+  function dial(label, value, sub, bar) {
+    return '<div class="qc-dial">' +
+      '<div class="qc-dial-label">' + esc(label) + '</div>' +
+      '<div class="qc-dial-value">' + esc(value) + '</div>' +
+      '<div class="qc-dial-sub">' + esc(sub) + '</div>' +
+      '<div class="qc-dial-bar">' + esc(bar) + '</div>' +
+    '</div>';
+  }
+
+  var html = '' +
+    '<h2>QC Track</h2>' +
+    '<p class="qc-lede">Review documents another reviewer already coded. Catch what they got wrong — ' +
+      'without changing what they got right.</p>' +
+    '<div class="qc-dials">' +
+      dial('Accuracy', pillarText, rateText,
+           'Bar to clear: 2 defects per 1,000 documents') +
+      dial('Pace',
+           paceP == null ? 'No data yet' : Math.round(paceP) + ' / 100',
+           paceP == null ? 'Certify on a case to start measuring'
+                         : 'Throughput discounted by accuracy',
+           'Bar to clear: 60 docs/hr, held at accuracy') +
+      dial('Responsiveness',
+           respP == null ? 'No data yet' : Math.round(respP) + ' / 100',
+           respP == null ? 'Certify on a case to start measuring'
+                         : 'Acknowledgement times across batches',
+           'Bar to clear: acknowledge inside 2 minutes') +
+    '</div>' +
+    '<p class="qc-diag">Judgment and Reliability arrive with the live-project loop.</p>' +
+    '<div class="qc-actions">' +
+      '<button onclick="renderQcLaunch()">Start a batch</button> ' +
+      '<button onclick="renderQcTaxonomy()">Error taxonomy</button>' +
+      (isLeadership(SB.user)
+        ? ' <button onclick="renderQcAdmin()">Project targets</button>'
+        : '') +
+    '</div>';
+
+  document.getElementById('qc-view-home').innerHTML = html;
+  qcNav('home');
+}
+
+
+// A document someone has already reviewed cannot measure them again -- they
+// remember it, whatever errors get reseeded. The rolling 1,000-document window
+// therefore needs 1,000 distinct documents, which no single case holds.
+function qcSeenDocIds() {
+  var seen = {};
+  for (var i = 0; i < qcAttempts.length; i++) {
+    var ids = qcAttempts[i].detail && qcAttempts[i].detail.docIds;
+    if (!ids) continue;
+    for (var j = 0; j < ids.length; j++) seen[ids[j]] = 1;
+  }
+  return seen;
+}
+
+function qcFreshCount(caseKey) {
+  var seen = qcSeenDocIds();
+  var docs = QC_CASES[caseKey].docs() || [];
+  var n = 0;
+  for (var i = 0; i < docs.length; i++) if (!seen[docs[i].id]) n++;
+  return n;
+}
+
+function qcNextBatchNo(caseKey, batchType) {
+  var n = 0;
+  for (var i = 0; i < qcAttempts.length; i++) {
+    if (qcAttempts[i].case_key === caseKey && qcAttempts[i].batch_type === batchType) n++;
+  }
+  return n + 1;
+}
+
+function renderQcLaunch() {
+  var html = '<h2>Start a batch</h2>' +
+    '<p class="qc-lede">Practice batches are dense with errors so you can learn the patterns. ' +
+    'Certification batches are realistic — almost everything is clean, which is exactly why ' +
+    'people stop looking. Only certification counts toward your Accuracy score.</p>';
+
+  for (var key in QC_CASES) {
+    if (!Object.prototype.hasOwnProperty.call(QC_CASES, key)) continue;
+    var c = QC_CASES[key];
+    var cfg = qcConfig(key);
+    var available = c.docs() ? c.docs().length : 0;
+
+    html += '<div class="qc-case">' +
+      '<h3>' + esc(c.label) + '</h3>' +
+      '<div class="qc-case-meta">' + esc(String(available)) + ' documents \u00b7 ' +
+        esc(String(qcFreshCount(key))) + ' not yet certified against</div>' +
+      '<button onclick="startQcBatch(\'' + escAttr(key) + '\',\'practice\')">' +
+        'Practice · ' + esc(String(cfg.practice_batch_size)) + ' docs</button> ';
+
+    if (c.certification && available >= cfg.cert_batch_size) {
+      html += '<button onclick="startQcBatch(\'' + escAttr(key) + '\',\'certification\')">' +
+        'Certify · ' + esc(String(cfg.cert_batch_size)) + ' docs</button>';
+    } else {
+      html += '<span class="qc-note">Too few documents to certify — needs ' +
+        esc(String(cfg.cert_batch_size)) + '</span>';
+    }
+    html += '</div>';
+  }
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-launch').innerHTML = html;
+  qcNav('launch');
+}
+
+function startQcBatch(caseKey, batchType) {
+  var cfg = qcConfig(caseKey);
+  var all = QC_CASES[caseKey].docs();
+  var size = batchType === 'certification' ? cfg.cert_batch_size : cfg.practice_batch_size;
+  var density = batchType === 'certification' ? cfg.cert_density : cfg.practice_density;
+  var batchNo = qcNextBatchNo(caseKey, batchType);
+  var email = (SB.user && SB.user.email) || 'anonymous';
+  var seed = email + '|' + caseKey + '|' + batchType + '|' + batchNo;
+
+  // Draw the batch itself from the same seeded stream, so which documents appear
+  // is as reproducible as which of them carry errors.
+  var rng = QC.makeRng(QC.hashSeed(seed + '|draw'));
+  var pool = all.slice();
+  if (batchType === 'certification') {
+    var seen = qcSeenDocIds();
+    var fresh = [];
+    for (var s = 0; s < pool.length; s++) if (!seen[pool[s].id]) fresh.push(pool[s]);
+    if (fresh.length >= size) {
+      pool = fresh;
+    } else {
+      alert('Only ' + fresh.length + ' unreviewed documents remain in ' +
+            QC_CASES[caseKey].label + ' -- not enough for a ' + size +
+            '-document certification batch. Pick another case to keep the window honest.');
+      renderQcLaunch();
+      return;
+    }
+  }
+  for (var i = pool.length - 1; i > 0; i--) {
+    var j = Math.floor(rng() * (i + 1));
+    var tmp = pool[i]; pool[i] = pool[j]; pool[j] = tmp;
+  }
+  var drawn = pool.slice(0, Math.min(size, pool.length));
+
+  // Families are built before seeding so the inconsistency type has something
+  // to attach to, and so a family's members are drawn as one unit.
+  var fam = QC.makeFamilies(drawn, { seed: seed + '|fam' });
+  var entries = QC.seedErrors(fam.docs, {
+    seed: seed, density: density, allowedTypes: QC.PHASE2_TYPES
+  });
+  var interrupts = qcBuildInterrupts(caseKey, entries.length,
+    QC.makeRng(QC.hashSeed(seed + '|int')));
+
+  qcState = {
+    caseKey: caseKey,
+    batchType: batchType,
+    batchNo: batchNo,
+    seed: seed,
+    startedAt: new Date().toISOString(),
+    marks: [Date.now()],
+    entries: entries,
+    familyIds: fam.familyIds,
+    interrupts: interrupts,
+    decisions: [],
+    currentIdx: 0
+  };
+  for (var k = 0; k < qcState.entries.length; k++) qcState.decisions.push(null);
+
+  qcStartClock();
+  renderQcReview();
+}
+
+
+var QC_FIELD_LABELS = {
+  responsive: 'Responsiveness', privilege: 'Privilege',
+  action: 'Action', conf: 'Confidentiality', issues: 'Issues'
+};
+
+function qcCodingRows(coding) {
+  var rows = '';
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    if (coding[f] == null) return;
+    rows += '<div class="qc-code-row"><span>' + esc(QC_FIELD_LABELS[f]) + '</span>' +
+            '<strong>' + esc(String(coding[f])) + '</strong></div>';
+  });
+  var iss = (coding.issues || []).join(', ') || '—';
+  rows += '<div class="qc-code-row"><span>' + esc(QC_FIELD_LABELS.issues) + '</span>' +
+          '<strong>' + esc(iss) + '</strong></div>';
+  return rows;
+}
+
+function qcStatusChip(idx) {
+  var d = qcState.decisions[idx];
+  if (!d) return '<span class="qc-chip qc-chip-none">unreviewed</span>';
+  if (d.action === 'agree')    return '<span class="qc-chip qc-chip-agree">agreed</span>';
+  if (d.action === 'correct')  return '<span class="qc-chip qc-chip-correct">corrected</span>';
+  return '<span class="qc-chip qc-chip-esc">escalated</span>';
+}
+
+function renderQcReview() {
+  qcCheckInterrupts();
+  var idx = qcState.currentIdx;
+  var entry = qcState.entries[idx];
+  var doc = entry.doc;
+  var done = 0;
+  for (var i = 0; i < qcState.decisions.length; i++) if (qcState.decisions[i]) done++;
+  var pace = qcLivePace();
+
+  var list = '';
+  for (var j = 0; j < qcState.entries.length; j++) {
+    list += '<div class="qc-list-row' + (j === idx ? ' qc-list-row-active' : '') + '" ' +
+      'onclick="qcSelectDoc(' + j + ')">' +
+      '<span class="qc-list-id">' + esc(qcState.entries[j].doc.id) +
+        (qcState.entries[j].doc.familyId
+          ? ' <span class="qc-fam">' + esc(qcState.entries[j].doc.familyId) + '</span>'
+          : '') +
+      '</span>' +
+      qcStatusChip(j) + '</div>';
+  }
+
+  var thread = '';
+  if (doc.thread && doc.thread.length) {
+    for (var t = 0; t < doc.thread.length; t++) {
+      thread += '<div class="qc-thread-item"><div class="qc-thread-meta">' +
+        esc(doc.thread[t].from || '') + ' · ' + esc(doc.thread[t].date || '') +
+        '</div><div>' + esc(doc.thread[t].text || '') + '</div></div>';
+    }
+  }
+
+  var html = '' +
+    '<div class="qc-shell">' +
+      '<div class="qc-shell-bar">' +
+        '<strong>' + esc(QC_CASES[qcState.caseKey].label) + '</strong> · ' +
+        esc(qcState.batchType) + ' batch ' + esc(String(qcState.batchNo)) + ' · ' +
+        esc(String(done)) + ' of ' + esc(String(qcState.entries.length)) + ' reviewed' +
+        '<span class="qc-clock' + (pace.onTarget ? ' qc-clock-ok' : ' qc-clock-slow') + '">' +
+          esc(pace.docsPerHour.toFixed(0)) + ' / ' + esc(String(pace.target)) + ' docs per hour' +
+          ' \u00b7 ' + esc(String(pace.elapsedMin)) + ' min' +
+        '</span>' +
+        (done === qcState.entries.length
+          ? ' <button onclick="finishQcBatch()">Finish batch</button>'
+          : '') +
+      '</div>' +
+      '<div class="qc-panes">' +
+        '<div class="qc-pane-list">' + list + '</div>' +
+        '<div class="qc-pane-doc">' +
+          '<div class="qc-doc-meta">' +
+            '<div><strong>' + esc(doc.subject || doc.id) + '</strong></div>' +
+            '<div>' + esc(doc.from || '') + '</div>' +
+            '<div>' + esc(doc.to || '') + '</div>' +
+            '<div>' + esc(doc.date || '') + '</div>' +
+          '</div>' +
+          '<pre class="qc-doc-body">' + esc(doc.body || '') + '</pre>' +
+          thread +
+        '</div>' +
+        '<div class="qc-pane-decide">' +
+          '<div class="qc-card' + (qcUnackedCount() ? ' qc-card-alert' : '') + '">' +
+            '<h4>Inbox' + (qcUnackedCount()
+              ? ' <span class="qc-badge">' + esc(String(qcUnackedCount())) + '</span>'
+              : '') + '</h4>' +
+            qcRenderInbox() +
+          '</div>' +
+          '<div class="qc-card">' +
+            '<h4>Prior reviewer coding</h4>' + qcCodingRows(entry.priorCoding) +
+          '</div>' +
+          '<div class="qc-card">' +
+            '<h4>Your QC decision</h4>' +
+            '<button onclick="qcDecide(\'agree\')">Agree</button> ' +
+            '<button onclick="qcDecide(\'correct\')">Correct</button> ' +
+            (qcAmbiguousIds(qcState.caseKey).length
+              ? '<button onclick="qcDecide(\'escalate\')">Escalate</button>'
+              : '') +
+            '<div id="qc-correction"></div>' +
+          '</div>' +
+        '</div>' +
+      '</div>' +
+    '</div>';
+
+  document.getElementById('qc-view-review').innerHTML = html;
+  qcNav('review');
+}
+
+function qcSelectDoc(idx) {
+  qcState.currentIdx = idx;
+  renderQcReview();
+}
+
+function qcAdvance() {
+  for (var i = qcState.currentIdx + 1; i < qcState.entries.length; i++) {
+    if (!qcState.decisions[i]) { qcState.currentIdx = i; renderQcReview(); return; }
+  }
+  for (var j = 0; j < qcState.entries.length; j++) {
+    if (!qcState.decisions[j]) { qcState.currentIdx = j; renderQcReview(); return; }
+  }
+  renderQcReview();   // all reviewed — the Finish button is now shown
+}
+
+function qcDecide(action) {
+  if (action === 'correct') { qcRenderCorrectionForm(); return; }
+  qcState.decisions[qcState.currentIdx] = { action: action };
+  qcMark();
+  qcAdvance();
+}
+
+function qcRenderCorrectionForm() {
+  var entry = qcState.entries[qcState.currentIdx];
+  var vocab = QC.buildVocabulary(QC_CASES[qcState.caseKey].docs());
+  var html = '<div class="qc-correct-form"><h5>Corrected coding</h5>';
+
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    if (entry.priorCoding[f] == null) return;
+    html += '<label>' + esc(QC_FIELD_LABELS[f]) + '<select id="qc-fix-' + escAttr(f) + '">';
+    vocab[f].forEach(function (v) {
+      html += '<option value="' + escAttr(v) + '"' +
+        (v === entry.priorCoding[f] ? ' selected' : '') + '>' + esc(v) + '</option>';
+    });
+    html += '</select></label>';
+  });
+
+  html += '<label>' + esc(QC_FIELD_LABELS.issues) + '<span class="qc-issue-list">';
+  vocab.issues.forEach(function (v) {
+    var on = (entry.priorCoding.issues || []).indexOf(v) !== -1;
+    html += '<label class="qc-issue"><input type="checkbox" value="' + escAttr(v) + '"' +
+      (on ? ' checked' : '') + '> ' + esc(v) + '</label>';
+  });
+  html += '</span></label>';
+
+  html += '<button onclick="qcSubmitCorrection()">Submit correction</button></div>';
+  document.getElementById('qc-correction').innerHTML = html;
+}
+
+function qcSubmitCorrection() {
+  var coding = {};
+  ['responsive', 'privilege', 'action', 'conf'].forEach(function (f) {
+    var el = document.getElementById('qc-fix-' + f);
+    if (el) coding[f] = el.value;
+  });
+  coding.issues = [];
+  var boxes = document.querySelectorAll('#qc-correction .qc-issue input:checked');
+  for (var i = 0; i < boxes.length; i++) coding.issues.push(boxes[i].value);
+
+  qcState.decisions[qcState.currentIdx] = { action: 'correct', coding: coding };
+  qcMark();
+  qcAdvance();
+}
+
+
+// Documents that are genuine close calls and should be escalated rather than
+// silently resolved. In TransRidge these already exist in the data: any document
+// coded fa-flag (Flag & Escalate). Other cases list ids explicitly. Keep this to
+// roughly 5% of a case — beyond that, escalation stops being a judgment call and
+// becomes the safe default.
+var QC_AMBIGUOUS = {
+  joba: [],
+  // NOT derived from fa-flag. 219 of TransRidge's 500 documents carry fa-flag,
+  // because it is the ordinary coding for First Amendment qualified privilege —
+  // not a marker of a close call — and those 219 share only 8 generated
+  // explanations between them. Treating them all as escalation targets demanded
+  // escalating 103 documents in a 250-document batch, which makes escalation the
+  // safe default rather than a judgment call.
+  //
+  // These five are the genuine close calls: the only FA documents with both a
+  // uniquely hand-authored explanation and an fa-flag coding.
+  firstam: ['FA-0002', 'FA-0003', 'FA-0004', 'FA-0010', 'FA-0011'],
+  p3: [],
+  p4: [],
+  ptbr: []
+};
+
+function qcAmbiguousIds(caseKey) {
+  return QC_AMBIGUOUS[caseKey] || [];
+}
+
+function finishQcBatch() {
+  // Idempotent: a double-click on Finish, or a stale call after the launcher
+  // refused a batch, must not record the same work twice.
+  if (!qcState || qcState.completedAt) return;
+  qcStopClock();
+  var score = QC.scoreBatch(qcState.entries, qcState.decisions, {
+    ambiguousIds: qcAmbiguousIds(qcState.caseKey)
+  });
+  qcState.completedAt = new Date().toISOString();
+  qcState.score = score;
+  // Persistence arrives in Task 11. Guarded so this task stands alone.
+  if (typeof saveQcAttempt === 'function') saveQcAttempt(score);
+  renderQcComplete(score);
+}
+
+function renderQcComplete(score) {
+  var pillar = QC.accuracyPillar(score.defectsPer1000);
+  var counted = qcState.batchType === 'certification';
+
+  var html = '<h2>Batch complete</h2>' +
+    '<div class="qc-result">' +
+      '<div class="qc-result-headline">' +
+        esc(score.defectsPer1000.toFixed(1)) + ' defects per 1,000 documents' +
+      '</div>' +
+      '<div class="qc-result-sub">' +
+        esc(String(score.defects)) + ' defect units across ' +
+        esc(String(score.docsReviewed)) + ' documents · ' +
+        'Accuracy ' + esc(String(Math.round(pillar))) + ' / 100' +
+      '</div>' +
+      '<div class="qc-result-note">' +
+        (counted
+          ? 'This batch counts toward your rolling Accuracy score.'
+          : 'Practice batch — this does not count toward your Accuracy score.') +
+      '</div>' +
+    '</div>';
+
+  var cfg = qcConfig(qcState.caseKey);
+  var pstats = QC.paceStats(qcState.marks);
+  var ppillar = QC.pacePillar(pstats.docsPerHour, pillar, cfg.target_pace_docs_per_hour);
+  html += '<h3>Pace</h3><div class="qc-result">' +
+    '<div class="qc-result-headline">' + esc(pstats.docsPerHour.toFixed(0)) +
+      ' docs per hour</div>' +
+    '<div class="qc-result-sub">Target ' + esc(String(cfg.target_pace_docs_per_hour)) +
+      ' \u00b7 sustainable pace ' + esc(String(Math.round(ppillar))) + ' / 100</div>' +
+    '<div class="qc-result-note">Throughput is discounted by the square of your accuracy. ' +
+      'Speed bought with mistakes is not speed.' +
+      (pstats.fade != null && pstats.fade < 0.8
+        ? ' Your final third ran at ' + esc(String(Math.round(pstats.fade * 100))) +
+          '% of your opening pace.'
+        : '') +
+    '</div></div>';
+
+  if (score.diagnostics.familyAgreement != null) {
+    var fa = Math.round(score.diagnostics.familyAgreement * 100);
+    html += '<h3>Consistency</h3><div class="qc-result">' +
+      '<div class="qc-result-headline">' + esc(String(fa)) + '% of families coded alike</div>' +
+      '<div class="qc-result-sub">' +
+        esc(String((qcState.familyIds || []).length)) +
+        ' near-duplicate families in this batch</div>' +
+      '<div class="qc-result-note">Threads, re-sends and forwarded copies have to land on ' +
+        'the same call. Where they do not, the production contradicts itself.</div>' +
+    '</div>';
+  }
+
+  var resp = QC.responsivenessScore(qcState.interrupts, cfg.response_window_minutes);
+  if (resp != null) {
+    var fired = qcState.interrupts.filter(function (x) { return x.firedAt != null; }).length;
+    var acked = qcState.interrupts.filter(function (x) { return x.ackAt != null; }).length;
+    html += '<h3>Responsiveness</h3><div class="qc-result">' +
+      '<div class="qc-result-headline">' + esc(String(Math.round(resp))) + ' / 100</div>' +
+      '<div class="qc-result-sub">' + esc(String(acked)) + ' of ' + esc(String(fired)) +
+        ' messages acknowledged \u00b7 window ' + esc(String(cfg.response_window_minutes)) +
+        ' minutes</div>' +
+      '<div class="qc-result-note">Full credit inside the window, nothing after three times it. ' +
+        'On a live project this is the number a PM notices first.</div>' +
+    '</div>';
+  }
+  if (score.diagnostics.postChangeCompliance != null) {
+    html += '<p class="qc-diag">After the protocol change you applied the new rule to ' +
+      esc(String(Math.round(score.diagnostics.postChangeCompliance * 100))) +
+      '% of the documents it affected.</p>';
+  }
+
+  html += '<h3>Where the defects were</h3><ul class="qc-breakdown">' +
+    '<li>Missed errors: ' + esc(String(score.counts.MISS)) + '</li>' +
+    '<li>Corrected to the wrong value: ' + esc(String(score.counts.BAD_FIX)) + '</li>' +
+    '<li>Changed a document that was already right: ' + esc(String(score.counts.FALSE_CORRECTION)) + '</li>' +
+    '<li>Should have escalated: ' + esc(String(score.counts.MISSED_ESCALATION)) + '</li>' +
+    '<li>Escalated something clear: ' + esc(String(score.counts.OVER_ESCALATION)) + '</li>' +
+    '</ul>';
+
+  if (score.diagnostics.catchRate != null) {
+    html += '<p class="qc-diag">You caught ' +
+      esc(String(Math.round(score.diagnostics.catchRate * 100))) +
+      '% of the errors that were there, and changed ' +
+      esc(String(Math.round((score.diagnostics.falseCorrectionRate || 0) * 100))) +
+      '% of the documents that were already correct.</p>';
+  }
+
+  html += '<h3>Every document you got wrong</h3>';
+  var anyWrong = false;
+  var ambiguous = {};
+  qcAmbiguousIds(qcState.caseKey).forEach(function (id) { ambiguous[id] = 1; });
+
+  for (var i = 0; i < qcState.entries.length; i++) {
+    var e = qcState.entries[i];
+    var r = QC.classifyDecision(e, qcState.decisions[i] || { action: 'agree' }, !!ambiguous[e.doc.id]);
+    if (r.correct) continue;
+    anyWrong = true;
+    var seededLabel = e.seededError
+      ? QC.ERROR_TYPES[e.seededError.type].label
+      : 'No error was present';
+    html += '<div class="qc-wrong">' +
+      '<div class="qc-wrong-head"><strong>' + esc(e.doc.id) + '</strong> · ' +
+        esc(e.doc.subject || '') + '</div>' +
+      '<div>You: <strong>' + esc((qcState.decisions[i] || {}).action || 'agree') + '</strong> · ' +
+        'Defect: <strong>' + esc(r.defect) + '</strong> · ' +
+        'Seeded: ' + esc(seededLabel) + '</div>' +
+      '<div class="qc-wrong-truth">Correct coding: ' + qcCodingRows(e.doc.answer) + '</div>' +
+      '<div class="qc-wrong-why">' + esc(e.doc.explanation || '') + '</div>' +
+      '</div>';
+  }
+  if (!anyWrong) html += '<p>Nothing. A clean batch.</p>';
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back to QC Track</button></div>';
+  document.getElementById('qc-view-complete').innerHTML = html;
+  qcNav('complete');
+}
+
+
+// Persistence. Uses the existing SB.req() wrapper rather than new SB methods:
+// it already builds auth headers via SB.hdr() and normalises errors to
+// {data, error}, so the auth-critical SB object needs no edits.
+// Family variants carry derived ids (JB-0050-A); record the source document so
+// a sibling is never served back as if it were new.
+// Display metadata only. Never used for authorisation - see the migration note.
+function qcDisplayName() {
+  var u = SB.user || {};
+  var meta = u.user_metadata || {};
+  return meta.display_name || (u.email ? String(u.email).split('@')[0] : null);
+}
+
+function qcDrawnDocIds() {
+  var out = [], seen = {};
+  for (var i = 0; i < qcState.entries.length; i++) {
+    var base = String(qcState.entries[i].doc.id).replace(/-[A-D]$/, '');
+    if (!seen[base]) { seen[base] = 1; out.push(base); }
+  }
+  return out;
+}
+
+function saveQcAttempt(score) {
+  var email = (SB.user && SB.user.email) || null;
+
+  // localStorage first, mirroring the existing progress pattern: the score
+  // survives a lost connection, and a signed-out trainee still sees their work.
+  try {
+    var local = JSON.parse(localStorage.getItem('qc_attempts') || '[]');
+    local.push({
+      case_key: qcState.caseKey, batch_type: qcState.batchType,
+      batch_no: qcState.batchNo, docs_reviewed: score.docsReviewed,
+      defects: score.defects, completed_at: qcState.completedAt,
+      accuracy: QC.accuracyPillar(score.defectsPer1000),
+      pace: QC.pacePillar(
+        QC.paceStats(qcState.marks).docsPerHour,
+        QC.accuracyPillar(score.defectsPer1000),
+        qcConfig(qcState.caseKey).target_pace_docs_per_hour),
+      responsiveness: QC.responsivenessScore(
+        qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
+      consistency: score.diagnostics.familyAgreement,
+      user_name: qcDisplayName(),
+      // docIds must be here too, not only on the Supabase row: the no-repeat
+      // guard reads qcAttempts, which is the local list when signed out.
+      detail: { docIds: qcDrawnDocIds() }
+    });
+    localStorage.setItem('qc_attempts', JSON.stringify(local));
+    qcAttempts = local.slice();
+  } catch (e) { /* storage full or disabled — the Supabase write still stands */ }
+
+  if (!email || !SB.token) return;
+
+  var row = {
+    user_email: email,
+    user_name: qcDisplayName(),
+    case_key: qcState.caseKey,
+    batch_no: qcState.batchNo,
+    batch_type: qcState.batchType,
+    seed: qcState.seed,
+    started_at: qcState.startedAt,
+    completed_at: qcState.completedAt,
+    docs_reviewed: score.docsReviewed,
+    defects: score.defects,
+    accuracy: QC.accuracyPillar(score.defectsPer1000),
+    pace: QC.pacePillar(
+      QC.paceStats(qcState.marks).docsPerHour,
+      QC.accuracyPillar(score.defectsPer1000),
+      qcConfig(qcState.caseKey).target_pace_docs_per_hour),
+    responsiveness: QC.responsivenessScore(
+      qcState.interrupts, qcConfig(qcState.caseKey).response_window_minutes),
+    consistency: score.diagnostics.familyAgreement,
+    detail: {
+      counts: score.counts,
+      diagnostics: score.diagnostics,
+      docIds: qcDrawnDocIds()
+    }
+  };
+
+  SB.req('POST', '/rest/v1/qc_attempts', row).then(function (r) {
+    if (r && r.error) { console.error('QC attempt save failed', r.error); return; }
+    qcAttempts.unshift(row);
+  });
+}
+
+function loadQcData() {
+  return SB.req('GET', '/rest/v1/qc_projects?select=*').then(function (r) {
+    if (r && r.data && r.data.length) {
+      qcProjects = {};
+      for (var i = 0; i < r.data.length; i++) qcProjects[r.data[i].case_key] = r.data[i];
+    }
+    var email = (SB.user && SB.user.email) || null;
+    if (!email || !SB.token) {
+      try { qcAttempts = JSON.parse(localStorage.getItem('qc_attempts') || '[]'); }
+      catch (e) { qcAttempts = []; }
+      return null;
+    }
+    return SB.req('GET', '/rest/v1/qc_attempts?select=*&user_email=eq.' +
+      encodeURIComponent(email) + '&order=completed_at.desc');
+  }).then(function (r) {
+    if (r && r.data) { qcAttempts = r.data; }
+    // Only refresh the dial if the user is still looking at it. This resolves
+    // after an unknown delay, and re-rendering home would otherwise interrupt
+    // whatever they navigated to in the meantime.
+    if (qcCurrentView === 'home') renderQcHome();
+  }).catch(function () { /* QC_DEFAULTS and local storage still apply */ });
+}
+
+
+function renderQcAdmin() {
+  if (!isLeadership(SB.user)) { renderQcHome(); return; }
+
+  var html = '<h2>QC project targets</h2>' +
+    '<p class="qc-lede">These are the numbers every drill is scored against. ' +
+    'Changing them changes what the bar means, so change them because a client ' +
+    'changed, not because a batch felt hard.</p>';
+
+  for (var key in QC_CASES) {
+    if (!Object.prototype.hasOwnProperty.call(QC_CASES, key)) continue;
+    var cfg = qcConfig(key);
+    var row = qcProjects[key] || {};
+    html += '<div class="qc-case">' +
+      '<h3>' + esc(QC_CASES[key].label) + '</h3>' +
+      '<div class="qc-admin-grid">' +
+        '<label>Target pace (docs/hr)<input type="number" min="1" max="500" ' +
+          'id="qcp-pace-' + escAttr(key) + '" value="' + escAttr(String(cfg.target_pace_docs_per_hour)) + '"></label>' +
+        '<label>Response window (min)<input type="number" min="1" max="120" ' +
+          'id="qcp-resp-' + escAttr(key) + '" value="' + escAttr(String(cfg.response_window_minutes)) + '"></label>' +
+        '<label>Max defects per 1,000<input type="number" min="0" max="100" step="0.5" ' +
+          'id="qcp-tol-' + escAttr(key) + '" value="' + escAttr(String(cfg.max_defects_per_1000)) + '"></label>' +
+        '<label>Certification batch size<input type="number" min="25" max="1000" ' +
+          'id="qcp-size-' + escAttr(key) + '" value="' + escAttr(String(cfg.cert_batch_size)) + '"></label>' +
+        '<label class="qc-admin-check"><input type="checkbox" ' +
+          'id="qcp-cert-' + escAttr(key) + '"' + (row.supports_certification ? ' checked' : '') +
+          '> Available for certification</label>' +
+      '</div>' +
+      '<button onclick="qcSaveProject(\'' + escAttr(key) + '\')">Save ' +
+        esc(QC_CASES[key].label) + '</button>' +
+      '<span id="qcp-status-' + escAttr(key) + '" class="qc-note"></span>' +
+      '</div>';
+  }
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-admin').innerHTML = html;
+  qcNav('admin');
+}
+
+function qcSaveProject(caseKey) {
+  var status = document.getElementById('qcp-status-' + caseKey);
+  var body = {
+    target_pace_docs_per_hour: Number(document.getElementById('qcp-pace-' + caseKey).value),
+    response_window_minutes: Number(document.getElementById('qcp-resp-' + caseKey).value),
+    max_defects_per_1000: Number(document.getElementById('qcp-tol-' + caseKey).value),
+    cert_batch_size: Number(document.getElementById('qcp-size-' + caseKey).value),
+    supports_certification: document.getElementById('qcp-cert-' + caseKey).checked,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!(body.target_pace_docs_per_hour > 0) || !(body.response_window_minutes > 0) ||
+      !(body.cert_batch_size >= 25)) {
+    status.textContent = 'Check the numbers - pace and window must be above zero, batch size at least 25.';
+    return;
+  }
+
+  status.textContent = 'Saving...';
+  SB.req('PATCH', '/rest/v1/qc_projects?case_key=eq.' + encodeURIComponent(caseKey), body)
+    .then(function (r) {
+      if (r && r.error) { status.textContent = 'Save failed.'; return; }
+      qcProjects[caseKey] = qcProjects[caseKey] || { case_key: caseKey };
+      for (var k in body) {
+        if (Object.prototype.hasOwnProperty.call(body, k)) qcProjects[caseKey][k] = body[k];
+      }
+      status.textContent = 'Saved.';
+    });
+}
+
+// Cards are discrete nodes, so the library is built by moving them rather than by
+// rewriting markup - every inline onclick survives the move untouched.
+var REVIEW_LIBRARY = {
+  relativity: ['openCase(1)', 'openCase(2)', 'openAICase'],
+  everlaw:    ['openEverlawCase', 'openCadeCase'],
+  casepoint:  ['antitrust', 'breach', 'firstam']
+};
+
+// The launcher sits on the card for some matters and on a nested button for others,
+// so match the launcher then walk up to the card.
+function reviewCardFor(needle) {
+  // Take the first match that is actually inside a card. The path's own stage
+  // buttons reuse these launchers (stage 2 is openCase(1)) and sit earlier in the
+  // document, so a plain querySelector would return the path button and resolve
+  // to no card at all.
+  var hits = document.querySelectorAll('[onclick*="' + needle + '"]');
+  for (var i = 0; i < hits.length; i++) {
+    var card = hits[i].closest('.proj-case-card, .fl-case-card');
+    if (card) return card;
+  }
+  return null;
+}
+
+function reviewMoveCards() {
+  for (var group in REVIEW_LIBRARY) {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_LIBRARY, group)) continue;
+    var pane = document.getElementById('vpane-' + group);
+    if (!pane) continue;
+    var needles = REVIEW_LIBRARY[group];
+    for (var i = 0; i < needles.length; i++) {
+      var card = reviewCardFor(needles[i]);
+      if (card && card.parentNode !== pane) pane.appendChild(card);
+    }
+  }
+}
+
+var REVIEW_CARD_QCKEY = {
+  'openCase(1)':     'joba',
+  'openCase(2)':     null,
+  'openAICase':      'p4',
+  'openEverlawCase': 'p3',
+  'openCadeCase':    'ptbr',
+  'antitrust':       null,
+  'breach':          null,
+  'firstam':         'firstam'
+};
+
+// Derived from QC_CASES and qc_projects rather than hardcoded, so the label cannot
+// drift out of step with what the drills actually offer.
+function reviewCapabilityText(qcKey) {
+  if (!qcKey || !QC_CASES[qcKey]) return 'First-pass review';
+  var row = qcProjects[qcKey] || {};
+  var certifiable = (row.supports_certification != null)
+    ? row.supports_certification
+    : QC_CASES[qcKey].certification;
+  return certifiable
+    ? 'First-pass review \u00b7 QC practice \u00b7 QC certification'
+    : 'First-pass review \u00b7 QC practice';
+}
+
+function reviewLabelCards() {
+  for (var needle in REVIEW_CARD_QCKEY) {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_CARD_QCKEY, needle)) continue;
+    var card = reviewCardFor(needle);
+    if (!card) continue;
+    var tag = card.querySelector('.rv-cap');
+    if (!tag) {
+      tag = document.createElement('div');
+      tag.className = 'rv-cap';
+      card.appendChild(tag);
+    }
+    tag.textContent = reviewCapabilityText(REVIEW_CARD_QCKEY[needle]);
+  }
+}
+
+var reviewCurrentTab = 'relativity';
+
+function showReviewTab(id, btn) {
+  reviewCurrentTab = id;
+  document.querySelectorAll('#page-review .vpane').forEach(function (p) { p.classList.remove('active'); });
+  document.querySelectorAll('#review-tabs .rtab').forEach(function (t) { t.classList.remove('active'); });
+  var pane = document.getElementById('vpane-' + id);
+  if (pane) pane.classList.add('active');
+  if (btn) btn.classList.add('active');
+}
+
+function reviewRulesKey() { return getProgressKey() + '_path_rules'; }
+
+function reviewRulesRead() {
+  try { return localStorage.getItem(reviewRulesKey()) === '1'; } catch (e) { return false; }
+}
+
+function reviewToggleRules() {
+  try { localStorage.setItem(reviewRulesKey(), reviewRulesRead() ? '0' : '1'); } catch (e) {}
+  renderReviewPage();
+}
+
+// relCoding / cpCoding / evCoding are objects keyed by document id, maintained by the
+// simulators as people work. Counting keys is the completion signal, so stages 2 and 3
+// self-mark instead of asking anyone to tick a box.
+function reviewCountKeys(obj) {
+  var n = 0;
+  for (var k in (obj || {})) if (Object.prototype.hasOwnProperty.call(obj, k)) n++;
+  return n;
+}
+
+function reviewFirstPassCounts() {
+  var joba = (typeof relCoding !== 'undefined') ? reviewCountKeys(relCoding) : 0;
+  var cp   = (typeof cpCoding  !== 'undefined') ? reviewCountKeys(cpCoding)  : 0;
+  var ev   = (typeof evCoding  !== 'undefined') ? reviewCountKeys(evCoding)  : 0;
+  return { joba: joba, scale: Math.max(cp, ev) };
+}
+
+// A named helper rather than an inline call: the onclick goes through escAttr() into
+// an HTML attribute, and nesting quotes inside that is fragile and hard to read.
+function reviewGoToLibrary() {
+  var firstTab = document.querySelector('#review-tabs .rtab');
+  showReviewTab('relativity', firstTab);
+  var lib = document.getElementById('review-tabs');
+  if (lib) lib.scrollIntoView({ block: 'start' });
+}
+
+var REVIEW_PATH_COPY = {
+  rules: {
+    n: 1, title: 'Know the rules',
+    blurb: 'The review protocol, the eDiscovery playbook, and the eight defects QC looks for.',
+    action: 'Open the error taxonomy', onclick: 'renderQcTaxonomy()'
+  },
+  firstpass: {
+    n: 2, title: 'First-pass review',
+    blurb: 'Joba v. Bukando \u2014 55 documents. The on-ramp: code a real matter end to end.',
+    action: 'Open Joba in Relativity', onclick: 'openCase(1)'
+  },
+  scale: {
+    n: 3, title: 'Review at scale',
+    blurb: 'Any larger matter, on any platform. Volume changes how the work feels.',
+    action: 'Choose a matter', onclick: 'reviewGoToLibrary()'
+  },
+  qcpractice: {
+    n: 4, title: 'QC practice',
+    blurb: 'Review what another reviewer already coded, under dense errors, and learn the patterns.',
+    action: 'Start a practice batch', onclick: 'renderQcLaunch()'
+  },
+  qccert: {
+    n: 5, title: 'QC certification',
+    blurb: 'The real bar: 250 documents at realistic error density, where almost everything is clean.',
+    action: 'Choose a matter to certify on', onclick: 'renderQcLaunch()'
+  },
+  readiness: {
+    n: 6, title: 'Readiness',
+    blurb: 'Your Accuracy, Pace and Responsiveness, and what to practise next.',
+    action: 'View readiness', onclick: 'renderQcHome()'
+  }
+};
+
+function renderReviewPage() {
+  if (typeof reviewMoveCards === 'function') reviewMoveCards();
+  if (typeof reviewLabelCards === 'function') reviewLabelCards();
+
+  var stages = QC.pathStatus({
+    attempts: qcAttempts,
+    firstPassCounts: reviewFirstPassCounts(),
+    marked: { rules: reviewRulesRead() }
+  });
+
+  var counts = reviewFirstPassCounts();
+  var h = '<div class="card"><h3 style="margin:0 0 4px">Your path to QC</h3>' +
+    '<p class="muted" style="margin:0 0 12px">Nothing is locked. Every stage is open \u2014 ' +
+    'the marker just says where to pick up.</p><div class="rv-path">';
+
+  for (var i = 0; i < stages.length; i++) {
+    var st = stages[i];
+    var c = REVIEW_PATH_COPY[st.key];
+    var detail = '';
+    if (st.key === 'firstpass') {
+      detail = counts.joba + ' of ' + QC.PATH_THRESHOLDS.firstPass + ' documents coded';
+    } else if (st.key === 'scale') {
+      detail = counts.scale + ' of ' + QC.PATH_THRESHOLDS.scale + ' documents coded';
+    }
+
+    h += '<div class="rv-stage rv-' + escAttr(st.status) + '">' +
+      '<div class="rv-num">' + esc(String(c.n)) + '</div>' +
+      '<div class="rv-body">' +
+        '<div class="rv-title">' + esc(c.title) +
+          (st.status === 'next' ? ' <span class="rv-flag">Start here</span>' : '') +
+          (st.status === 'done' ? ' <span class="rv-done">\u2713 done</span>' : '') +
+        '</div>' +
+        '<div class="rv-blurb">' + esc(c.blurb) + '</div>' +
+        (detail ? '<div class="rv-detail">' + esc(detail) + '</div>' : '') +
+        '<button class="btn btn-outline btn-sm" onclick="' + escAttr(c.onclick) + '">' +
+          esc(c.action) + '</button>' +
+        (st.key === 'rules'
+          ? ' <button class="btn btn-outline btn-sm" onclick="reviewToggleRules()">' +
+            (reviewRulesRead() ? 'Mark as unread' : 'Mark as read') + '</button>'
+          : '') +
+      '</div>' +
+    '</div>';
+  }
+
+  h += '</div></div>';
+  document.getElementById('review-path').innerHTML = h;
+}
+
+function renderQcTaxonomy() {
+  var html = '<h2>QC error taxonomy</h2>' +
+    '<p class="qc-lede">The defects seeded into your batches, and the defects real QC finds. ' +
+    'They are not equal — the weight column is how much each one costs you.</p>';
+
+  var ordered = QC.PHASE1_TYPES.slice().sort(function (a, b) {
+    return QC.ERROR_TYPES[b].weight - QC.ERROR_TYPES[a].weight;
+  });
+
+  for (var i = 0; i < ordered.length; i++) {
+    var t = QC.ERROR_TYPES[ordered[i]];
+    html += '<div class="qc-tax">' +
+      '<h3>' + esc(t.label) + ' <span class="qc-tax-weight">weight ' + esc(String(t.weight)) + '</span></h3>' +
+      '<p>' + esc(t.blurb) + '</p>' +
+      '<p class="qc-tax-spot"><strong>How to spot it:</strong> ' + esc(t.spot) + '</p>' +
+      '</div>';
+  }
+
+  html += '<div class="qc-tax">' +
+    '<h3>Two defects you can commit yourself</h3>' +
+    '<p>Everything above is a mistake the prior reviewer made. These two are yours. ' +
+    '<strong>False correction</strong> — changing a document that was already right — ' +
+    'costs the same as a weight-2 error, because it is one: the document is now miscoded, ' +
+    'and the team has to re-review the set to find out how far it spread. ' +
+    '<strong>Over-escalation</strong> costs less, but escalating what you should have decided ' +
+    'is how a QC reviewer becomes a bottleneck.</p>' +
+    '</div>';
+
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back</button></div>';
+  document.getElementById('qc-view-taxonomy').innerHTML = html;
+  qcNav('taxonomy');
+}
+
+
+// ==================================================================
+// QC TEAM ROSTER (leadership + admin)
+// ==================================================================
+
+var QC_ROSTER = [];
+var qcRosterOpen = {};
+
+function qcRosterAllowed() {
+  return !!(SB.user && SB.user.email === ADMIN_EMAIL);
+}
+
+function loadQcRoster(mountId) {
+  var mount = document.getElementById(mountId);
+  if (!mount) return;
+
+  // The client-side check only decides what to draw. The real gate is the
+  // leadership_select_qc_attempts policy, which keys on the JWT email claim.
+  if (!qcRosterAllowed()) {
+    mount.innerHTML = '<p class="muted">Team QC metrics are restricted to the site administrator. ' +
+      'Your own figures are on the QC Track page.</p>';
+    return;
+  }
+
+  mount.innerHTML = '<p class="muted">Loading\u2026</p>';
+  SB.req('GET', '/rest/v1/qc_attempts?select=*&order=completed_at.desc').then(function (r) {
+    if (r && r.error) {
+      mount.innerHTML = '<p style="color:var(--red)">Could not load QC metrics: ' +
+        esc(String(r.error)) + '</p>';
+      return;
+    }
+    QC_ROSTER = QC.roster(r.data || [], 1000);
+    renderQcRoster(mountId);
+  });
+}
+
+function qcNum(v) { return v == null ? '\u2014' : String(Math.round(v)); }
+function qcDate(v) { return v ? String(v).slice(0, 10) : '\u2014'; }
+
+function qcRosterRowDetail(row) {
+  var h = '<table class="qc-roster-sub"><thead><tr>' +
+    '<th>Completed</th><th>Case</th><th>Type</th><th>Docs</th><th>Defects</th>' +
+    '<th>Accuracy</th><th>Pace</th><th>Resp.</th><th>Consist.</th></tr></thead><tbody>';
+  var list = row.attempts.slice().sort(function (a, b) {
+    return String(b.completed_at || '').localeCompare(String(a.completed_at || ''));
+  });
+  for (var i = 0; i < list.length; i++) {
+    var a = list[i];
+    h += '<tr>' +
+      '<td>' + esc(qcDate(a.completed_at)) + '</td>' +
+      '<td>' + esc(String(a.case_key || '')) + '</td>' +
+      '<td>' + esc(String(a.batch_type || '')) + '</td>' +
+      '<td class="qc-r">' + esc(String(a.docs_reviewed == null ? '' : a.docs_reviewed)) + '</td>' +
+      '<td class="qc-r">' + esc(String(a.defects == null ? '' : a.defects)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.accuracy)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.pace)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(a.responsiveness)) + '</td>' +
+      '<td class="qc-r">' + esc(a.consistency == null ? '\u2014' : Math.round(a.consistency * 100) + '%') + '</td>' +
+      '</tr>';
+  }
+  return h + '</tbody></table>';
+}
+
+function renderQcRoster(mountId) {
+  var mount = document.getElementById(mountId);
+  if (!mount) return;
+
+  if (!QC_ROSTER.length) {
+    mount.innerHTML = '<p class="muted">No QC batches recorded yet. Figures appear here once ' +
+      'people start certifying on the QC Track page.</p>';
+    return;
+  }
+
+  var h = '<div class="qc-roster-head">' +
+    '<span class="muted">Rolling over each person\u2019s last 1,000 certification documents. ' +
+    'Practice batches do not count toward Accuracy.</span>' +
+    '<button class="btn btn-outline btn-sm" onclick="qcRosterCsv()">\u2b07\ufe0f Export CSV</button>' +
+    '</div>' +
+    '<p class="qc-roster-warn">A CSV leaves this app\u2019s access controls behind \u2014 it is named ' +
+    'performance data in a file that can be forwarded anywhere.</p>' +
+    '<table class="qc-roster"><thead><tr>' +
+      '<th>Person</th><th>Defects / 1,000</th><th>Accuracy</th><th>Pace</th>' +
+      '<th>Resp.</th><th>Consist.</th><th>Certified docs</th><th>Batches</th><th>Last active</th>' +
+    '</tr></thead><tbody>';
+
+  for (var i = 0; i < QC_ROSTER.length; i++) {
+    var r = QC_ROSTER[i];
+    var open = !!qcRosterOpen[r.email];
+    var cls = r.accuracy == null ? 'qc-none' : (r.accuracy >= 90 ? 'qc-ok' : (r.accuracy >= 70 ? 'qc-mid' : 'qc-low'));
+    h += '<tr class="qc-roster-row" onclick="qcRosterToggle(\'' + escAttr(r.email) + '\',\'' + escAttr(mountId) + '\')">' +
+      '<td><span class="qc-caret">' + (open ? '\u25be' : '\u25b8') + '</span> ' + esc(r.name) +
+        '<div class="qc-roster-email">' + esc(r.email) + '</div></td>' +
+      '<td class="qc-r ' + cls + '">' +
+        (r.accuracy == null ? '\u2014' : esc(r.defectsPer1000.toFixed(1)) + (r.partial ? ' *' : '')) + '</td>' +
+      '<td class="qc-r ' + cls + '">' + esc(qcNum(r.accuracy)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(r.pace)) + '</td>' +
+      '<td class="qc-r">' + esc(qcNum(r.responsiveness)) + '</td>' +
+      '<td class="qc-r">' + esc(r.consistency == null ? '\u2014' : Math.round(r.consistency * 100) + '%') + '</td>' +
+      '<td class="qc-r">' + esc(String(r.documents)) + '</td>' +
+      '<td class="qc-r">' + esc(String(r.batches)) + '</td>' +
+      '<td>' + esc(qcDate(r.lastActive)) + '</td>' +
+      '</tr>';
+    if (open) {
+      h += '<tr class="qc-roster-detail"><td colspan="9">' + qcRosterRowDetail(r) + '</td></tr>';
+    }
+  }
+
+  h += '</tbody></table>' +
+    '<p class="muted qc-roster-foot">* fewer than 1,000 certification documents so far, so the ' +
+    'rate is over a shorter run. Bar to clear: 2 defects per 1,000.</p>';
+
+  mount.innerHTML = h;
+}
+
+function qcRosterToggle(email, mountId) {
+  qcRosterOpen[email] = !qcRosterOpen[email];
+  renderQcRoster(mountId);
+}
+
+function qcCsvCell(v) {
+  var t = (v == null) ? '' : String(v);
+  return /[",\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t;
+}
+
+function qcRosterCsv() {
+  var head = ['Name', 'Email', 'Defects per 1000', 'Accuracy', 'Pace', 'Responsiveness',
+              'Consistency %', 'Certified documents', 'Partial window', 'Batches',
+              'Certifications', 'Last active'];
+  var rows = [head.join(',')];
+  for (var i = 0; i < QC_ROSTER.length; i++) {
+    var r = QC_ROSTER[i];
+    rows.push([
+      r.name, r.email,
+      r.accuracy == null ? '' : r.defectsPer1000.toFixed(2),
+      r.accuracy == null ? '' : Math.round(r.accuracy),
+      r.pace == null ? '' : Math.round(r.pace),
+      r.responsiveness == null ? '' : Math.round(r.responsiveness),
+      r.consistency == null ? '' : Math.round(r.consistency * 100),
+      r.documents, r.partial ? 'yes' : 'no', r.batches, r.certifications,
+      qcDate(r.lastActive)
+    ].map(qcCsvCell).join(','));
+  }
+
+  var blob = new Blob([rows.join('\n')], { type: 'text/csv;charset=utf-8' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'qc-metrics-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+}
+
 </script>
 
 <!-- ══ SHELLS (fixed position, outside all page divs) ══ -->

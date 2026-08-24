@@ -5,7 +5,7 @@
     { "source": "/wellness", "destination": "/wellness/index.html" },
     { "source": "/wellness/", "destination": "/wellness/index.html" },
     {
-      "source": "/((?!og-image\\.png$|accent-trainer|wellness).*)",
+      "source": "/((?!og-image\\.png$|qc-engine\\.js$|accent-trainer|wellness).*)",
       "destination": "/index.html"
     }
   ]
