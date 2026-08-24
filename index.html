@@ -7915,7 +7915,7 @@ function renderQcHome() {
   }
 
   var html = '' +
-    '<h2>QC Track</h2>' +
+    '<h2>Your QC readiness</h2>' +
     '<p class="qc-lede">Review documents another reviewer already coded. Catch what they got wrong — ' +
       'without changing what they got right.</p>' +
     '<div class="qc-dials">' +
@@ -8395,7 +8395,7 @@ function renderQcComplete(score) {
   }
   if (!anyWrong) html += '<p>Nothing. A clean batch.</p>';
 
-  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back to QC Track</button></div>';
+  html += '<div class="qc-actions"><button onclick="renderQcHome()">Back to readiness</button></div>';
   document.getElementById('qc-view-complete').innerHTML = html;
   qcNav('complete');
 }
@@ -8863,7 +8863,7 @@ function loadQcRoster(mountId) {
   // leadership_select_qc_attempts policy, which keys on the JWT email claim.
   if (!qcRosterAllowed()) {
     mount.innerHTML = '<p class="muted">Team QC metrics are restricted to the site administrator. ' +
-      'Your own figures are on the QC Track page.</p>';
+      'Your own figures are on the Doc Review Projects &amp; QC Path page.</p>';
     return;
   }
 
@@ -8911,8 +8911,9 @@ function renderQcRoster(mountId) {
   if (!mount) return;
 
   if (!QC_ROSTER.length) {
-    mount.innerHTML = '<p class="muted">No QC batches recorded yet. Figures appear here once ' +
-      'people start certifying on the QC Track page.</p>';
+    mount.innerHTML = '<p class="muted">No QC batches recorded yet. People appear here as soon ' +
+      'as they run a batch on the Doc Review Projects &amp; QC Path page. Accuracy stays blank ' +
+      'until they certify \u2014 practice batches do not count toward it.</p>';
     return;
   }
 
