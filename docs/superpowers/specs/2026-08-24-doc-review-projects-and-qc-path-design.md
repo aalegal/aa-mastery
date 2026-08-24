@@ -29,9 +29,10 @@ it knowing nothing and can work start to finish without being told what to click
 
 - **Not rewriting case content.** The three project pages move in almost verbatim.
 - **Not locking progression.** The path recommends an order; nothing is gated.
-- **Not authoring new document corpora.** The nine matters stay as they are.
+- **Not authoring new document corpora.** The eight working matters stay as they are.
+  The ninth card is removed rather than built — see the inventory.
 - **Not per-case readiness.** The readiness picture stays global, as specified in
-  `2026-08-17-qc-track-design.md`. A person has one Accuracy figure, not nine.
+  `2026-08-17-qc-track-design.md`. A person has one Accuracy figure, not one per matter.
 
 ---
 
@@ -50,7 +51,7 @@ differ from what the Phase 2 work assumed:
 | NorthStar v. Meridian | `CP_DOCS` | Casepoint | — | No |
 | St. Aurelius — data breach | `SAH_DOCS` | Casepoint | — | No |
 | TransRidge v. Cascade Headwaters | `FA_DOCS` (500) | Casepoint | `firstam` | Yes |
-| **Grupo Velasco Motors** (Spanish) | **none — see below** | Relativity | — | No |
+| ~~Grupo Velasco Motors~~ (Spanish) | none — **card deleted, see below** | — | — | — |
 
 **Correction carried into this work:** `QC_CASES.p4` is labelled "Project 4". It is
 actually **SEC v. QuantumEdge AI**, launched by `openAICase()` which delegates to
@@ -73,9 +74,14 @@ that exact card, so leaving it would mean knowingly moving something broken into
 whose whole purpose is telling people where to go. `CLAUDE.md` compounds it by claiming
 case 3 is Veridian Bank, which matches neither the code nor the card.
 
-The card is treated as unbuilt content. It moves into the library marked **"Not yet
-available"** with the button disabled, and `CLAUDE.md`'s stale line is corrected. If a
-Spanish corpus is planned, wiring it up is separate work with its own answer keys.
+**Resolution: the card is deleted.** Confirmed 2026-08-24 — no Spanish corpus is
+planned, so there is nothing for it to open and no reason to carry a card advertising a
+matter that does not exist. The library therefore holds **eight** matters.
+
+Deleting the card removes the only caller of `openCase(3)`; a repo-wide check confirmed
+it is used exactly once. No change to `openCase` itself is needed — its `else` branch
+remains correct as the path for case 1 (Joba). `CLAUDE.md`'s stale "Case 3" line is
+corrected in the same change.
 
 ---
 
@@ -215,7 +221,7 @@ structural, and correct: it is the practice on-ramp.
 
 Three platform sub-tabs, reflecting how the content already splits:
 
-- **Relativity** — Joba, Harmon, SEC v. QuantumEdge AI, Grupo Velasco (unavailable)
+- **Relativity** — Joba, Harmon, SEC v. QuantumEdge AI
 - **Everlaw** — Veridian Bank, CADE
 - **Casepoint** — NorthStar, St. Aurelius, TransRidge
 
@@ -232,7 +238,7 @@ so it cannot drift out of step with what the drills actually offer.
 | --- | --- |
 | `qc-engine.js` | Add `QC.pathStatus`. No other logic changes. |
 | `tests/qc-engine.test.js` | Tests for `pathStatus`, and for each protocol-change predicate matching its corpus. |
-| `index.html` | New `page-review`; nav consolidation; path renderer; library sub-tabs; re-parented case content; conditional Escalate; three interrupt scripts; `p4` label fix; Grupo Velasco marked unavailable. |
+| `index.html` | New `page-review`; nav consolidation; path renderer; library sub-tabs; re-parented case content; conditional Escalate; three interrupt scripts; `p4` label fix; Grupo Velasco card deleted. |
 | `CLAUDE.md` | Correct the stale "Case 3: `P3_DOCS` — GDPR/AI" line. |
 
 No migration. No new table. Stage 1's flag rides the existing progress key.
@@ -243,7 +249,7 @@ No migration. No new table. Stage 1's flag rides the existing progress key.
 
 - **A silent protocol-change no-op.** Covered by the corpus-match test above. This is
   the failure that would be hardest to notice in use.
-- **Re-parenting breaks case launchers.** The nine cases open modal shells by id
+- **Re-parenting breaks case launchers.** The eight cases open modal shells by id
   (`everlaw-shell`, `cp-shell`, `rel-shell`), which are siblings of the page divs
   rather than children, so moving card markup should not affect them. Every launcher
   gets an explicit post-move check.
