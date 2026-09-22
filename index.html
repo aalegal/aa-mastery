@@ -1399,6 +1399,35 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-tax h3{margin:0 0 .5rem;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
 .qc-tax-weight{font-size:.7rem;background:#1c2740;color:var(--gold);padding:.15rem .5rem;border-radius:999px;font-weight:400}
 .qc-tax-spot{color:#9fb0c9;font-size:.9rem}
+.tac-weekbar{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:.7rem .9rem;margin-bottom:.8rem}
+.tac-weekbar-head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.55rem}
+.tac-count{color:#7d8ca3;font-size:.78rem}
+.tac-chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.tac-chip{font-size:.78rem;padding:.2rem .6rem;border-radius:999px;cursor:pointer;border:1px solid transparent}
+.tac-in{background:#0d3b34;color:#4fd1b5;border-color:#145146}
+.tac-out{background:#3a2028;color:#e5737b;border-color:#5a2f39}
+.tac-chip:hover{filter:brightness(1.25)}
+.tac-form{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;margin-bottom:1rem}
+.tac-form-head{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
+.tac-form-head h4{margin:0}
+.tac-editing{color:var(--gold);font-size:.76rem}
+.tac-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:.7rem;margin-bottom:.8rem}
+.tac-row label,.tac-label{display:flex;flex-direction:column;gap:.25rem;font-size:.78rem;color:#9fb0c9}
+.tac-label{margin-bottom:.8rem}
+.tac-form select,.tac-form input[type=date],.tac-form textarea{background:#0b1220;border:1px solid #1c2740;border-radius:6px;color:#dbe4f0;padding:.45rem .55rem;font:inherit;font-size:.85rem;width:100%}
+.tac-form textarea{resize:vertical;line-height:1.5}
+.tac-actions{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.25rem}
+.tac-hist-head{margin:1.2rem 0 .5rem}
+.tac-empty{font-size:.85rem}
+.tac-week{background:var(--card);border:1px solid #1c2740;border-radius:8px;margin-bottom:.5rem}
+.tac-week>summary{cursor:pointer;padding:.6rem .9rem;color:#dbe4f0;font-weight:600}
+.tac-week>summary:hover{background:#131c2e}
+.tac-past{border-top:1px solid #16203a;padding:.7rem .9rem}
+.tac-past-head{display:flex;justify-content:space-between;align-items:center;gap:.5rem;margin-bottom:.45rem}
+.tac-past-sec{margin-bottom:.5rem}
+.tac-past-sec span{display:block;color:#7d8ca3;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.2rem}
+.tac-past-sec pre{white-space:pre-wrap;margin:0;font:inherit;font-size:.82rem;line-height:1.55;color:#c3d0e4}
+.tac-miss{border-top:1px solid #16203a;padding:.5rem .9rem;color:#7d8ca3;font-size:.82rem}
 .qc-roster-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:.35rem}
 .qc-roster-warn{color:#e0a56a;font-size:.78rem;margin:0 0 .75rem}
 .qc-roster{width:100%;border-collapse:collapse;font-size:.85rem}
@@ -2800,13 +2829,13 @@ tr:nth-child(even) td{background:#0d162080}
 
     <!-- TACTICAL MEETING REPORTS -->
     <div id="lpane-meetings" class="lpane active">
-      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px">
-        <h3 style="margin:0">Tactical Meeting Reports</h3>
-        <button class="btn btn-outline btn-sm" onclick="fetchTactical()">⬇️ Import from Monday.com</button>
-      </div>
-      <p class="muted" style="margin-top:6px">One report table per supervisor, grouped by the <strong>Person</strong> column on the Monday.com board.</p>
+      <h3 style="margin:0 0 4px">Tactical Meeting Reports</h3>
+      <p class="muted" style="margin:0 0 10px">Submitted each Wednesday &mdash; one report per supervisor per week.
+        Every submission is kept, so earlier weeks stay readable below.</p>
       <div id="tactical-status" class="lead-status"></div>
-      <div id="tactical-container"></div>
+      <div id="tactical-weekbar"></div>
+      <div id="tactical-form"></div>
+      <div id="tactical-history"></div>
     </div>
 
     <!-- PAYMENTS -->
@@ -3123,7 +3152,6 @@ function showTime(id,btn){
 /* ===================== LEADERSHIP DATA MODULE ===================== */
 var LEAD_TACTICAL_PEOPLE=['Glory','Junior','Simon','Achumboro','Jeff'];
 // Set this to your deployed serverless proxy (e.g. '/api/monday') to enable live Monday.com sync.
-var MONDAY_PROXY_URL='';
 
 function leadStatus(elId,msg,cls){var el=document.getElementById(elId);if(!el)return;el.textContent=msg||'';el.className='lead-status'+(cls?' '+cls:'');}
 function escAttr(v){return String(v==null?'':v).replace(/"/g,'&quot;');}
@@ -3229,103 +3257,218 @@ async function deletePaymentRow(id){
 
 /* ---- TACTICAL MEETING REPORTS (Monday.com) ---- */
 // Each person gets ONE structured report with these named sections (matching the Monday.com form).
+// Ordered to match the Monday.com form this replaces.
 var TACTICAL_SECTIONS=[
-  {key:'headlines', label:'Customer / Contractors Headlines', rows:4, hint:'e.g. Richard — on TP project, 35 docs/hour, energy 100%'},
-  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:8, hint:'Describe the issue, then Solution 1, 2, 3…'},
-  {key:'rocks',     label:'ROCK Updates', rows:7, hint:'1. Goal — % complete, with sub-bullets'},
+  {key:'rocks',     label:'ROCK Updates', rows:7, hint:'1. Goal \u2014 % complete, with sub-bullets'},
+  {key:'headlines', label:'Customer / Contractors Headlines', rows:4, hint:'e.g. 5 projects running. Energy levels \u2014 93%'},
+  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9, hint:'Describe the issue, then Solution 1, 2, 3\u2026'},
   {key:'actions',   label:'Action Items / Priorities', rows:5, hint:'Numbered priorities and owners'}
 ];
-var TACTICAL_BY_PERSON={}; // person -> report record (or null)
+
+var TACTICAL_RECORDS=[];      // every report, every week
+var tacticalFormWeek=null;    // the week the form is currently filling
+
+function tacticalThisWeek(){ return QC.tacticalWeekOf(new Date()); }
+
+function tacticalFor(person,weekOf){
+  for(var i=0;i<TACTICAL_RECORDS.length;i++){
+    var r=TACTICAL_RECORDS[i];
+    if(r&&r.person===person&&r.week_of===weekOf)return r;
+  }
+  return null;
+}
+
+function tacticalPrettyWeek(w){
+  if(!w)return 'Undated';
+  var d=new Date(w+'T12:00:00Z');
+  return d.toLocaleDateString(undefined,{timeZone:'UTC',weekday:'long',day:'numeric',month:'long',year:'numeric'});
+}
+
+// Default the form to whoever is signed in, when their display name is on the roster.
+function tacticalDefaultPerson(){
+  var meta=(SB.user&&SB.user.user_metadata)||{};
+  var name=String(meta.display_name||'').trim().toLowerCase();
+  for(var i=0;i<LEAD_TACTICAL_PEOPLE.length;i++){
+    if(LEAD_TACTICAL_PEOPLE[i].toLowerCase()===name)return LEAD_TACTICAL_PEOPLE[i];
+  }
+  return LEAD_TACTICAL_PEOPLE[0];
+}
+
 async function loadTactical(){
-  if(!SB.token){leadStatus('tactical-status','Log in to view and edit tactical reports.','err');TACTICAL_BY_PERSON={};renderTacticalReports();return;}
-  leadStatus('tactical-status','Loading…');
+  if(!SB.token){
+    leadStatus('tactical-status','Log in to view and submit tactical reports.','err');
+    TACTICAL_RECORDS=[];renderTactical();return;
+  }
+  leadStatus('tactical-status','Loading\u2026');
   var r=await SB.getTactical();
-  if(r.error){leadStatus('tactical-status','Could not load: '+r.error,'err');renderTacticalReports();return;}
-  TACTICAL_BY_PERSON={};
-  (r.data||[]).forEach(function(rec){TACTICAL_BY_PERSON[rec.person]=rec;}); // last write per person wins
-  renderTacticalReports();
+  if(r.error){leadStatus('tactical-status','Could not load: '+r.error,'err');renderTactical();return;}
+  TACTICAL_RECORDS=r.data||[];
+  renderTactical();
   leadStatus('tactical-status','');
 }
-function renderTacticalReports(){
-  var c=document.getElementById('tactical-container');if(!c)return;
-  c.innerHTML='';
-  LEAD_TACTICAL_PEOPLE.forEach(function(person){
-    var rec=TACTICAL_BY_PERSON[person]||null;
-    var rid=rec?rec.id:'';
-    var dateVal=rec?(rec.row_date||''):'';
-    var wrap=document.createElement('div');wrap.className='tactical-report';
-    var html='<div class="tactical-report-head">'+
-        '<h4>'+person+'</h4>'+
-        (rec?'<button class="lead-del-btn" title="Clear this report" onclick="deleteTactical(\''+person+'\')">Clear report</button>':'')+
-      '</div>'+
-      '<label class="lead-field-label">Date</label>'+
-      '<input class="lead-cell-input" type="date" value="'+escAttr(dateVal)+'" onchange="saveTacticalSection(\''+person+'\',\'row_date\',this.value)">';
-    TACTICAL_SECTIONS.forEach(function(sec){
-      var val=rec?(rec[sec.key]||''):'';
-      html+='<label class="lead-field-label">'+sec.label+'</label>'+
-        '<textarea class="lead-textarea" rows="'+sec.rows+'" placeholder="'+escAttr(sec.hint)+'" '+
-        'onchange="saveTacticalSection(\''+person+'\',\''+sec.key+'\',this.value)">'+
-        (val?String(val).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'):'')+'</textarea>';
-    });
-    wrap.innerHTML=html;
-    c.appendChild(wrap);
+
+function renderTactical(){
+  if(!tacticalFormWeek)tacticalFormWeek=tacticalThisWeek();
+  renderTacticalWeekbar();
+  renderTacticalForm();
+  renderTacticalHistory();
+}
+
+// The gap is the point: a cadence is only real if a missing report is visible.
+function renderTacticalWeekbar(){
+  var el=document.getElementById('tactical-weekbar');if(!el)return;
+  var status=QC.tacticalWeekStatus(TACTICAL_RECORDS,LEAD_TACTICAL_PEOPLE,tacticalFormWeek);
+  var inCount=status.filter(function(s){return s.submitted;}).length;
+  var h='<div class="tac-weekbar"><div class="tac-weekbar-head">'+
+    '<strong>Week of '+esc(tacticalPrettyWeek(tacticalFormWeek))+'</strong>'+
+    '<span class="tac-count">'+esc(String(inCount))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+' submitted</span>'+
+    '</div><div class="tac-chips">';
+  status.forEach(function(s){
+    h+='<span class="tac-chip '+(s.submitted?'tac-in':'tac-out')+'" '+
+       'onclick="tacticalEdit(\''+escAttr(s.person)+'\')" title="'+
+       escAttr(s.submitted?'Open '+s.person+'\u2019s report':'Not submitted yet')+'">'+
+       (s.submitted?'\u2713 ':'')+esc(s.person)+'</span>';
   });
+  el.innerHTML=h+'</div></div>';
 }
-async function saveTacticalSection(person,field,value){
+
+function renderTacticalForm(){
+  var el=document.getElementById('tactical-form');if(!el)return;
+  var person=el.getAttribute('data-person')||tacticalDefaultPerson();
+  var existing=tacticalFor(person,tacticalFormWeek);
+  var dateVal=(existing&&existing.row_date)||tacticalFormWeek||'';
+
+  var h='<div class="tac-form"><div class="tac-form-head"><h4>'+
+    esc(existing?'Edit report':'Submit report')+'</h4>'+
+    (existing?'<span class="tac-editing">Editing an existing submission for this week</span>':'')+
+    '</div><div class="tac-row">'+
+      '<label>Requested by<select id="tac-person" onchange="tacticalSwitchPerson(this.value)">';
+  LEAD_TACTICAL_PEOPLE.forEach(function(pp){
+    h+='<option value="'+escAttr(pp)+'"'+(pp===person?' selected':'')+'>'+esc(pp)+'</option>';
+  });
+  h+='</select></label>'+
+     '<label>Date<input type="date" id="tac-date" value="'+escAttr(dateVal)+'" onchange="tacticalDateChanged(this.value)"></label>'+
+     '</div>';
+
+  TACTICAL_SECTIONS.forEach(function(sec){
+    var val=existing?(existing[sec.key]||''):'';
+    h+='<label class="tac-label">'+esc(sec.label)+
+       '<textarea id="tac-'+escAttr(sec.key)+'" rows="'+esc(String(sec.rows))+'" '+
+       'placeholder="'+escAttr(sec.hint)+'">'+esc(val)+'</textarea></label>';
+  });
+
+  h+='<div class="tac-actions">'+
+     '<button class="btn btn-primary" onclick="submitTactical()">'+
+       esc(existing?'Update report':'Submit report')+'</button>'+
+     (existing?' <button class="lead-del-btn" onclick="deleteTacticalReport()">Delete this report</button>':'')+
+     '</div></div>';
+  el.setAttribute('data-person',person);
+  el.innerHTML=h;
+}
+
+function tacticalSwitchPerson(person){
+  var el=document.getElementById('tactical-form');
+  if(el)el.setAttribute('data-person',person);
+  renderTacticalForm();
+}
+
+// Changing the date can move the report into a different week.
+function tacticalDateChanged(value){
+  var w=QC.tacticalWeekOf(value);
+  if(w&&w!==tacticalFormWeek){tacticalFormWeek=w;renderTactical();}
+}
+
+function tacticalEdit(person,weekOf){
+  if(weekOf)tacticalFormWeek=weekOf;
+  var el=document.getElementById('tactical-form');
+  if(el)el.setAttribute('data-person',person);
+  renderTactical();
+  var f=document.getElementById('tactical-form');
+  if(f)f.scrollIntoView({block:'start'});
+}
+
+function tacticalFormValues(){
+  var out={};
+  TACTICAL_SECTIONS.forEach(function(sec){
+    var t=document.getElementById('tac-'+sec.key);
+    out[sec.key]=t?t.value:'';
+  });
+  return out;
+}
+
+async function submitTactical(){
   if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
-  var rec=TACTICAL_BY_PERSON[person];
-  leadStatus('tactical-status','Saving…');
-  if(rec&&rec.id){
-    var patch={};patch[field]=value;
-    var r=await SB.updateTactical(rec.id,patch);
-    if(r.error){leadStatus('tactical-status','Save failed: '+r.error,'err');return;}
-    rec[field]=value;
+  var person=(document.getElementById('tac-person')||{}).value;
+  var dateVal=(document.getElementById('tac-date')||{}).value||null;
+  var weekOf=QC.tacticalWeekOf(dateVal)||tacticalFormWeek;
+  if(!person||!weekOf){leadStatus('tactical-status','Pick a person and a date first.','err');return;}
+
+  var vals=tacticalFormValues();
+  var filled=TACTICAL_SECTIONS.some(function(sec){return String(vals[sec.key]||'').trim()!=='';});
+  if(!filled){leadStatus('tactical-status','Nothing to submit \u2014 fill in at least one section.','err');return;}
+
+  var rec={person:person,row_date:dateVal,week_of:weekOf};
+  TACTICAL_SECTIONS.forEach(function(sec){rec[sec.key]=vals[sec.key]||'';});
+
+  var existing=tacticalFor(person,weekOf);
+  leadStatus('tactical-status','Saving\u2026');
+  if(existing&&existing.id){
+    var u=await SB.updateTactical(existing.id,rec);
+    if(u.error){leadStatus('tactical-status','Save failed: '+u.error,'err');return;}
+    for(var k in rec)if(Object.prototype.hasOwnProperty.call(rec,k))existing[k]=rec[k];
   }else{
-    var base={person:person,row_date:null,headlines:'',issues:'',rocks:'',actions:''};
-    base[field]=value;
-    var ar=await SB.addTactical(base);
-    if(ar.error){leadStatus('tactical-status','Save failed: '+ar.error,'err');return;}
-    var created=(ar.data&&ar.data[0])?ar.data[0]:base;
-    TACTICAL_BY_PERSON[person]=created;
+    var a=await SB.addTactical(rec);
+    if(a.error){leadStatus('tactical-status','Save failed: '+a.error,'err');return;}
+    TACTICAL_RECORDS.push((a.data&&a.data[0])||rec);
   }
-  leadStatus('tactical-status','Saved.','ok');
-  setTimeout(function(){leadStatus('tactical-status','');},1500);
+  tacticalFormWeek=weekOf;
+  renderTactical();
+  leadStatus('tactical-status','Saved \u2014 '+person+', week of '+tacticalPrettyWeek(weekOf)+'.');
 }
-async function deleteTactical(person){
-  var rec=TACTICAL_BY_PERSON[person];if(!rec||!rec.id)return;
-  if(!confirm('Clear '+person+"'s entire report for everyone?"))return;
+
+async function deleteTacticalReport(){
+  var el=document.getElementById('tactical-form');
+  var person=el?el.getAttribute('data-person'):null;
+  var rec=person?tacticalFor(person,tacticalFormWeek):null;
+  if(!rec||!rec.id)return;
+  if(!confirm('Delete '+person+'\u2019s report for the week of '+tacticalPrettyWeek(tacticalFormWeek)+'? This cannot be undone.'))return;
+  leadStatus('tactical-status','Deleting\u2026');
   var r=await SB.deleteTactical(rec.id);
   if(r.error){leadStatus('tactical-status','Delete failed: '+r.error,'err');return;}
-  loadTactical();
+  TACTICAL_RECORDS=TACTICAL_RECORDS.filter(function(x){return x.id!==rec.id;});
+  renderTactical();
+  leadStatus('tactical-status','Deleted.');
 }
-// Optional one-click import: pulls each person's report from Monday.com into Supabase.
-async function fetchTactical(){
-  if(!SB.token){leadStatus('tactical-status','Log in first.','err');return;}
-  if(!MONDAY_PROXY_URL){
-    leadStatus('tactical-status','Monday.com import is not connected yet — set MONDAY_PROXY_URL to your serverless proxy to enable it. You can still type reports directly below.','');
+
+function renderTacticalHistory(){
+  var el=document.getElementById('tactical-history');if(!el)return;
+  var weeks=QC.tacticalWeeks(TACTICAL_RECORDS).filter(function(w){return w!==tacticalFormWeek;});
+  if(!weeks.length){
+    el.innerHTML='<p class="muted tac-empty">No earlier weeks yet. Every submission is kept, so this fills in as the weeks go by.</p>';
     return;
   }
-  leadStatus('tactical-status','Importing from Monday.com…');
-  try{
-    var res=await fetch(MONDAY_PROXY_URL);
-    if(!res.ok)throw new Error('HTTP '+res.status);
-    var data=await res.json(); // { "Glory":{date,headlines,issues,rocks,actions}, ... }
-    var n=0;
-    for(var pi=0;pi<LEAD_TACTICAL_PEOPLE.length;pi++){
-      var person=LEAD_TACTICAL_PEOPLE[pi];
-      var rep=data&&data[person];if(!rep)continue;
-      var rec={person:person,row_date:rep.date||null,headlines:rep.headlines||'',issues:rep.issues||'',rocks:rep.rocks||'',actions:rep.actions||''};
-      var existing=TACTICAL_BY_PERSON[person];
-      if(existing&&existing.id){await SB.updateTactical(existing.id,rec);}else{await SB.addTactical(rec);}
-      n++;
-    }
-    leadStatus('tactical-status','Imported '+n+' report(s) from Monday.com.','ok');
-    loadTactical();
-  }catch(e){
-    leadStatus('tactical-status','Could not reach Monday.com ('+e.message+'). You can still type reports directly below.','err');
-  }
+  var h='<h4 class="tac-hist-head">Earlier weeks</h4>';
+  weeks.forEach(function(w){
+    var status=QC.tacticalWeekStatus(TACTICAL_RECORDS,LEAD_TACTICAL_PEOPLE,w);
+    var n=status.filter(function(s){return s.submitted;}).length;
+    h+='<details class="tac-week"><summary>'+esc(tacticalPrettyWeek(w))+
+       ' <span class="tac-count">'+esc(String(n))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+'</span></summary>';
+    status.forEach(function(s){
+      if(!s.submitted){h+='<div class="tac-miss">'+esc(s.person)+' \u2014 no report</div>';return;}
+      h+='<div class="tac-past"><div class="tac-past-head"><strong>'+esc(s.person)+'</strong>'+
+         '<button class="btn btn-outline btn-sm" onclick="tacticalEdit(\''+escAttr(s.person)+'\',\''+escAttr(w)+'\')">Open</button></div>';
+      TACTICAL_SECTIONS.forEach(function(sec){
+        var v=s.record[sec.key];
+        if(!v||!String(v).trim())return;
+        h+='<div class="tac-past-sec"><span>'+esc(sec.label)+'</span><pre>'+esc(String(v))+'</pre></div>';
+      });
+      h+='</div>';
+    });
+    h+='</details>';
+  });
+  el.innerHTML=h;
 }
-/* =================== END LEADERSHIP DATA MODULE =================== */
+
 function showPlatform(agency,plat,btn){
   var prefix=agency+'-';
   ['rel','elv','dis'].forEach(function(p){var el=document.getElementById(prefix+p);if(el)el.classList.remove('active');});
