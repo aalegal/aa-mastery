@@ -384,10 +384,6 @@ tr:nth-child(even) td{background:#0d162080}
 .issue2{background:rgba(124,77,255,.15);color:#b39ddb;border-color:#7c4dff}
 .issue3{background:rgba(0,105,92,.15);color:#4caf50;border-color:#00695c}
 .issue4{background:rgba(212,168,42,.15);color:var(--gold-light);border-color:var(--gold-deep)}
-.proj-stats{display:flex;gap:12px;flex-wrap:wrap}
-.proj-stat{background:#111827;border-radius:7px;padding:8px 14px;border:1px solid var(--border);text-align:center}
-.proj-stat-num{font-size:1.2rem;font-weight:800;color:var(--gold-light)}
-.proj-stat-lbl{font-size:.7rem;color:var(--muted)}
 .proj-open-btn{background:var(--gold-metallic);color:#0a0c10;border:1px solid var(--gold-deep);padding:10px 24px;border-radius:8px;font-weight:700;cursor:pointer;font-size:.88rem;transition:all .2s}
 .proj-open-btn:hover{filter:brightness(1.1);box-shadow:0 0 14px var(--gs-glow)}
 
@@ -3483,6 +3479,202 @@ function renderTacticalPresent(){
   el.innerHTML=h+'</div>';
 }
 
+
+// ══════════════════════════════════════════════════════════════════
+// CODING MODE SWITCHER + PII TAGS
+// Restored from a468d2d^. That commit removed 22 functions but left the
+// mode dropdown and the PII Tags button sitting in the markup, so both
+// were live controls wired to nothing.
+// Only the 11 reachable from those controls come back. The other 11 --
+// drag redaction, the issue sidebar, the ev restore handlers -- have no
+// caller anywhere in the app now, so restoring them would be dead code.
+// The inline-plog-* ids are created by populateInlinePlog itself rather
+// than authored in the markup, so nothing is missing for these to work.
+// ══════════════════════════════════════════════════════════════════
+var inlinePlogPrivType = null;
+var evPiiVisible = false;
+
+function updateInlineRdxPanel(docId) {
+  var marks = rdxState.marks[docId] || [];
+  var panel = document.getElementById('inline-rdx-panel');
+  if (!panel) return;
+  if (marks.length === 0) {
+    panel.classList.remove('visible');
+    return;
+  }
+  panel.classList.add('visible');
+  var reasonLabels = { privilege: 'Privilege', pii: 'PII', privacy: 'Privacy', relevance: 'Relevance' };
+  panel.innerHTML = '<div class="panel-title">✏️ ' + marks.length + ' Redaction Mark' + (marks.length !== 1 ? 's' : '') + ' — ' + docId + '</div>' +
+    marks.map(function(m, i) {
+      return '<div class="rdx-mark-bar" style="margin:3px 0">' +
+        '<span class="rdx-reason-chip ' + m.reason + '">' + reasonLabels[m.reason] + '</span>' +
+        '<span style="flex:1;font-size:.74rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(m.note) + '</span>' +
+        '<button onclick="rdxRemoveByIdx(' + i + ')" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:.8rem;padding:2px 5px;">✕</button>' +
+        '</div>';
+    }).join('');
+}
+
+function rdxRemoveByIdx(idx) {
+  var docId = relCurrentDoc ? relCurrentDoc.id : null;
+  if (!docId || !rdxState.marks[docId]) return;
+  rdxState.marks[docId].splice(idx, 1);
+  updateInlineRdxPanel(docId);
+}
+
+function switchCodingMode(mode) {
+  // Close dropdown
+  closeModeDropdown();
+  // Update menu items
+  ['standard','redact','plog'].forEach(function(m) {
+    var btn = document.getElementById('mode-btn-' + m);
+    if (btn) {
+      btn.classList.toggle('active', m === mode);
+    }
+  });
+  // Show/hide panels
+  ['standard','redact','plog'].forEach(function(m) {
+    var panel = document.getElementById('mode-panel-' + m);
+    if (panel) panel.classList.toggle('active', m === mode);
+  });
+  // Toggle inline panels
+  var rdxPanel = document.getElementById('inline-rdx-panel');
+  var plogPanel = document.getElementById('inline-plog-panel');
+  if (rdxPanel) rdxPanel.classList.toggle('visible', mode === 'redact' && relCurrentDoc && (rdxState.marks[relCurrentDoc.id]||[]).length > 0);
+  if (plogPanel) plogPanel.classList.toggle('visible', mode === 'plog');
+  if (mode === 'plog' && relCurrentDoc) populateInlinePlog(relCurrentDoc);
+  // Show drag hint in redact mode
+  var hint = document.getElementById('drag-rdx-hint');
+  if (hint) hint.style.display = mode === 'redact' ? 'block' : 'none';
+  // Update trigger label
+  var icons = {standard:'⚖️', redact:'✏️', plog:'📋'};
+  var labels = {standard:'Standard Coding', redact:'Redaction Mode', plog:'PLOG Mode'};
+  var iconEl = document.getElementById('mode-active-icon');
+  var labelEl = document.getElementById('mode-active-label');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (iconEl) iconEl.textContent = icons[mode];
+  if (labelEl) labelEl.textContent = labels[mode];
+  if (trigger) {
+    // trigger updated by toggleModeDropdown
+    if (mode === 'redact') trigger.style.borderLeft = '3px solid var(--red)';
+    else if (mode === 'plog') trigger.style.borderLeft = '3px solid var(--gold-deep)';
+    else trigger.style.borderLeft = '3px solid var(--sapphire-light)';
+  }
+}
+
+function toggleModeDropdown() {
+  var menu = document.getElementById('mode-dropdown-menu');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (!menu) return;
+  var isOpen = menu.classList.contains('open');
+  if (isOpen) {
+    closeModeDropdown();
+  } else {
+    menu.classList.add('open');
+    if (trigger) trigger.classList.add('open');
+    setTimeout(function() {
+      document.addEventListener('click', closeModeDropdownOutside);
+    }, 50);
+  }
+}
+
+function closeModeDropdown() {
+  var menu = document.getElementById('mode-dropdown-menu');
+  var trigger = document.getElementById('mode-dropdown-trigger');
+  if (menu) menu.classList.remove('open');
+  if (trigger) trigger.classList.remove('open');
+  document.removeEventListener('click', closeModeDropdownOutside);
+}
+
+function closeModeDropdownOutside(e) {
+  var switcher = document.getElementById('coding-mode-switcher');
+  if (switcher && !switcher.contains(e.target)) {
+    closeModeDropdown();
+  }
+}
+
+function populateInlinePlog(doc) {
+  var panel = document.getElementById('inline-plog-panel');
+  if (!panel) return;
+  panel.innerHTML = '<div class="panel-title">📋 Quick PLOG Entry — ' + doc.id + '</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px">' +
+      '<div><div style="font-size:.68rem;color:var(--muted);margin-bottom:2px">DOC ID</div><div style="font-size:.78rem;color:var(--accent);font-weight:600">' + doc.id + '</div></div>' +
+      '<div><div style="font-size:.68rem;color:var(--muted);margin-bottom:2px">DATE</div><div style="font-size:.78rem">' + (doc.date||'').split('·')[0].trim() + '</div></div>' +
+      '<div style="grid-column:1/-1"><div style="font-size:.68rem;color:var(--muted);margin-bottom:2px">SUBJECT</div><div style="font-size:.78rem;color:var(--text2)">' + esc(doc.subject) + '</div></div>' +
+    '</div>' +
+    '<div style="font-size:.68rem;color:var(--muted);font-weight:600;margin-bottom:5px">PRIVILEGE TYPE</div>' +
+    '<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:8px">' +
+      '<button class="plog-priv-btn acp" onclick="inlinePlogSelect(\'acp\',this)">⚖️ ACP</button>' +
+      '<button class="plog-priv-btn wpp" onclick="inlinePlogSelect(\'wpp\',this)">📄 WPP</button>' +
+      '<button class="plog-priv-btn both" onclick="inlinePlogSelect(\'both\',this)">ACP+WPP</button>' +
+      '<button class="plog-priv-btn cip" onclick="inlinePlogSelect(\'cip\',this)">🤝 CIP</button>' +
+    '</div>' +
+    '<div style="font-size:.68rem;color:var(--muted);font-weight:600;margin-bottom:3px">DESCRIPTION</div>' +
+    '<textarea id="inline-plog-desc" style="width:100%;background:#111827;border:1px solid var(--border2);color:var(--text);padding:7px;border-radius:6px;font-size:.78rem;resize:none;height:68px;font-family:inherit;margin-bottom:6px" placeholder="Describe privilege without revealing the secret…" oninput="checkInlinePlogQuality()"></textarea>' +
+    '<div id="inline-plog-quality" style="font-size:.73rem;padding:5px 8px;border-radius:5px;background:#111827;border:1px solid var(--border);color:var(--muted);margin-bottom:6px">Start typing for quality feedback…</div>' +
+    '<button id="inline-plog-save" onclick="saveInlinePlog()" disabled style="width:100%;background:var(--gold-metallic);color:#0a0c10;border:none;border-radius:6px;padding:8px;font-weight:700;font-size:.79rem;cursor:pointer;opacity:.4">Save to PLOG →</button>';
+}
+
+function inlinePlogSelect(type, btn) {
+  inlinePlogPrivType = type;
+  btn.closest('div').querySelectorAll('.plog-priv-btn').forEach(function(b){ b.classList.remove('active'); });
+  btn.classList.add('active');
+  checkInlinePlogQuality();
+}
+
+function checkInlinePlogQuality() {
+  var desc = (document.getElementById('inline-plog-desc')||{}).value || '';
+  var quality = document.getElementById('inline-plog-quality');
+  var saveBtn = document.getElementById('inline-plog-save');
+  if (!quality) return;
+  var issues = [];
+  var descLower = desc.toLowerCase();
+  if (desc.length < 60) issues.push('Too short (' + desc.length + '/60 chars min)');
+  var goodWords = ['attorney','counsel','legal advice','work product','litigation','privileged','anticipation','confidential'];
+  if (!goodWords.some(function(w){ return descLower.includes(w); })) issues.push('Add privilege indicators (attorney, legal advice, work product…)');
+  var secretPhrases = ['will lose','we are liable','illegal','we violated','we broke'];
+  var secretFound = secretPhrases.filter(function(p){ return descLower.includes(p); });
+  if (secretFound.length) issues.push('⚠️ May reveal privileged content — rephrase');
+  if (!inlinePlogPrivType) issues.push('Select privilege type');
+  var ok = issues.length === 0;
+  quality.style.cssText = ok
+    ? 'font-size:.73rem;padding:5px 8px;border-radius:5px;background:#00695c18;border:1px solid #00695c;color:#4caf50;margin-bottom:6px'
+    : 'font-size:.73rem;padding:5px 8px;border-radius:5px;background:#f9a82518;border:1px solid #f9a825;color:#f9a825;margin-bottom:6px';
+  quality.textContent = ok ? '✅ Description looks good!' : '⚠️ ' + issues.join(' · ');
+  if (saveBtn) { saveBtn.disabled = !ok; saveBtn.style.opacity = ok ? '1' : '.4'; }
+}
+
+function saveInlinePlog() {
+  var desc = (document.getElementById('inline-plog-desc')||{}).value || '';
+  var doc = relCurrentDoc;
+  if (!doc || !inlinePlogPrivType || desc.length < 60) return;
+  plogState.entries = plogState.entries.filter(function(e){ return e.docId !== doc.id; });
+  plogState.entries.unshift({
+    docId: doc.id, docType: doc.type || '',
+    date: (doc.date||'').split('·')[0].trim(),
+    custodian: (doc.custodian||'').replace('cust-','').replace(/-/g,' '),
+    from: doc.from||'', to: doc.to||'', subject: doc.subject||'',
+    privType: inlinePlogPrivType, description: desc
+  });
+  if (!relCoding[doc.id]) relCoding[doc.id] = {};
+  relCoding[doc.id].plogEntry = true;
+  relRenderList();
+  var panel = document.getElementById('inline-plog-panel');
+  if (panel) {
+    panel.innerHTML = '<div class="panel-title">📋 PLOG Saved — ' + doc.id + '</div>' +
+      '<div style="color:#4caf50;font-size:.82rem;padding:8px">✅ Privilege log entry saved (' + plogState.entries.length + ' total entries). Switch to another mode or continue coding.</div>';
+  }
+  var fb = document.createElement('div');
+  fb.style.cssText = 'position:fixed;bottom:20px;right:20px;background:var(--sapphire-mid);color:var(--gold-light);padding:8px 14px;border-radius:7px;font-size:.8rem;font-weight:700;z-index:900;border:1px solid var(--gold-deep)';
+  fb.textContent = '✅ PLOG entry saved for ' + doc.id;
+  document.body.appendChild(fb);
+  setTimeout(function(){ fb.remove(); }, 2500);
+}
+
+function evTogglePii() {
+  evPiiVisible = !evPiiVisible;
+  // Future: highlight PII entities in document
+}
+
 function renderTactical(){
   if(!tacticalFormWeek)tacticalFormWeek=tacticalThisWeek();
   renderTacticalWeekbar();
@@ -4608,7 +4800,6 @@ function closeRelativity(){
     if (pl) pl.style.display = 'block';
     nav('review');
   }
-  updateLandingStats();
 }
 
 function relGetVisible(){
@@ -4861,7 +5052,6 @@ function relSubmitCoding(){
   showCodingFeedback(doc,errors,score,total,isCorrect,isPartial);
   relRenderList();
   updateRelProgress();
-  updateLandingStats();
 }
 
 
@@ -4924,15 +5114,11 @@ function updateRelProgress(){
   document.getElementById("rel-accuracy-disp").textContent=acc;
 }
 
-function updateLandingStats(){
-  var coded=Object.keys(relCoding).length;
-  var total=ACTIVE_DOCS.length;
-  var correct=Object.values(relAnswered).filter(function(a){return a.correct;}).length;
-  var attempted=Object.keys(relAnswered).length;
-  document.getElementById("proj-stat-coded").textContent=coded;
-  document.getElementById("proj-stat-remaining").textContent=total-coded;
-  document.getElementById("proj-stat-accuracy").textContent=attempted?Math.round(correct/attempted*100)+"%":"—";
-}
+// updateLandingStats() lived here. It wrote to proj-stat-coded / -remaining /
+// -accuracy, which only ever existed inside the Joba project card. Removing
+// that card in d9d6588 took the markup with it and left this function throwing
+// on every page load, from all seven of its call sites. Nothing displays those
+// numbers now, so the function and its calls are gone rather than guarded.
 
 function showRelResults(){
   var coded=Object.keys(relCoding).length;
@@ -4966,7 +5152,7 @@ function relResetAll(){
   document.getElementById("rel-doc-content").innerHTML="<div style=\"text-align:center;padding:60px 20px;color:var(--muted)\"><div style=\"font-size:3rem;margin-bottom:14px\">📂</div><div style=\"font-size:1rem;font-weight:600;color:var(--text2);margin-bottom:8px\">No Document Selected</div><div style=\"font-size:.84rem\">Select a document from the list to begin.</div></div>";
   document.getElementById("rel-doc-title").textContent="Select a document to begin review";
   document.getElementById("rel-panel-doc-id").textContent="No document loaded";
-  relRenderList();updateRelProgress();updateLandingStats();
+  relRenderList();updateRelProgress();
 }
 
 // ══════════════════════════════════════════
@@ -7768,7 +7954,6 @@ async function loadProgress() {
   if (!data) return null;
   applyProgressData(data);
   updateRelProgress();
-  updateLandingStats();
   evUpdateProgress();
   evUpdateLanding();
   cpUpdateLanding();
@@ -7813,7 +7998,6 @@ onLogin = function() {
   if (localData) {
     applyProgressData(localData);
     updateRelProgress();
-    updateLandingStats();
     evUpdateProgress();
     evUpdateLanding();
     cpUpdateLanding();
@@ -7823,7 +8007,6 @@ onLogin = function() {
   loadProgress().then(function(d) {
     if (d && d.current_doc_rel) {
       updateRelProgress();
-      updateLandingStats();
     }
     if (d && d.current_doc_ev) {
       evUpdateProgress();
@@ -7843,7 +8026,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (localData) {
     applyProgressData(localData);
     updateRelProgress();
-    updateLandingStats();
     evUpdateProgress();
     evUpdateLanding();
     cpUpdateLanding();
