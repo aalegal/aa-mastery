@@ -935,3 +935,77 @@ test('pathStatus tolerates missing and malformed input', function () {
   assert.strictEqual(QC.pathStatus({ attempts: null, firstPassCounts: null }).length, 6);
   assert.strictEqual(pstat({ attempts: [null, undefined] }).qcpractice, 'available');
 });
+
+test('tacticalWeekOf anchors a Wednesday to itself', function () {
+  assert.strictEqual(QC.tacticalWeekOf('2026-09-16'), '2026-09-16');
+  assert.strictEqual(QC.tacticalWeekOf('2026-09-23'), '2026-09-23');
+});
+
+test('tacticalWeekOf pulls Thursday through Sunday back to that week', function () {
+  ['2026-09-17', '2026-09-18', '2026-09-19', '2026-09-20'].forEach(function (d) {
+    assert.strictEqual(QC.tacticalWeekOf(d), '2026-09-16', d);
+  });
+});
+
+test('tacticalWeekOf pushes Monday and Tuesday to the coming Wednesday', function () {
+  assert.strictEqual(QC.tacticalWeekOf('2026-09-21'), '2026-09-23');
+  assert.strictEqual(QC.tacticalWeekOf('2026-09-22'), '2026-09-23');
+});
+
+test('tacticalWeekOf crosses month and year boundaries', function () {
+  assert.strictEqual(QC.tacticalWeekOf('2026-12-31'), '2026-12-30');  // Thu -> Wed
+  assert.strictEqual(QC.tacticalWeekOf('2027-01-01'), '2026-12-30');  // Fri -> prior Wed
+});
+
+test('tacticalWeekOf accepts a Date and a full ISO timestamp', function () {
+  assert.strictEqual(QC.tacticalWeekOf(new Date('2026-09-17T23:30:00Z')), '2026-09-16');
+  assert.strictEqual(QC.tacticalWeekOf('2026-09-17T23:30:00Z'), '2026-09-16');
+});
+
+test('tacticalWeekOf returns null for missing or unparseable input', function () {
+  assert.strictEqual(QC.tacticalWeekOf(null), null);
+  assert.strictEqual(QC.tacticalWeekOf(''), null);
+  assert.strictEqual(QC.tacticalWeekOf('not-a-date'), null);
+});
+
+var PEOPLE = ['Glory', 'Junior', 'Simon', 'Achumboro', 'Jeff'];
+
+test('tacticalWeekStatus reports who has submitted and who has not', function () {
+  var recs = [
+    { person: 'Glory', week_of: '2026-09-23', rocks: 'x' },
+    { person: 'Jeff',  week_of: '2026-09-23', rocks: 'y' },
+    { person: 'Simon', week_of: '2026-09-16', rocks: 'last week' }
+  ];
+  var s = QC.tacticalWeekStatus(recs, PEOPLE, '2026-09-23');
+  assert.strictEqual(s.length, 5);
+  var by = {}; s.forEach(function (r) { by[r.person] = r; });
+  assert.strictEqual(by.Glory.submitted, true);
+  assert.strictEqual(by.Jeff.submitted, true);
+  assert.strictEqual(by.Simon.submitted, false, 'last week does not count for this week');
+  assert.strictEqual(by.Junior.submitted, false);
+  assert.strictEqual(by.Achumboro.submitted, false);
+});
+
+test('tacticalWeekStatus keeps the roster order and carries the record', function () {
+  var recs = [{ person: 'Simon', week_of: '2026-09-23', rocks: 'z', id: 7 }];
+  var s = QC.tacticalWeekStatus(recs, PEOPLE, '2026-09-23');
+  assert.deepStrictEqual(s.map(function (r) { return r.person; }), PEOPLE);
+  assert.strictEqual(s[2].record.id, 7);
+  assert.strictEqual(s[0].record, null);
+});
+
+test('tacticalWeekStatus tolerates empty and malformed input', function () {
+  assert.strictEqual(QC.tacticalWeekStatus([], PEOPLE, '2026-09-23').length, 5);
+  assert.strictEqual(QC.tacticalWeekStatus(null, PEOPLE, '2026-09-23').length, 5);
+  assert.strictEqual(QC.tacticalWeekStatus([null, {}], PEOPLE, '2026-09-23')
+    .filter(function (r) { return r.submitted; }).length, 0);
+});
+
+test('tacticalWeeks lists distinct weeks newest first', function () {
+  var recs = [
+    { person: 'A', week_of: '2026-09-16' }, { person: 'B', week_of: '2026-09-23' },
+    { person: 'C', week_of: '2026-09-16' }, { person: 'D', week_of: null }
+  ];
+  assert.deepStrictEqual(QC.tacticalWeeks(recs), ['2026-09-23', '2026-09-16']);
+  assert.deepStrictEqual(QC.tacticalWeeks([]), []);
+});

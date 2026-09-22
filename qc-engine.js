@@ -746,6 +746,48 @@
     ]
   };
 
+  // ── Tactical meeting cadence ────────────────────────────────────────
+  // The weekly beat. Reports are submitted on Wednesday, so every date is
+  // anchored to the Wednesday of its Mon-Sun week: Monday and Tuesday belong to
+  // the Wednesday ahead of them, Thursday to Sunday to the one behind. The SQL
+  // backfill in the migration uses the same rule.
+  function tacticalWeekOf(value) {
+    if (!value) return null;
+    var d = (value instanceof Date) ? new Date(value.getTime())
+          : new Date(String(value).length === 10 ? value + 'T12:00:00Z' : value);
+    if (isNaN(d.getTime())) return null;
+    var isodow = d.getUTCDay() === 0 ? 7 : d.getUTCDay();   // Mon=1 .. Sun=7
+    d.setUTCDate(d.getUTCDate() - (isodow - 3));            // 3 = Wednesday
+    return d.toISOString().slice(0, 10);
+  }
+
+  // Who has filed this week and who has not. The gap is the point: a cadence is
+  // only real if a missing report is visible.
+  function tacticalWeekStatus(records, people, weekOf) {
+    var byPerson = {};
+    for (var i = 0; i < (records || []).length; i++) {
+      var r = records[i];
+      if (!r || !r.person || r.week_of !== weekOf) continue;
+      byPerson[r.person] = r;
+    }
+    return (people || []).map(function (person) {
+      var rec = byPerson[person] || null;
+      return { person: person, submitted: !!rec, record: rec };
+    });
+  }
+
+  function tacticalWeeks(records) {
+    var seen = {}, out = [];
+    for (var i = 0; i < (records || []).length; i++) {
+      var w = records[i] && records[i].week_of;
+      if (!w || seen[w]) continue;
+      seen[w] = 1;
+      out.push(w);
+    }
+    out.sort(function (a, b) { return b.localeCompare(a); });
+    return out;
+  }
+
   return {
     hashSeed: hashSeed,
     makeRng: makeRng,
@@ -769,6 +811,9 @@
     responsivenessScore: responsivenessScore,
     rollingPillar: rollingPillar,
     roster: roster,
+    tacticalWeekOf: tacticalWeekOf,
+    tacticalWeekStatus: tacticalWeekStatus,
+    tacticalWeeks: tacticalWeeks,
     PATH_STAGES: PATH_STAGES,
     PATH_THRESHOLDS: PATH_THRESHOLDS,
     pathStatus: pathStatus,
