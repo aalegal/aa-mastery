@@ -3270,10 +3270,10 @@ async function deletePaymentRow(id){
 // Each person gets ONE structured report with these named sections (matching the Monday.com form).
 // Ordered to match the Monday.com form this replaces.
 var TACTICAL_SECTIONS=[
-  {key:'rocks',     label:'ROCK Updates', rows:7, hint:'1. Goal \u2014 % complete, with sub-bullets'},
-  {key:'headlines', label:'Customer / Contractors Headlines', rows:4, hint:'e.g. 5 projects running. Energy levels \u2014 93%'},
-  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9, hint:'Describe the issue, then Solution 1, 2, 3\u2026'},
-  {key:'actions',   label:'Action Items / Priorities', rows:5, hint:'Numbered priorities and owners'}
+  {key:'rocks',     label:'ROCK Updates', rows:7},
+  {key:'headlines', label:'Customer / Contractors Headlines', rows:4},
+  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9},
+  {key:'actions',   label:'Action Items / Priorities', rows:5}
 ];
 
 var TACTICAL_RECORDS=[];      // every report, every week
@@ -3417,8 +3417,7 @@ function renderTacticalForm(){
   TACTICAL_SECTIONS.forEach(function(sec){
     var val=existing?(existing[sec.key]||''):'';
     h+='<label class="tac-label">'+esc(sec.label)+
-       '<textarea id="tac-'+escAttr(sec.key)+'" rows="'+esc(String(sec.rows))+'" '+
-       'placeholder="'+escAttr(sec.hint)+'">'+esc(val)+'</textarea></label>';
+       '<textarea id="tac-'+escAttr(sec.key)+'" rows="'+esc(String(sec.rows))+'">'+esc(val)+'</textarea></label>';
   });
 
   h+='<div class="tac-actions">'+
