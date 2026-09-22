@@ -1407,17 +1407,60 @@ tr:nth-child(even) td{background:#0d162080}
 .tac-in{background:#0d3b34;color:#4fd1b5;border-color:#145146}
 .tac-out{background:#3a2028;color:#e5737b;border-color:#5a2f39}
 .tac-chip:hover{filter:brightness(1.25)}
-.tac-new{background:#3d3115;color:#e9b949;border-color:#5c4a1d}
-.tac-unconf{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;
-  background:#3d3115;border:1px solid #5c4a1d;border-radius:8px;padding:.6rem .75rem;margin-bottom:.7rem}
-.tac-unconf span{color:#e9b949;font-size:.82rem}
-.tac-src{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#e9b949;
-  background:#3d3115;border:1px solid #5c4a1d;border-radius:999px;padding:.1rem .5rem;margin-left:.45rem}
 .tac-share{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;background:#161b22;border:1px solid #232a34;
   border-radius:8px;padding:.6rem .75rem;margin-bottom:.9rem}
 .tac-share code{font-size:.8rem;color:var(--gold);background:none;padding:0;word-break:break-all}
 .tac-share a.btn{text-decoration:none}
 .tac-share .muted{font-size:.76rem}
+
+/* Meeting view -- sized to be read on a shared screen, not leaned into. */
+.tac-weekbar-top{display:flex;justify-content:space-between;align-items:center;gap:.75rem;flex-wrap:wrap;margin-bottom:.6rem}
+.tac-weeknav{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap}
+.tac-weeknav strong{font-size:.98rem}
+.tac-nav{background:#131c2e;border:1px solid var(--border);color:#b8c8e0;border-radius:6px;
+  width:1.7rem;height:1.7rem;line-height:1;font-size:1rem;cursor:pointer;flex:none}
+.tac-nav:hover{border-color:var(--gold);color:var(--gold)}
+.tac-now{font-size:.72rem;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:.1rem .55rem}
+.tac-today{background:none;border:1px solid var(--border);color:var(--gold);border-radius:999px;
+  padding:.12rem .6rem;font-size:.72rem;cursor:pointer}
+.tac-today:hover{border-color:var(--gold)}
+.tac-viewtabs{display:flex;gap:.25rem;background:#0b1220;border:1px solid var(--border);border-radius:999px;padding:.15rem}
+.tac-vt{background:none;border:none;color:#8fa3bf;border-radius:999px;padding:.28rem .85rem;
+  font-size:.78rem;font-weight:600;cursor:pointer}
+.tac-vt.on{background:var(--gold);color:#12100a}
+.tac-vt:not(.on):hover{color:var(--text)}
+
+.tac-present{display:flex;flex-direction:column;gap:.85rem;margin-bottom:1rem}
+.tac-rep{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.tac-rep-head{display:flex;justify-content:space-between;align-items:center;gap:.75rem;
+  padding:.7rem .95rem;background:#111b2c;border-bottom:1px solid var(--border)}
+.tac-rep-who{display:flex;align-items:center;gap:.65rem;min-width:0}
+.tac-ava{width:2rem;height:2rem;border-radius:50%;border:1px solid;display:grid;place-items:center;
+  font-weight:700;font-size:.9rem;flex:none}
+.tac-rep-who h4{margin:0;font-size:1rem;line-height:1.2}
+.tac-rep-date{color:var(--muted);font-size:.72rem}
+.tac-rep-body{padding:.35rem .95rem .85rem}
+.tac-rep-sec{padding:.6rem 0;border-bottom:1px solid #16203a}
+.tac-rep-sec:last-child{border-bottom:none;padding-bottom:.1rem}
+.tac-rep-sec h5{margin:0 0 .3rem;color:var(--gold);font-size:.7rem;font-weight:700;
+  text-transform:uppercase;letter-spacing:.09em}
+.tac-rep-text{white-space:pre-wrap;font-size:.92rem;line-height:1.65;color:#dce6f5}
+.tac-rep-blank{margin:0;padding:.8rem .95rem;color:var(--muted);font-size:.84rem}
+.tac-rep-empty{display:flex;flex-direction:column;gap:.3rem;background:var(--card);
+  border:1px dashed var(--border2);border-radius:10px;padding:1.4rem 1rem;text-align:center;margin-bottom:1rem}
+.tac-rep-empty span{color:var(--muted);font-size:.84rem}
+.tac-flash{outline:2px solid var(--gold);outline-offset:2px;transition:outline-color .4s}
+
+.tac-missing{display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;padding:.2rem .1rem}
+.tac-missing>span{color:var(--muted);font-size:.78rem;margin-right:.15rem}
+.tac-miss-chip{background:#3a2028;border:1px solid #5a2f39;color:#e5737b;border-radius:999px;
+  padding:.18rem .6rem;font-size:.78rem;cursor:pointer}
+.tac-miss-chip:hover{filter:brightness(1.25)}
+
+/* Past weeks reuse the card, so the wrapper only needs to get out of the way. */
+.tac-past{border-top:1px solid #16203a;padding:.6rem}
+.tac-past .tac-rep{border:none;background:none}
+.tac-past .tac-rep-head{background:none;border-bottom:1px solid #16203a}
 .tac-form{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;margin-bottom:1rem}
 .tac-form-head{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
 .tac-form-head h4{margin:0}
@@ -2845,6 +2888,7 @@ tr:nth-child(even) td{background:#0d162080}
         Every submission is kept, so earlier weeks stay readable below.</p>
       <div id="tactical-status" class="lead-status"></div>
       <div id="tactical-weekbar"></div>
+      <div id="tactical-present"></div>
       <div id="tactical-form"></div>
       <div id="tactical-history"></div>
     </div>
@@ -3281,13 +3325,6 @@ var tacticalFormWeek=null;    // the week the form is currently filling
 
 function tacticalThisWeek(){ return QC.tacticalWeekOf(new Date()); }
 
-// A report that arrived through the public form and nobody has vouched for yet.
-// Rows written before the form existed have no 'source', so absence means
-// leadership typed it -- treat only an explicit unconfirmed form row as pending.
-function tacticalPending(rec){
-  return !!rec && rec.source==='form' && rec.confirmed===false;
-}
-
 function tacticalFormUrl(){ return location.origin+'/tactical'; }
 
 function copyTacticalLink(btn){
@@ -3303,20 +3340,6 @@ function copyTacticalLink(btn){
     t.select();var ok=false;try{ok=document.execCommand('copy');}catch(e){}
     document.body.removeChild(t);done(ok);
   }
-}
-
-async function confirmTacticalReport(id){
-  var rec=null;
-  for(var i=0;i<TACTICAL_RECORDS.length;i++){
-    if(String(TACTICAL_RECORDS[i].id)===String(id)){rec=TACTICAL_RECORDS[i];break;}
-  }
-  if(!rec){leadStatus('tactical-status','That report is no longer loaded \u2014 refresh.','err');return;}
-  leadStatus('tactical-status','Confirming\u2026');
-  var r=await SB.updateTactical(rec.id,{confirmed:true});
-  if(r.error){leadStatus('tactical-status','Could not confirm: '+r.error,'err');return;}
-  rec.confirmed=true;
-  renderTactical();
-  leadStatus('tactical-status','Confirmed \u2014 '+rec.person+', week of '+tacticalPrettyWeek(rec.week_of)+'.');
 }
 
 function tacticalFor(person,weekOf){
@@ -3356,9 +3379,114 @@ async function loadTactical(){
   leadStatus('tactical-status','');
 }
 
+// ── Meeting view ────────────────────────────────────────────────────────────
+// The panel used to offer only an edit form, so during a Wednesday call there
+// was nothing to put on the shared screen. This is the read view: the whole
+// week, laid out to be legible from across a room.
+
+var tacticalView='present';   // 'present' | 'edit'
+
+function tacticalSetView(v){
+  tacticalView=(v==='edit')?'edit':'present';
+  renderTactical();
+}
+
+function tacticalSlug(name){ return String(name||'').replace(/[^a-z0-9]/gi,''); }
+
+// Same name, same colour, every week -- so people find their own block fast.
+function tacticalHue(name){ return QC.hashSeed(String(name||'')) % 360; }
+
+function tacticalShiftWeek(days){
+  var d=new Date(tacticalFormWeek+'T12:00:00Z');
+  d.setUTCDate(d.getUTCDate()+days);
+  tacticalFormWeek=d.toISOString().slice(0,10);
+  renderTactical();
+}
+
+function tacticalGoThisWeek(){ tacticalFormWeek=tacticalThisWeek(); renderTactical(); }
+
+// A chip means "take me to that person". Where that lands depends on the view.
+function tacticalJump(person){
+  if(tacticalView==='present'){
+    var c=document.getElementById('tac-rep-'+tacticalSlug(person));
+    if(c){
+      c.scrollIntoView({block:'start',behavior:'smooth'});
+      c.classList.add('tac-flash');
+      setTimeout(function(){c.classList.remove('tac-flash');},1400);
+      return;
+    }
+  }
+  tacticalEdit(person);
+}
+
+function tacticalShortDate(v){
+  if(!v)return '';
+  var d=new Date(String(v).length===10?v+'T12:00:00Z':v);
+  if(isNaN(d.getTime()))return '';
+  return d.toLocaleDateString(undefined,{timeZone:'UTC',weekday:'short',day:'numeric',month:'short'});
+}
+
+// One report, rendered the same way wherever it appears.
+function tacticalReportCard(rec,person,weekOf){
+  var filled=TACTICAL_SECTIONS.filter(function(sec){
+    return rec && String(rec[sec.key]||'').trim()!=='';
+  });
+  var hue=tacticalHue(person);
+  var h='<article class="tac-rep" id="tac-rep-'+escAttr(tacticalSlug(person))+'">'+
+    '<header class="tac-rep-head">'+
+      '<div class="tac-rep-who">'+
+        '<span class="tac-ava" style="background:hsl('+hue+',42%,26%);border-color:hsl('+hue+',46%,40%);'+
+          'color:hsl('+hue+',70%,76%)">'+esc(person.charAt(0).toUpperCase())+'</span>'+
+        '<div><h4>'+esc(person)+'</h4>'+
+          '<span class="tac-rep-date">'+esc(tacticalShortDate(rec&&rec.row_date))+'</span></div>'+
+      '</div>'+
+      '<button class="btn btn-outline btn-sm" onclick="tacticalEdit(\''+escAttr(person)+'\',\''+
+        escAttr(weekOf||'')+'\')">Edit</button>'+
+    '</header>';
+
+  if(!filled.length){
+    h+='<p class="tac-rep-blank">Submitted with every section left blank.</p></article>';
+    return h;
+  }
+  h+='<div class="tac-rep-body">';
+  filled.forEach(function(sec){
+    h+='<section class="tac-rep-sec"><h5>'+esc(sec.label)+'</h5>'+
+       '<div class="tac-rep-text">'+esc(String(rec[sec.key]))+'</div></section>';
+  });
+  return h+'</div></article>';
+}
+
+function renderTacticalPresent(){
+  var el=document.getElementById('tactical-present');if(!el)return;
+  if(tacticalView!=='present'){el.innerHTML='';return;}
+
+  var status=QC.tacticalWeekStatus(TACTICAL_RECORDS,LEAD_TACTICAL_PEOPLE,tacticalFormWeek);
+  var inn=status.filter(function(s){return s.submitted;});
+  var out=status.filter(function(s){return !s.submitted;});
+
+  if(!inn.length){
+    el.innerHTML='<div class="tac-rep-empty"><strong>Nothing submitted for this week yet.</strong>'+
+      '<span>Reports appear here the moment they are sent, from the form or from this panel.</span></div>';
+    return;
+  }
+
+  var h='<div class="tac-present">';
+  inn.forEach(function(s){ h+=tacticalReportCard(s.record,s.person,tacticalFormWeek); });
+  if(out.length){
+    h+='<div class="tac-missing"><span>Still waiting on</span>';
+    out.forEach(function(s){
+      h+='<button class="tac-miss-chip" onclick="tacticalEdit(\''+escAttr(s.person)+'\')">'+
+         esc(s.person)+'</button>';
+    });
+    h+='</div>';
+  }
+  el.innerHTML=h+'</div>';
+}
+
 function renderTactical(){
   if(!tacticalFormWeek)tacticalFormWeek=tacticalThisWeek();
   renderTacticalWeekbar();
+  renderTacticalPresent();
   renderTacticalForm();
   renderTacticalHistory();
 }
@@ -3372,37 +3500,43 @@ function renderTacticalWeekbar(){
     '<button class="btn btn-outline btn-sm" onclick="copyTacticalLink(this)">Copy link</button>'+
     '<a class="btn btn-outline btn-sm" href="/tactical" target="_blank" rel="noopener">Open</a></div>';
   var inCount=status.filter(function(s){return s.submitted;}).length;
-  var h='<div class="tac-weekbar"><div class="tac-weekbar-head">'+
-    '<strong>Week of '+esc(tacticalPrettyWeek(tacticalFormWeek))+'</strong>'+
+  var isNow=tacticalFormWeek===tacticalThisWeek();
+  var h='<div class="tac-weekbar">'+
+    '<div class="tac-weekbar-top">'+
+      '<div class="tac-weeknav">'+
+        '<button class="tac-nav" onclick="tacticalShiftWeek(-7)" title="Previous week">&#8249;</button>'+
+        '<strong>Week of '+esc(tacticalPrettyWeek(tacticalFormWeek))+'</strong>'+
+        '<button class="tac-nav" onclick="tacticalShiftWeek(7)" title="Next week">&#8250;</button>'+
+        (isNow?'<span class="tac-now">This week</span>'
+              :'<button class="tac-today" onclick="tacticalGoThisWeek()">Jump to this week</button>')+
+      '</div>'+
+      '<div class="tac-viewtabs">'+
+        '<button class="tac-vt'+(tacticalView==='present'?' on':'')+'" '+
+          'onclick="tacticalSetView(\'present\')">Meeting view</button>'+
+        '<button class="tac-vt'+(tacticalView==='edit'?' on':'')+'" '+
+          'onclick="tacticalSetView(\'edit\')">Edit</button>'+
+      '</div>'+
+    '</div>'+
+    '<div class="tac-weekbar-head">'+
     '<span class="tac-count">'+esc(String(inCount))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+' submitted</span>'+
     '</div><div class="tac-chips">';
   status.forEach(function(s){
-    var pend=s.submitted&&tacticalPending(s.record);
-    var cls=!s.submitted?'tac-out':(pend?'tac-new':'tac-in');
-    h+='<span class="tac-chip '+cls+'" '+
-       'onclick="tacticalEdit(\''+escAttr(s.person)+'\')" title="'+
-       escAttr(!s.submitted?'Not submitted yet'
-              :pend?'Came in through the form \u2014 not confirmed yet'
-              :'Open '+s.person+'\u2019s report')+'">'+
-       (s.submitted?(pend?'\u25cf ':'\u2713 '):'')+esc(s.person)+'</span>';
+    h+='<span class="tac-chip '+(s.submitted?'tac-in':'tac-out')+'" '+
+       'onclick="tacticalJump(\''+escAttr(s.person)+'\')" title="'+
+       escAttr(s.submitted?'Go to '+s.person+'\u2019s report':'Not submitted yet')+'">'+
+       (s.submitted?'\u2713 ':'')+esc(s.person)+'</span>';
   });
   el.innerHTML=share+h+'</div></div>';
 }
 
 function renderTacticalForm(){
   var el=document.getElementById('tactical-form');if(!el)return;
+  if(tacticalView!=='edit'){el.innerHTML='';return;}
   var person=el.getAttribute('data-person')||tacticalDefaultPerson();
   var existing=tacticalFor(person,tacticalFormWeek);
   var dateVal=(existing&&existing.row_date)||tacticalFormWeek||'';
 
-  var h='';
-  if(tacticalPending(existing)){
-    h+='<div class="tac-unconf"><span>'+esc(person)+' sent this through the form. '+
-       'Read it, then confirm.</span>'+
-       '<button class="btn btn-primary" onclick="confirmTacticalReport(\''+
-       escAttr(String(existing.id))+'\')">Confirm report</button></div>';
-  }
-  h+='<div class="tac-form"><div class="tac-form-head"><h4>'+
+  var h='<div class="tac-form"><div class="tac-form-head"><h4>'+
     esc(existing?'Edit report':'Submit report')+'</h4>'+
     (existing?'<span class="tac-editing">Editing an existing submission for this week</span>':'')+
     '</div><div class="tac-row">'+
@@ -3443,6 +3577,7 @@ function tacticalDateChanged(value){
 
 function tacticalEdit(person,weekOf){
   if(weekOf)tacticalFormWeek=weekOf;
+  tacticalView='edit';
   var el=document.getElementById('tactical-form');
   if(el)el.setAttribute('data-person',person);
   renderTactical();
@@ -3489,6 +3624,7 @@ async function submitTactical(){
     TACTICAL_RECORDS.push((a.data&&a.data[0])||rec);
   }
   tacticalFormWeek=weekOf;
+  tacticalView='present';
   renderTactical();
   leadStatus('tactical-status','Saved \u2014 '+person+', week of '+tacticalPrettyWeek(weekOf)+'.');
 }
@@ -3503,6 +3639,7 @@ async function deleteTacticalReport(){
   var r=await SB.deleteTactical(rec.id);
   if(r.error){leadStatus('tactical-status','Delete failed: '+r.error,'err');return;}
   TACTICAL_RECORDS=TACTICAL_RECORDS.filter(function(x){return x.id!==rec.id;});
+  tacticalView='present';
   renderTactical();
   leadStatus('tactical-status','Deleted.');
 }
@@ -3522,15 +3659,7 @@ function renderTacticalHistory(){
        ' <span class="tac-count">'+esc(String(n))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+'</span></summary>';
     status.forEach(function(s){
       if(!s.submitted){h+='<div class="tac-miss">'+esc(s.person)+' \u2014 no report</div>';return;}
-      h+='<div class="tac-past"><div class="tac-past-head"><strong>'+esc(s.person)+
-         (tacticalPending(s.record)?'<span class="tac-src">via form \u2014 unconfirmed</span>':'')+'</strong>'+
-         '<button class="btn btn-outline btn-sm" onclick="tacticalEdit(\''+escAttr(s.person)+'\',\''+escAttr(w)+'\')">Open</button></div>';
-      TACTICAL_SECTIONS.forEach(function(sec){
-        var v=s.record[sec.key];
-        if(!v||!String(v).trim())return;
-        h+='<div class="tac-past-sec"><span>'+esc(sec.label)+'</span><pre>'+esc(String(v))+'</pre></div>';
-      });
-      h+='</div>';
+      h+='<div class="tac-past">'+tacticalReportCard(s.record,s.person,w)+'</div>';
     });
     h+='</details>';
   });
