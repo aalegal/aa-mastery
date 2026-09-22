@@ -1407,6 +1407,17 @@ tr:nth-child(even) td{background:#0d162080}
 .tac-in{background:#0d3b34;color:#4fd1b5;border-color:#145146}
 .tac-out{background:#3a2028;color:#e5737b;border-color:#5a2f39}
 .tac-chip:hover{filter:brightness(1.25)}
+.tac-new{background:#3d3115;color:#e9b949;border-color:#5c4a1d}
+.tac-unconf{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;
+  background:#3d3115;border:1px solid #5c4a1d;border-radius:8px;padding:.6rem .75rem;margin-bottom:.7rem}
+.tac-unconf span{color:#e9b949;font-size:.82rem}
+.tac-src{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:#e9b949;
+  background:#3d3115;border:1px solid #5c4a1d;border-radius:999px;padding:.1rem .5rem;margin-left:.45rem}
+.tac-share{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap;background:#161b22;border:1px solid #232a34;
+  border-radius:8px;padding:.6rem .75rem;margin-bottom:.9rem}
+.tac-share code{font-size:.8rem;color:var(--gold);background:none;padding:0;word-break:break-all}
+.tac-share a.btn{text-decoration:none}
+.tac-share .muted{font-size:.76rem}
 .tac-form{background:var(--card);border:1px solid #1c2740;border-radius:8px;padding:1rem;margin-bottom:1rem}
 .tac-form-head{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap;margin-bottom:.75rem}
 .tac-form-head h4{margin:0}
@@ -3270,6 +3281,44 @@ var tacticalFormWeek=null;    // the week the form is currently filling
 
 function tacticalThisWeek(){ return QC.tacticalWeekOf(new Date()); }
 
+// A report that arrived through the public form and nobody has vouched for yet.
+// Rows written before the form existed have no 'source', so absence means
+// leadership typed it -- treat only an explicit unconfirmed form row as pending.
+function tacticalPending(rec){
+  return !!rec && rec.source==='form' && rec.confirmed===false;
+}
+
+function tacticalFormUrl(){ return location.origin+'/tactical'; }
+
+function copyTacticalLink(btn){
+  var url=tacticalFormUrl();
+  function done(ok){
+    btn.textContent=ok?'Copied':'Press Cmd+C';
+    setTimeout(function(){btn.textContent='Copy link';},1800);
+  }
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(function(){done(true);},function(){done(false);});
+  }else{
+    var t=document.createElement('textarea');t.value=url;document.body.appendChild(t);
+    t.select();var ok=false;try{ok=document.execCommand('copy');}catch(e){}
+    document.body.removeChild(t);done(ok);
+  }
+}
+
+async function confirmTacticalReport(id){
+  var rec=null;
+  for(var i=0;i<TACTICAL_RECORDS.length;i++){
+    if(String(TACTICAL_RECORDS[i].id)===String(id)){rec=TACTICAL_RECORDS[i];break;}
+  }
+  if(!rec){leadStatus('tactical-status','That report is no longer loaded \u2014 refresh.','err');return;}
+  leadStatus('tactical-status','Confirming\u2026');
+  var r=await SB.updateTactical(rec.id,{confirmed:true});
+  if(r.error){leadStatus('tactical-status','Could not confirm: '+r.error,'err');return;}
+  rec.confirmed=true;
+  renderTactical();
+  leadStatus('tactical-status','Confirmed \u2014 '+rec.person+', week of '+tacticalPrettyWeek(rec.week_of)+'.');
+}
+
 function tacticalFor(person,weekOf){
   for(var i=0;i<TACTICAL_RECORDS.length;i++){
     var r=TACTICAL_RECORDS[i];
@@ -3318,18 +3367,26 @@ function renderTactical(){
 function renderTacticalWeekbar(){
   var el=document.getElementById('tactical-weekbar');if(!el)return;
   var status=QC.tacticalWeekStatus(TACTICAL_RECORDS,LEAD_TACTICAL_PEOPLE,tacticalFormWeek);
+  var share='<div class="tac-share"><span class="muted">Share with the team:</span>'+
+    '<code>'+esc(tacticalFormUrl())+'</code>'+
+    '<button class="btn btn-outline btn-sm" onclick="copyTacticalLink(this)">Copy link</button>'+
+    '<a class="btn btn-outline btn-sm" href="/tactical" target="_blank" rel="noopener">Open</a></div>';
   var inCount=status.filter(function(s){return s.submitted;}).length;
   var h='<div class="tac-weekbar"><div class="tac-weekbar-head">'+
     '<strong>Week of '+esc(tacticalPrettyWeek(tacticalFormWeek))+'</strong>'+
     '<span class="tac-count">'+esc(String(inCount))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+' submitted</span>'+
     '</div><div class="tac-chips">';
   status.forEach(function(s){
-    h+='<span class="tac-chip '+(s.submitted?'tac-in':'tac-out')+'" '+
+    var pend=s.submitted&&tacticalPending(s.record);
+    var cls=!s.submitted?'tac-out':(pend?'tac-new':'tac-in');
+    h+='<span class="tac-chip '+cls+'" '+
        'onclick="tacticalEdit(\''+escAttr(s.person)+'\')" title="'+
-       escAttr(s.submitted?'Open '+s.person+'\u2019s report':'Not submitted yet')+'">'+
-       (s.submitted?'\u2713 ':'')+esc(s.person)+'</span>';
+       escAttr(!s.submitted?'Not submitted yet'
+              :pend?'Came in through the form \u2014 not confirmed yet'
+              :'Open '+s.person+'\u2019s report')+'">'+
+       (s.submitted?(pend?'\u25cf ':'\u2713 '):'')+esc(s.person)+'</span>';
   });
-  el.innerHTML=h+'</div></div>';
+  el.innerHTML=share+h+'</div></div>';
 }
 
 function renderTacticalForm(){
@@ -3338,7 +3395,14 @@ function renderTacticalForm(){
   var existing=tacticalFor(person,tacticalFormWeek);
   var dateVal=(existing&&existing.row_date)||tacticalFormWeek||'';
 
-  var h='<div class="tac-form"><div class="tac-form-head"><h4>'+
+  var h='';
+  if(tacticalPending(existing)){
+    h+='<div class="tac-unconf"><span>'+esc(person)+' sent this through the form. '+
+       'Read it, then confirm.</span>'+
+       '<button class="btn btn-primary" onclick="confirmTacticalReport(\''+
+       escAttr(String(existing.id))+'\')">Confirm report</button></div>';
+  }
+  h+='<div class="tac-form"><div class="tac-form-head"><h4>'+
     esc(existing?'Edit report':'Submit report')+'</h4>'+
     (existing?'<span class="tac-editing">Editing an existing submission for this week</span>':'')+
     '</div><div class="tac-row">'+
@@ -3413,10 +3477,14 @@ async function submitTactical(){
   var existing=tacticalFor(person,weekOf);
   leadStatus('tactical-status','Saving\u2026');
   if(existing&&existing.id){
+    // Leadership editing a report confirms it. 'source' is left alone: it
+    // records where the report originally came from, which stays true.
+    rec.confirmed=true;
     var u=await SB.updateTactical(existing.id,rec);
     if(u.error){leadStatus('tactical-status','Save failed: '+u.error,'err');return;}
     for(var k in rec)if(Object.prototype.hasOwnProperty.call(rec,k))existing[k]=rec[k];
   }else{
+    rec.source='leadership'; rec.confirmed=true;
     var a=await SB.addTactical(rec);
     if(a.error){leadStatus('tactical-status','Save failed: '+a.error,'err');return;}
     TACTICAL_RECORDS.push((a.data&&a.data[0])||rec);
@@ -3455,7 +3523,8 @@ function renderTacticalHistory(){
        ' <span class="tac-count">'+esc(String(n))+' of '+esc(String(LEAD_TACTICAL_PEOPLE.length))+'</span></summary>';
     status.forEach(function(s){
       if(!s.submitted){h+='<div class="tac-miss">'+esc(s.person)+' \u2014 no report</div>';return;}
-      h+='<div class="tac-past"><div class="tac-past-head"><strong>'+esc(s.person)+'</strong>'+
+      h+='<div class="tac-past"><div class="tac-past-head"><strong>'+esc(s.person)+
+         (tacticalPending(s.record)?'<span class="tac-src">via form \u2014 unconfirmed</span>':'')+'</strong>'+
          '<button class="btn btn-outline btn-sm" onclick="tacticalEdit(\''+escAttr(s.person)+'\',\''+escAttr(w)+'\')">Open</button></div>';
       TACTICAL_SECTIONS.forEach(function(sec){
         var v=s.record[sec.key];
