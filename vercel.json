@@ -4,8 +4,10 @@
     { "source": "/accent-trainer/", "destination": "/accent-trainer/index.html" },
     { "source": "/wellness", "destination": "/wellness/index.html" },
     { "source": "/wellness/", "destination": "/wellness/index.html" },
+    { "source": "/tactical", "destination": "/tactical/index.html" },
+    { "source": "/tactical/", "destination": "/tactical/index.html" },
     {
-      "source": "/((?!og-image\\.png$|qc-engine\\.js$|accent-trainer|wellness).*)",
+      "source": "/((?!og-image\\.png$|qc-engine\\.js$|accent-trainer|wellness|tactical).*)",
       "destination": "/index.html"
     }
   ]
