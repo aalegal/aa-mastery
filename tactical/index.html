@@ -149,10 +149,10 @@ var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 // Kept in step with TACTICAL_SECTIONS in the main app. Same keys, same order,
 // same column names -- the panel reads exactly what this form writes.
 var SECTIONS=[
-  {key:'rocks',     label:'ROCK Updates', rows:7, hint:'1. Goal — % complete, with sub-bullets'},
-  {key:'headlines', label:'Customer / Contractors Headlines', rows:4, hint:'e.g. 5 projects running. Energy levels — 93%'},
-  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9, hint:'Describe the issue, then Solution 1, 2, 3…'},
-  {key:'actions',   label:'Action Items / Priorities', rows:5, hint:'Numbered priorities and owners'}
+  {key:'rocks',     label:'ROCK Updates', rows:7},
+  {key:'headlines', label:'Customer / Contractors Headlines', rows:4},
+  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9},
+  {key:'actions',   label:'Action Items / Priorities', rows:5}
 ];
 
 // The people who can file a report. Add names here as the group grows.
@@ -182,7 +182,7 @@ function buildForm(){
   el('f-sections').innerHTML=SECTIONS.map(function(sec){
     return '<div class="field">'+
       '<label class="lbl" for="f-'+sec.key+'">'+sec.label+'</label>'+
-      '<textarea id="f-'+sec.key+'" rows="'+sec.rows+'" placeholder="'+sec.hint+'"></textarea>'+
+      '<textarea id="f-'+sec.key+'" rows="'+sec.rows+'"></textarea>'+
     '</div>';
   }).join('');
 
