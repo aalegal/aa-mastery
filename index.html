@@ -3092,10 +3092,63 @@ function isLeadership(u){
 
 const SB={
   url:SUPABASE_URL,key:SUPABASE_ANON_KEY,token:null,user:null,
+  refresh:null,expiresAt:0,_refreshing:null,
   hdr(x={}){return{'Content-Type':'application/json','apikey':this.key,'Authorization':'Bearer '+(this.token||this.key),...x}},
-  async req(m,p,b=null){try{const r=await axios({method:m,url:this.url+p,headers:this.hdr(),data:b});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.message||e.message}}},
-  async signUp(email,pw,name){const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name},emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{data:r.data}},
-  async signIn(email,pw){const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};if(r.data?.access_token){this.token=r.data.access_token;this.user=r.data.user;return{data:r.data}}return{error:'Login failed'}},
+
+  // Every sign-in path funnels through here so the refresh token and expiry are
+  // never dropped on the floor again. Login used to keep access_token alone.
+  setSession(d){
+    if(!d||!d.access_token)return false;
+    this.token=d.access_token;
+    if(d.refresh_token)this.refresh=d.refresh_token;
+    this.expiresAt=Date.now()+((Number(d.expires_in)||3600)*1000);
+    if(d.user)this.user=d.user;
+    return true;
+  },
+  clearSession(){this.token=null;this.user=null;this.refresh=null;this.expiresAt=0;},
+
+  // Access tokens last an hour. With nothing renewing them the app just began
+  // failing every request with "JWT expired" and the only way back was to log
+  // in again. Renew a minute early; concurrent callers share one in-flight call.
+  async ensureFresh(force){
+    if(!this.refresh)return;
+    if(!force&&Date.now()<this.expiresAt-60000)return;
+    if(this._refreshing)return this._refreshing;
+    this._refreshing=(async()=>{
+      try{
+        const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=refresh_token',
+          headers:{'Content-Type':'application/json','apikey':this.key},data:{refresh_token:this.refresh}});
+        this.setSession(r.data);
+      }catch(e){
+        // A refresh token that will not exchange is spent. Drop it so callers
+        // report an expired session instead of retrying forever.
+        this.refresh=null;this.expiresAt=0;
+      }finally{this._refreshing=null;}
+    })();
+    return this._refreshing;
+  },
+
+  async req(m,p,b=null){
+    await this.ensureFresh();
+    const send=()=>axios({method:m,url:this.url+p,headers:this.hdr(),data:b});
+    try{const r=await send();return{data:r.data,error:null}}
+    catch(e){
+      const msg=e.response?.data?.message||e.message;
+      const expired=e.response?.status===401&&/jwt|expired/i.test(String(msg));
+      if(expired&&this.refresh){
+        await this.ensureFresh(true);
+        if(this.refresh){
+          try{const r2=await send();return{data:r2.data,error:null}}catch(e2){
+            return{data:null,error:e2.response?.data?.message||e2.message};
+          }
+        }
+      }
+      if(expired)return{data:null,error:'Session expired \u2014 log in again.'};
+      return{data:null,error:msg};
+    }
+  },
+  async signUp(email,pw,name){const r=await axios({method:'POST',url:this.url+'/auth/v1/signup',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw,options:{data:{display_name:name},emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};if(r.data?.access_token){this.setSession(r.data);return{data:r.data}}return{data:r.data}},
+  async signIn(email,pw){const r=await axios({method:'POST',url:this.url+'/auth/v1/token?grant_type=password',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,password:pw}}).catch(e=>({data:e.response?.data}));if(r.data?.error_description||r.data?.error)return{error:r.data.error_description||r.data.error};if(r.data?.access_token){this.setSession(r.data);return{data:r.data}}return{error:'Login failed'}},
   // ---- MFA (TOTP) via Supabase GoTrue ----
   // List enrolled factors. Returns {totp:[...], all:[...]}.
   async mfaListFactors(){try{const r=await axios({method:'GET',url:this.url+'/auth/v1/factors',headers:this.hdr()});var all=(r.data&&r.data.all)||r.data||[];var totp=(all||[]).filter(function(f){return f.factor_type==='totp'&&f.status==='verified';});return{data:{all:all,totp:totp},error:null}}catch(e){return{data:{all:[],totp:[]},error:e.response?.data?.message||e.message}}},
@@ -3106,14 +3159,14 @@ const SB={
   // Create a challenge for a factor (needed before verify).
   async mfaChallenge(factorId){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/factors/'+factorId+'/challenge',headers:this.hdr()});return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.msg||e.response?.data?.message||e.message}}},
   // Verify a code against a challenge. On success the session is upgraded to aal2.
-  async mfaVerify(factorId,challengeId,code){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/factors/'+factorId+'/verify',headers:this.hdr(),data:{challenge_id:challengeId,code:code}});if(r.data&&r.data.access_token){this.token=r.data.access_token;this.user=r.data.user||this.user;}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.msg||e.response?.data?.message||'Invalid code'}}},
+  async mfaVerify(factorId,challengeId,code){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/factors/'+factorId+'/verify',headers:this.hdr(),data:{challenge_id:challengeId,code:code}});if(r.data&&r.data.access_token){this.setSession(r.data);}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.msg||e.response?.data?.message||'Invalid code'}}},
   // Email OTP: send a 6-digit code to the user's email, then verify it.
   async sendEmailOtp(email){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/otp',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,create_user:false}});return{data:r.data,error:null}}catch(e){const d=e.response?.data;const msg=d?.msg||d?.message||d?.error_description||d?.error||(typeof d==='string'?d:null)||e.message;const isRateLimit=d?.error_code==='over_email_send_rate_limit'||(e.response?.status===429);return{data:null,error:msg,rateLimit:isRateLimit}}},
-  async verifyEmailOtp(email,token){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/verify',headers:{'Content-Type':'application/json','apikey':this.key},data:{type:'email',email,token}});if(r.data&&r.data.access_token){this.token=r.data.access_token;this.user=r.data.user;}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.error_description||e.response?.data?.message||'Invalid or expired code.'}}},
+  async verifyEmailOtp(email,token){try{const r=await axios({method:'POST',url:this.url+'/auth/v1/verify',headers:{'Content-Type':'application/json','apikey':this.key},data:{type:'email',email,token}});if(r.data&&r.data.access_token){this.setSession(r.data);}return{data:r.data,error:null}}catch(e){return{data:null,error:e.response?.data?.error_description||e.response?.data?.message||'Invalid or expired code.'}}},
   async sendMagicLink(email){const r=await axios({method:'POST',url:this.url+'/auth/v1/magiclink',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{emailRedirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};return{data:r.data}},
   async sendPasswordReset(email){const r=await axios({method:'POST',url:this.url+'/auth/v1/recover',headers:{'Content-Type':'application/json','apikey':this.key},data:{email,options:{redirectTo:SITE_URL}}}).catch(e=>({data:e.response?.data}));if(r.data?.error)return{error:r.data.error.message||r.data.error};return{data:r.data}},
   async updatePassword(p){return this.req('PUT','/auth/v1/user',{password:p})},
-  async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.token=null;this.user=null},
+  async signOut(){await axios({method:'POST',url:this.url+'/auth/v1/logout',headers:this.hdr()}).catch(()=>{});this.clearSession()},
   async saveScore(uid,name,cat,score,total){return this.req('POST','/rest/v1/quiz_scores',{user_id:uid,display_name:name,category:cat,score,total,pct:Math.round(score/total*100),created_at:new Date().toISOString()})},
   async getLeaderboard(){return this.req('GET','/rest/v1/quiz_scores?select=display_name,score,total,pct,category,created_at&order=pct.desc,score.desc&limit=200')},
   async getUserScores(uid){return this.req('GET',`/rest/v1/quiz_scores?user_id=eq.${uid}&order=created_at.desc&limit=30`)},
@@ -5312,7 +5365,8 @@ logout=async function(){
   var type=params.get('type'),token=params.get('access_token');
   if(!token)return;
   window.history.replaceState(null,'',window.location.pathname);
-  SB.token=token;
+  SB.setSession({access_token:token,refresh_token:params.get('refresh_token'),
+                 expires_in:params.get('expires_in')});
   if(type==='recovery'){lwShowView('reset');}
   else if(type==='magiclink'||type==='signup'||type==='email'){
     axios({method:'GET',url:SB.url+'/auth/v1/user',headers:SB.hdr()}).then(function(res){
