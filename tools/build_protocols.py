@@ -245,7 +245,7 @@ def build(m):
     sect("Privilege", *priv[:2], rest=priv[2:])
 
     sect("Confidentiality",
-         table(["Designation", "Use it for"], sc["conf"], [w * 0.26, w * 0.74]),
+         table(["Designation", "Use it for"], m.get("conf") or sc["conf"], [w * 0.26, w * 0.74]),
          Spacer(1, 4), P(sc["conf_note"], "note"))
 
     if m.get("redaction"):

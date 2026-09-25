@@ -39,13 +39,13 @@ test('makeRng is roughly uniform', function () {
 
 var JSON_SET = [
   { id: 'A1', answer: { responsive: 'responsive', privilege: 'not-privileged', action: 'produce', conf: 'standard', issues: ['issue1'] } },
-  { id: 'A2', answer: { responsive: 'non-responsive', privilege: 'not-privileged', action: 'produce', conf: 'highly-conf', issues: [] } },
+  { id: 'A2', answer: { responsive: 'non-responsive', privilege: 'not-privileged', action: 'withhold', conf: 'highly-conf', issues: [] } },
   { id: 'A3', answer: { responsive: 'responsive', privilege: 'acp-wpp', action: 'withhold', conf: 'aeo', issues: ['issue2', 'issue3'] } }
 ];
 
 var FA_SET = [
   { id: 'F1', answer: { responsive: 'responsive', privilege: 'fa-flag', action: 'withhold', conf: 'hc-aeo', issues: ['issue1'] } },
-  { id: 'F2', answer: { responsive: 'non-responsive', privilege: 'not-privileged', action: 'produce', conf: 'confidential', issues: [] } }
+  { id: 'F2', answer: { responsive: 'non-responsive', privilege: 'not-privileged', action: 'withhold', conf: 'confidential', issues: [] } }
 ];
 
 test('buildVocabulary collects distinct values, sorted', function () {
@@ -1008,4 +1008,30 @@ test('tacticalWeeks lists distinct weeks newest first', function () {
   ];
   assert.deepStrictEqual(QC.tacticalWeeks(recs), ['2026-09-23', '2026-09-16']);
   assert.deepStrictEqual(QC.tacticalWeeks([]), []);
+});
+
+// A planted error has to look like a real reviewer's mistake. Flipping only the
+// responsiveness call left the old action behind, and the incoherent result
+// (responsive but withheld with no privilege, or non-responsive but produced)
+// told the QC reviewer where the error was.
+test('a planted over-designation produces the document, as the real mistake would', function () {
+  var v = QC.buildVocabulary(JSON_SET);
+  var planted = QC.ERROR_TYPES.OVER_DESIGNATION.apply(JSON_SET[1].answer, v, QC.makeRng(7));
+  assert.strictEqual(planted.responsive, 'responsive');
+  assert.strictEqual(planted.action, 'produce');
+  assert.strictEqual(planted.issues.length, 1);
+});
+
+test('a planted under-designation withholds the document, as the real mistake would', function () {
+  var v = QC.buildVocabulary(JSON_SET);
+  var planted = QC.ERROR_TYPES.UNDER_DESIGNATION.apply(JSON_SET[0].answer, v, QC.makeRng(7));
+  assert.strictEqual(planted.responsive, 'non-responsive');
+  assert.strictEqual(planted.action, 'withhold');
+  assert.deepStrictEqual(planted.issues, []);
+});
+
+test('the same holds on a Casepoint matter, whose non-responsive documents were always withheld', function () {
+  var v = QC.buildVocabulary(FA_SET);
+  var planted = QC.ERROR_TYPES.OVER_DESIGNATION.apply(FA_SET[1].answer, v, QC.makeRng(7));
+  assert.strictEqual(planted.action, 'produce');
 });
