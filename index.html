@@ -5820,12 +5820,13 @@ function openCase(caseNum) {
 
 // The custodian list was hardcoded to Joba's people, so it returned nothing for any
 // other matter. Build it from whatever corpus is actually open.
-function renderRelCustodians() {
+function renderRelCustodians(docs) {
   var box = document.getElementById('rel-sidebar-custodians');
   if (!box || !ACTIVE_DOCS) return;
+  docs = docs || relBatchDocs();
   var counts = {}, order = [];
-  for (var i = 0; i < ACTIVE_DOCS.length; i++) {
-    var c = ACTIVE_DOCS[i].custodian;
+  for (var i = 0; i < docs.length; i++) {
+    var c = docs[i].custodian;
     if (!c) continue;
     if (!counts[c]) { counts[c] = 0; order.push(c); }
     counts[c]++;
@@ -5837,7 +5838,7 @@ function renderRelCustodians() {
     var label = short.length <= 3 ? short.toUpperCase()
               : short.charAt(0).toUpperCase() + short.slice(1);
     var div = document.createElement('div');
-    div.className = 'rel-sidebar-item';
+    div.className = 'rel-sidebar-item' + (relFilter === key ? ' active' : '');
     div.innerHTML = '<span>\u{1F464} ' + esc(label) + '</span>' +
                     '<span class="rel-count">' + esc(String(counts[key])) + '</span>';
     div.onclick = (function (k) { return function () { relSidebarFilter(k, this); }; })(key);
@@ -5845,21 +5846,79 @@ function renderRelCustodians() {
   });
 }
 
+// The issues for the one matter left in this shell. The sidebar and the
+// coding panel both read this, so they can no longer disagree -- the panel
+// had been left showing Joba's four issues after that matter was removed.
+var REL_ISSUES = [
+  {id:'issue1', n:1, label:'Securities Fraud'},
+  {id:'issue2', n:2, label:'Market Manipulation'},
+  {id:'issue3', n:3, label:'Insider Trading'},
+  {id:'issue4', n:4, label:'Failure to Supervise'}
+];
+
 function updateSidebarForCase(caseNum) {
-  var container = document.getElementById('rel-sidebar-issues');
-  if (!container) return;
-  var issues = [];
-  // One matter left in this shell, so one issue set.
-  issues = [{id:'issue1',n:1,label:'Securities Fraud'},{id:'issue2',n:2,label:'Market Manipulation'},{id:'issue3',n:3,label:'Insider Trading'},{id:'issue4',n:4,label:'Failure to Supervise'}];
-  container.innerHTML = '';
-  renderRelCustodians();
-  issues.forEach(function(iss) {
-    var div = document.createElement('div');
-    div.className = 'rel-sidebar-item';
-    div.innerHTML = '<span>Issue ' + iss.n + '</span><span>' + iss.label + '</span>';
-    div.onclick = (function(id){ return function(){ relSidebarFilter(id, this); }; })(iss.id);
-    container.appendChild(div);
+  REL_ISSUES.forEach(function (iss) {
+    var lbl = document.getElementById('rel-issue-lbl-' + iss.n);
+    if (lbl) lbl.textContent = 'Issue ' + iss.n + ': ' + iss.label;
   });
+  updateRelSearchCounts();
+}
+
+function relBatchDocs() {
+  var st = batchState.rel || {};
+  return getBatchDocs(ACTIVE_DOCS || [], st.currentBatch || 0);
+}
+
+// Does a document belong under a sidebar entry? Custodian and type are
+// document metadata. Issues deliberately are NOT: each document's issue tags
+// are the answer key, so filtering on them would hand the answers over. An
+// issue entry lists what the reviewer has tagged with that issue themselves,
+// which is how a saved search on a coded field behaves in real Relativity.
+function relMatchesSidebar(d, mode) {
+  if (!mode || mode === 'all') return true;
+  if (mode === 'attachment') return d.type === 'attachment' || !!d.hasAttachment;
+  if (/^cust-/.test(mode)) return d.custodian === mode;
+  if (/^issue\d$/.test(mode)) {
+    var c = relCoding[d.id];
+    return !!(c && c.issues && c.issues.indexOf(mode) !== -1);
+  }
+  if (/^(email|memo|contract|chat)$/.test(mode)) return d.type === mode;
+  return true;
+}
+
+// Every count describes the batch you are working in, which is exactly what
+// clicking the entry will list. They used to be Joba's totals, hardcoded.
+function updateRelSearchCounts() {
+  var docs = relBatchDocs();
+  var count = function (mode) {
+    return docs.filter(function (d) { return relMatchesSidebar(d, mode); }).length;
+  };
+
+  ['all','email','attachment','memo','contract','chat'].forEach(function (mode) {
+    var el = document.getElementById('sc-' + mode);
+    if (!el) return;
+    var nDocs = count(mode);
+    el.textContent = nDocs;
+    // A saved search that can never return anything is just a dead button.
+    var row = el.closest('.rel-sidebar-item');
+    if (row && mode !== 'all') row.style.display = nDocs ? '' : 'none';
+  });
+
+  renderRelCustodians(docs);
+
+  var box = document.getElementById('rel-sidebar-issues');
+  if (box) {
+    box.innerHTML = '';
+    REL_ISSUES.forEach(function (iss) {
+      var div = document.createElement('div');
+      div.className = 'rel-sidebar-item' + (relFilter === iss.id ? ' active' : '');
+      div.title = 'Documents you have tagged with this issue';
+      div.innerHTML = '<span>Issue ' + iss.n + ' ' + esc(iss.label) + '</span>' +
+                      '<span class="rel-count">' + count(iss.id) + '</span>';
+      div.onclick = (function (id) { return function () { relSidebarFilter(id, this); }; })(iss.id);
+      box.appendChild(div);
+    });
+  }
 }
 
 
@@ -7789,7 +7848,7 @@ function getBatchVisibleDocs(platform) {
       }
       if (relFilter === 'uncoded') return !relCoding[d.id];
       if (relFilter === 'coded') return !!relCoding[d.id];
-      return true;
+      return relMatchesSidebar(d, relFilter);
     });
   } else {
     return batchDocs.filter(function(d) {
@@ -7849,6 +7908,7 @@ evGetVisible = function() {
 var _origRelRenderList = relRenderList;
 relRenderList = function() {
   _origRelRenderList();
+  if (typeof updateRelSearchCounts === 'function') updateRelSearchCounts();
   renderBatchSelector('rel');
   checkBatchCompletion('rel');
 };
@@ -9806,6 +9866,7 @@ function qcRosterCsv() {
       <div class="rel-sidebar-section">
         <div class="rel-sidebar-header">By Issue</div>
         <div id="rel-sidebar-issues"></div>
+      </div>
       <div class="rel-progress-wrap">
         <div class="rel-progress-label"><span>Progress</span><span id="rel-prog-pct">0%</span></div>
         <div class="rel-progress-bar"><div class="rel-progress-fill" id="rel-prog-fill" style="width:0%"></div></div>
@@ -9879,10 +9940,10 @@ function qcRosterCsv() {
           <div class="rel-field">
             <div class="rel-field-label">Issues (select all that apply)</div>
             <div class="rel-field-options" id="field-issues">
-              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue1',this)"><input type="checkbox" id="i-1"><label for="i-1"><span style="color:#ff5252">■</span> Issue 1: NDA Breach</label></div>
-              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue2',this)"><input type="checkbox" id="i-2"><label for="i-2"><span style="color:#b39ddb">■</span> Issue 2: Trade Secret</label></div>
-              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue3',this)"><input type="checkbox" id="i-3"><label for="i-3"><span style="color:#4caf50">■</span> Issue 3: Competitive Dmg</label></div>
-              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue4',this)"><input type="checkbox" id="i-4"><label for="i-4"><span style="color:var(--gold-light)">■</span> Issue 4: Wrongful Term.</label></div>
+              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue1',this)"><input type="checkbox" id="i-1"><label for="i-1"><span style="color:#ff5252">■</span> <span id="rel-issue-lbl-1">Issue 1</span></label></div>
+              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue2',this)"><input type="checkbox" id="i-2"><label for="i-2"><span style="color:#b39ddb">■</span> <span id="rel-issue-lbl-2">Issue 2</span></label></div>
+              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue3',this)"><input type="checkbox" id="i-3"><label for="i-3"><span style="color:#4caf50">■</span> <span id="rel-issue-lbl-3">Issue 3</span></label></div>
+              <div class="rel-option rel-issue-option" onclick="relToggleIssue('issue4',this)"><input type="checkbox" id="i-4"><label for="i-4"><span style="color:var(--gold-light)">■</span> <span id="rel-issue-lbl-4">Issue 4</span></label></div>
             </div>
           </div>
 
