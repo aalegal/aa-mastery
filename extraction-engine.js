@@ -21,7 +21,7 @@
 
   // "Ana M." and "ana" are the same name; so are "O'Neil" and "ONeil".
   function normalizeName(s) {
-    var t = clean(s).toLowerCase().replace(/['']/g, '').replace(/[.,\-]/g, ' ');
+    var t = clean(s).toLowerCase().replace(/['’]/g, '').replace(/[.,\-]/g, ' ');
     var parts = t.split(/\s+/).filter(Boolean);
     var long = parts.filter(function (p) { return p.length > 1; });
     return (long.length ? long : parts).join(' ');

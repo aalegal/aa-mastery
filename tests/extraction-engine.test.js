@@ -21,6 +21,7 @@ test('normalizeName ignores case, punctuation and middle initials', function () 
   assert.strictEqual(EX.normalizeName('Ana M.'), 'ana');
   assert.strictEqual(EX.normalizeName('  RIVERA '), 'rivera');
   assert.strictEqual(EX.normalizeName("O'Neil"), 'oneil');
+  assert.strictEqual(EX.normalizeName('O’Neil'), 'oneil');
   assert.strictEqual(EX.normalizeName('Mary-Jo'), 'mary jo');
   assert.strictEqual(EX.normalizeName('J'), 'j');
 });
