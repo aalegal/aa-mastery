@@ -5066,16 +5066,20 @@ function showCodingFeedback(doc,errors,score,total,isCorrect,isPartial){
   document.body.appendChild(overlay);
 }
 
+// Counts only the open matter's documents. relCoding and relAnswered can hold
+// other matters' keys, stale ones included, and counting every key blended them
+// into one figure.
 function updateRelProgress(){
-  var coded=Object.keys(relCoding).length;
-  var total=ACTIVE_DOCS.length;
-  var pct=Math.round(coded/total*100);
-  document.getElementById("rel-prog-pct").textContent=pct+"%";
-  document.getElementById("rel-prog-fill").style.width=pct+"%";
-  var correct=Object.values(relAnswered).filter(function(a){return a.correct;}).length;
-  var attempted=Object.keys(relAnswered).length;
-  var acc=attempted?Math.round(correct/attempted*100)+"%":"—";
-  document.getElementById("rel-accuracy-disp").textContent=acc;
+  if (relIsExtraction()) { if (typeof cirUpdateProgress === 'function') cirUpdateProgress(); return; }
+  var total = ACTIVE_DOCS.length;
+  var coded = ACTIVE_DOCS.filter(function(d){ return !!relCoding[d.id]; }).length;
+  var pct = total ? Math.round(coded / total * 100) : 0;
+  document.getElementById("rel-prog-pct").textContent = pct + "%";
+  document.getElementById("rel-prog-fill").style.width = pct + "%";
+  var answers = ACTIVE_DOCS.map(function(d){ return relAnswered[d.id]; }).filter(Boolean);
+  var correct = answers.filter(function(a){ return a.correct; }).length;
+  document.getElementById("rel-accuracy-disp").textContent =
+    answers.length ? Math.round(correct / answers.length * 100) + "%" : "—";
 }
 
 // updateLandingStats() lived here. It wrote to proj-stat-coded / -remaining /
@@ -5085,9 +5089,10 @@ function updateRelProgress(){
 // numbers now, so the function and its calls are gone rather than guarded.
 
 function showRelResults(){
-  var coded=Object.keys(relCoding).length;
-  var correct=Object.values(relAnswered).filter(function(a){return a.correct;}).length;
-  var attempted=Object.keys(relAnswered).length;
+  var coded=ACTIVE_DOCS.filter(function(d){return !!relCoding[d.id];}).length;
+  var answers=ACTIVE_DOCS.map(function(d){return relAnswered[d.id];}).filter(Boolean);
+  var correct=answers.filter(function(a){return a.correct;}).length;
+  var attempted=answers.length;
   var acc=attempted?Math.round(correct/attempted*100):0;
   var accColor=acc>=90?"var(--green)":acc>=70?"#f9a825":"var(--red-soft)";
   var overlay=document.createElement("div");
@@ -5110,13 +5115,26 @@ function showRelResults(){
   document.body.appendChild(overlay);
 }
 
+// Resets only the open matter. It used to wipe every key in relCoding, so
+// pressing it inside Larkspur would have erased QuantumEdge work. It saves, so
+// a reload no longer brings the reset work back.
 function relResetAll(){
-  if(!confirm("Reset all your coding for this project? This cannot be undone."))return;
-  relCoding={};relAnswered={};relCodingState={};relCurrentDoc=null;relCurrentIdx=-1;
+  var m = relMatter();
+  if(!confirm("Reset all your work on " + m.caseLabel + "? This cannot be undone."))return;
+  if (relIsExtraction()) {
+    relExtract = { entries: {}, batch: { currentBatch: 0, unlockedBatches: [0] } };
+    if (typeof cirDrafts !== 'undefined') cirDrafts = {};
+    var drawer = document.getElementById('cir-drawer');
+    if (drawer) drawer.style.display = 'none';
+  } else {
+    ACTIVE_DOCS.forEach(function(d){ delete relCoding[d.id]; delete relAnswered[d.id]; });
+  }
+  relCodingState={};relCurrentDoc=null;relCurrentIdx=-1;
   document.getElementById("rel-doc-content").innerHTML="<div style=\"text-align:center;padding:60px 20px;color:var(--muted)\"><div style=\"font-size:3rem;margin-bottom:14px\">📂</div><div style=\"font-size:1rem;font-weight:600;color:var(--text2);margin-bottom:8px\">No Document Selected</div><div style=\"font-size:.84rem\">Select a document from the list to begin.</div></div>";
   document.getElementById("rel-doc-title").textContent="Select a document to begin review";
   document.getElementById("rel-panel-doc-id").textContent="No document loaded";
   relRenderList();updateRelProgress();
+  triggerAutoSave();
 }
 
 // ══════════════════════════════════════════
@@ -5692,15 +5710,36 @@ function openPlogViewer() {
 var ACTIVE_DOCS = ACTIVE_DOCS || null;
 var ACTIVE_CASE = 1;
 
+// Every matter the Relativity shell can open. docs is a function because the
+// document arrays are declared further down the file; reading them here, at
+// load, would find them undefined.
+var REL_MATTERS = {
+  4: { id: 4, key: 'quantumedge', mode: 'coding', batchSize: 50,
+       caseLabel: 'SEC v. QuantumEdge AI', batchLabel: 'Flash Crash Matter',
+       docs: function () { return P4_DOCS; } },
+  5: { id: 5, key: 'larkspur', mode: 'extraction', batchSize: 25,
+       caseLabel: 'Larkspur Benefit Services', batchLabel: 'Cyber Incident Response',
+       docs: function () { return (typeof CIR_DOCS !== 'undefined') ? CIR_DOCS : []; } }
+};
+
+// Extraction progress lives apart from relCoding/relAnswered: the Relativity
+// counters were written for one matter and counted every key in those objects.
+var relExtract = { entries: {}, batch: { currentBatch: 0, unlockedBatches: [0] } };
+
+function relMatter() { return REL_MATTERS[ACTIVE_CASE] || REL_MATTERS[4]; }
+function relIsExtraction() { return relMatter().mode === 'extraction'; }
+function relStore() { return relIsExtraction() ? relExtract.entries : relCoding; }
+function relBatchState() { return relIsExtraction() ? relExtract.batch : batchState.rel; }
+function relBatchSize() { return relMatter().batchSize; }
+
 function openCase(caseNum) {
-  // Only SEC v. QuantumEdge AI remains in the Relativity shell. Joba v. Bukando
-  // and Harmon v. NovaCure were removed for carrying 55 documents each.
-  ACTIVE_CASE = 4;
-  ACTIVE_DOCS = P4_DOCS;
+  ACTIVE_CASE = REL_MATTERS[caseNum] ? caseNum : 4;
+  var m = relMatter();
+  ACTIVE_DOCS = m.docs();
   var el = document.getElementById('rel-toolbar-case-label');
-  if (el) el.textContent = 'SEC v. QuantumEdge AI';
+  if (el) el.textContent = m.caseLabel;
   el = document.getElementById('rel-toolbar-batch-label');
-  if (el) el.textContent = 'Flash Crash Matter';
+  if (el) el.textContent = m.batchLabel;
   el = document.getElementById('proj-landing');
   if (el) el.style.display = 'none';
   var shell = document.getElementById('rel-shell');
@@ -5708,12 +5747,13 @@ function openCase(caseNum) {
   shell.style.position = 'fixed';
   shell.style.inset = '0';
   shell.style.zIndex = '500';
-  // NEVER reset relCoding/relAnswered — those are persistent progress
-  // Only reset the current session navigation state and form state
+  // NEVER reset relCoding/relAnswered/relExtract: those are persistent progress.
+  // Only reset the current session's navigation and form state.
   relCodingState = {};
   relCurrentDoc = null; relCurrentIdx = -1;
   relFilter = 'all'; relSearchQ = '';
   if (typeof rdxState !== 'undefined') rdxState.marks = {};
+  if (typeof relApplyMatterChrome === 'function') relApplyMatterChrome();
   updateSidebarForCase(caseNum);
   renderRelCustodians();
   relRenderList();
@@ -5767,8 +5807,7 @@ function updateSidebarForCase(caseNum) {
 }
 
 function relBatchDocs() {
-  var st = batchState.rel || {};
-  return getBatchDocs(ACTIVE_DOCS || [], st.currentBatch || 0);
+  return getBatchDocs(ACTIVE_DOCS || [], relBatchState().currentBatch || 0, relBatchSize());
 }
 
 // Does a document belong under a sidebar entry? Custodian and type are
@@ -7650,21 +7689,22 @@ var batchState = {
   ev:  { currentBatch: 0, unlockedBatches: [0] }
 };
 
-function getBatchDocs(docs, batchIdx) {
-  return docs.slice(batchIdx * BATCH_SIZE, (batchIdx + 1) * BATCH_SIZE);
+function getBatchDocs(docs, batchIdx, size) {
+  size = size || BATCH_SIZE;
+  return docs.slice(batchIdx * size, (batchIdx + 1) * size);
 }
 
-function getTotalBatches(docs) {
-  return Math.ceil(docs.length / BATCH_SIZE);
+function getTotalBatches(docs, size) {
+  return Math.ceil(docs.length / (size || BATCH_SIZE));
 }
 
-function isBatchComplete(docs, batchIdx, coding) {
-  var batchDocs = getBatchDocs(docs, batchIdx);
+function isBatchComplete(docs, batchIdx, coding, size) {
+  var batchDocs = getBatchDocs(docs, batchIdx, size);
   return batchDocs.length > 0 && batchDocs.every(function(d) { return !!coding[d.id]; });
 }
 
-function getBatchProgress(docs, batchIdx, coding) {
-  var batchDocs = getBatchDocs(docs, batchIdx);
+function getBatchProgress(docs, batchIdx, coding, size) {
+  var batchDocs = getBatchDocs(docs, batchIdx, size);
   var coded = batchDocs.filter(function(d) { return !!coding[d.id]; }).length;
   return { coded: coded, total: batchDocs.length };
 }
@@ -7676,22 +7716,22 @@ function renderBatchSelector(platform) {
   var container = document.getElementById(containerId);
   if (!container) return;
   var docs = isRel ? ACTIVE_DOCS : P3_DOCS;
-  var coding = isRel ? relCoding : evCoding;
-  var state = batchState[platform];
-  var totalBatches = getTotalBatches(docs);
-  
+  var coding = isRel ? relStore() : evCoding;
+  var state = isRel ? relBatchState() : batchState.ev;
+  var size = isRel ? relBatchSize() : BATCH_SIZE;
+  var totalBatches = getTotalBatches(docs, size);
+
   var html = '<div class="batch-selector-title">📦 Batches</div><div class="batch-list">';
   for (var i = 0; i < totalBatches; i++) {
-    var prog = getBatchProgress(docs, i, coding);
+    var prog = getBatchProgress(docs, i, coding, size);
     var isUnlocked = state.unlockedBatches.indexOf(i) > -1;
     var isActive = state.currentBatch === i;
-    var isComplete = isBatchComplete(docs, i, coding);
+    var isComplete = isBatchComplete(docs, i, coding, size);
     var cls = 'batch-item' + (isActive ? ' active' : '') + (isComplete ? ' completed' : '') + (!isUnlocked ? ' locked' : '');
     var icon = isComplete ? '✅' : (!isUnlocked ? '🔒' : (isActive ? '📂' : '📁'));
-    var batchNum = i + 1;
-    var startDoc = i * BATCH_SIZE + 1;
-    var endDoc = Math.min((i + 1) * BATCH_SIZE, docs.length);
-    var batchLabel = 'Batch ' + batchNum + ' (Docs ' + startDoc + '–' + endDoc + ')';
+    var startDoc = i * size + 1;
+    var endDoc = Math.min((i + 1) * size, docs.length);
+    var batchLabel = 'Batch ' + (i + 1) + ' (Docs ' + startDoc + '–' + endDoc + ')';
     var progressLabel = prog.coded + '/' + prog.total;
     var onclick = isUnlocked ? 'onclick="switchBatch(\'' + platform + '\',' + i + ')"' : '';
     html += '<div class="' + cls + '" ' + onclick + '>'
@@ -7705,7 +7745,7 @@ function renderBatchSelector(platform) {
 }
 
 function switchBatch(platform, batchIdx) {
-  var state = batchState[platform];
+  var state = platform === 'rel' ? relBatchState() : batchState[platform];
   if (state.unlockedBatches.indexOf(batchIdx) === -1) return;
   state.currentBatch = batchIdx;
   if (platform === 'rel') {
@@ -7724,39 +7764,35 @@ function switchBatch(platform, batchIdx) {
 }
 
 function getBatchVisibleDocs(platform) {
-  var state = batchState[platform];
-  var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
-  var batchDocs = getBatchDocs(docs, state.currentBatch);
-  // Apply existing filters on top of batch slice
   if (platform === 'rel') {
-    return batchDocs.filter(function(d) {
+    var store = relStore();
+    return getBatchDocs(ACTIVE_DOCS, relBatchState().currentBatch, relBatchSize()).filter(function(d) {
       if (relSearchQ) {
         var q = relSearchQ.toLowerCase();
         return (d.subject + d.body + d.from + d.id).toLowerCase().includes(q);
       }
-      if (relFilter === 'uncoded') return !relCoding[d.id];
-      if (relFilter === 'coded') return !!relCoding[d.id];
+      if (relFilter === 'uncoded') return !store[d.id];
+      if (relFilter === 'coded') return !!store[d.id];
       return relMatchesSidebar(d, relFilter);
     });
-  } else {
-    return batchDocs.filter(function(d) {
-      if (evFilterMode === 'uncoded') return !evCoding[d.id];
-      if (evFilterMode === 'coded') return !!evCoding[d.id];
-      return true;
-    });
   }
+  return getBatchDocs(P3_DOCS, batchState.ev.currentBatch).filter(function(d) {
+    if (evFilterMode === 'uncoded') return !evCoding[d.id];
+    if (evFilterMode === 'coded') return !!evCoding[d.id];
+    return true;
+  });
 }
 
 function checkBatchCompletion(platform) {
-  var state = batchState[platform];
-  var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
-  var coding = platform === 'rel' ? relCoding : evCoding;
-  var isComplete = isBatchComplete(docs, state.currentBatch, coding);
-  var bannerId = platform === 'rel' ? 'rel-batch-banner' : 'ev-batch-banner';
-  var banner = document.getElementById(bannerId);
+  var isRel = platform === 'rel';
+  var state = isRel ? relBatchState() : batchState.ev;
+  var docs = isRel ? ACTIVE_DOCS : P3_DOCS;
+  var coding = isRel ? relStore() : evCoding;
+  var size = isRel ? relBatchSize() : BATCH_SIZE;
+  var isComplete = isBatchComplete(docs, state.currentBatch, coding, size);
+  var banner = document.getElementById(isRel ? 'rel-batch-banner' : 'ev-batch-banner');
   if (!banner) return;
-  var totalBatches = getTotalBatches(docs);
-  var hasNext = state.currentBatch < totalBatches - 1;
+  var hasNext = state.currentBatch < getTotalBatches(docs, size) - 1;
   if (isComplete && hasNext) {
     banner.classList.add('visible');
     banner.querySelector('.batch-next-num').textContent = state.currentBatch + 2;
@@ -7766,10 +7802,10 @@ function checkBatchCompletion(platform) {
 }
 
 function completeBatchAndNext(platform) {
-  var state = batchState[platform];
+  var state = platform === 'rel' ? relBatchState() : batchState[platform];
   var docs = platform === 'rel' ? ACTIVE_DOCS : P3_DOCS;
   var nextBatch = state.currentBatch + 1;
-  if (nextBatch >= getTotalBatches(docs)) return;
+  if (nextBatch >= getTotalBatches(docs, platform === 'rel' ? relBatchSize() : BATCH_SIZE)) return;
   // Unlock next batch
   if (state.unlockedBatches.indexOf(nextBatch) === -1) {
     state.unlockedBatches.push(nextBatch);
@@ -7850,7 +7886,9 @@ function applyProgressData(d) {
   if (d.cp_answered) cpAnswered = d.cp_answered;
   if (d.cp_redactions) cpRedactions = d.cp_redactions;
   cpMigrateFlatState();
-  if (d.active_case) ACTIVE_CASE = d.active_case;
+  // ACTIVE_CASE is not restored: openCase() sets it together with ACTIVE_DOCS.
+  // Restoring it alone could put the shell in Larkspur's mode while
+  // QuantumEdge's documents are loaded. Nothing else read the restored value.
   if (d.active_batch_rel) batchState.rel = d.active_batch_rel;
   if (d.active_batch_ev) batchState.ev = d.active_batch_ev;
 }
