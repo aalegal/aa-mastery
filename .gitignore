@@ -8,3 +8,5 @@ supabase/.temp/
 .DS_Store
 .claude/
 .playwright-mcp/
+.venv/
+__pycache__/

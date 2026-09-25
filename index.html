@@ -1500,6 +1500,18 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-backbar{margin-bottom:.6rem}
 .rv-cap{margin-top:.6rem;padding-top:.5rem;border-top:1px solid #1c2740;color:#7d8ca3;font-size:.74rem}
 .rv-path{display:flex;flex-direction:column;gap:.5rem}
+.rv-proto{display:flex;align-items:center;gap:.7rem;margin:0 0 .5rem;padding:.55rem .75rem;
+  border:1px solid #2a3550;border-radius:8px;background:#0f1726;color:var(--text);text-decoration:none;
+  transition:border-color .15s,background .15s}
+.rv-proto:hover{border-color:var(--gold);background:#131d30}
+.rv-proto-ic{flex:none;font-size:.62rem;font-weight:800;letter-spacing:.06em;color:#0b0f17;
+  background:var(--gold);border-radius:4px;padding:.28rem .38rem}
+.rv-proto-txt{flex:1;min-width:0;font-size:.84rem;line-height:1.35}
+.rv-proto-txt strong{color:var(--gold-light);font-weight:700}
+.rv-proto-name{display:block;color:var(--text2);font-size:.78rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv-proto-dl{flex:none;font-size:.74rem;font-weight:700;color:var(--gold-light)}
+.rv-proto-sm{display:inline-flex;margin:.15rem .5rem .35rem 0;padding:.34rem .6rem}
+.rv-proto-sm .rv-proto-txt{flex:none}
 .rv-stage{display:flex;gap:.75rem;align-items:flex-start;padding:.7rem;border:1px solid #1c2740;border-radius:8px;background:var(--card)}
 .rv-num{flex:0 0 1.8rem;height:1.8rem;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;background:#1c2740;color:#9fb0c9}
 .rv-next{border-color:var(--gold);box-shadow:0 0 0 1px var(--gold)}
@@ -2665,7 +2677,7 @@ tr:nth-child(even) td{background:#0d162080}
           <span class="proj-issue-tag" style="background:rgba(0,105,92,.15);color:#4caf50;border:1px solid #00695c;">Issue 3: Merger Rationale</span>
           <span class="proj-issue-tag" style="background:rgba(229,57,53,.15);color:#ff5252;border:1px solid #e53935;">Issue 4: Hot Doc</span>
         </div>
-        <div style="margin-top:10px;font-size:.78rem;color:var(--muted);">🖥️ Runs on <strong style="color:#1f6fc4">Casepoint</strong> · 500 documents · DOJ Antitrust Division</div>
+        <div style="margin-top:10px;font-size:.78rem;color:var(--muted);">🖥️ Runs on <strong style="color:#1f6fc4">Casepoint</strong> · 415 documents · DOJ Antitrust Division</div>
       </div>
       <div style="text-align:center;flex-shrink:0;">
         <div style="font-size:1.5rem;font-weight:800;color:#1f6fc4" id="cp-proj-coded-antitrust">0</div>
@@ -9463,6 +9475,44 @@ function reviewCapabilityText(qcKey) {
     : 'First-pass review \u00b7 QC practice';
 }
 
+// Every matter has a protocol, and a reviewer picks it up right before the card
+// that opens the matter. The PDFs are built by tools/build_protocols.py from rules
+// derived from each matter's answer key.
+var REVIEW_PROTOCOLS = {
+  'openAICase':      {file: 'QuantumEdge-AI-Review-Protocol.pdf',     label: 'SEC v. QuantumEdge AI'},
+  'openEverlawCase': {file: 'VeridianBank-GDPR-Review-Protocol.pdf',  label: 'VeridianBank European Data Breach'},
+  'openCadeCase':    {file: 'CADE-TechBrasil-Review-Protocol.pdf',    label: 'CADE v. TechBrasil Consortium'},
+  'antitrust':       {file: 'NorthStar-Meridian-Review-Protocol.pdf', label: 'NorthStar / Meridian Merger Review'},
+  'breach':          {file: 'St-Aurelius-Breach-Review-Protocol.pdf', label: 'Doe v. St. Aurelius Health System'},
+  'firstam':         {file: 'Cascade-Headwaters-Review-Protocol.pdf', label: 'TransRidge v. Cascade Headwaters'}
+};
+
+function reviewProtocolLink(needle, compact) {
+  var p = REVIEW_PROTOCOLS[needle];
+  if (!p) return '';
+  return '<a class="rv-proto' + (compact ? ' rv-proto-sm' : '') + '" data-for="' + escAttr(needle) + '"' +
+         ' href="/protocols/' + escAttr(p.file) + '" download="' + escAttr(p.file) + '">' +
+         '<span class="rv-proto-ic">PDF</span>' +
+         '<span class="rv-proto-txt"><strong>Review protocol</strong>' +
+           (compact ? '' : '<span class="rv-proto-name">' + esc(p.label) + '</span>') + '</span>' +
+         '<span class="rv-proto-dl">Download</span></a>';
+}
+
+// A sibling placed immediately before the card, never inside it: the whole card
+// is clickable, so a link inside would also open the matter.
+function reviewAddProtocolLinks() {
+  for (var needle in REVIEW_PROTOCOLS) {
+    if (!Object.prototype.hasOwnProperty.call(REVIEW_PROTOCOLS, needle)) continue;
+    var card = reviewCardFor(needle);
+    if (!card || !card.parentNode) continue;
+    var prev = card.previousElementSibling;
+    if (prev && prev.classList.contains('rv-proto') && prev.getAttribute('data-for') === needle) continue;
+    var holder = document.createElement('div');
+    holder.innerHTML = reviewProtocolLink(needle, false);
+    card.parentNode.insertBefore(holder.firstChild, card);
+  }
+}
+
 function reviewLabelCards() {
   for (var needle in REVIEW_CARD_QCKEY) {
     if (!Object.prototype.hasOwnProperty.call(REVIEW_CARD_QCKEY, needle)) continue;
@@ -9565,7 +9615,8 @@ var REVIEW_PATH_COPY = {
   firstpass: {
     n: 2, title: 'First-pass review',
     blurb: 'SEC v. QuantumEdge AI in Relativity. Your first pass: code a real matter end to end.',
-    action: 'Open QuantumEdge in Relativity', onclick: 'openAICase()'
+    action: 'Open QuantumEdge in Relativity', onclick: 'openAICase()',
+    protocol: 'openAICase'
   },
   scale: {
     n: 3, title: 'Review at scale',
@@ -9593,6 +9644,7 @@ function renderReviewPage() {
   if (typeof reviewMoveCards === 'function') reviewMoveCards();
   reviewMoveQcViews();
   if (typeof reviewLabelCards === 'function') reviewLabelCards();
+  if (typeof reviewAddProtocolLinks === 'function') reviewAddProtocolLinks();
 
   var stages = QC.pathStatus({
     attempts: qcAttempts,
@@ -9624,6 +9676,7 @@ function renderReviewPage() {
         '</div>' +
         '<div class="rv-blurb">' + esc(c.blurb) + '</div>' +
         (detail ? '<div class="rv-detail">' + esc(detail) + '</div>' : '') +
+        (c.protocol ? reviewProtocolLink(c.protocol, true) : '') +
         '<button class="btn btn-outline btn-sm" onclick="' + escAttr(c.onclick) + '">' +
           esc(c.action) + '</button>' +
         (st.key === 'rules'

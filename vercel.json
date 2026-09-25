@@ -7,7 +7,7 @@
     { "source": "/tactical", "destination": "/tactical/index.html" },
     { "source": "/tactical/", "destination": "/tactical/index.html" },
     {
-      "source": "/((?!og-image\\.png$|qc-engine\\.js$|accent-trainer|wellness|tactical).*)",
+      "source": "/((?!og-image\\.png$|qc-engine\\.js$|accent-trainer|wellness|tactical|protocols/).*)",
       "destination": "/index.html"
     }
   ]
