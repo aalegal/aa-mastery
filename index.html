@@ -7879,34 +7879,62 @@ function loadProgressLocal() {
   }
 }
 
+// The columns reviewer_progress actually has. Anything else in the payload makes
+// PostgREST reject the whole insert, which is how saved_at (29 May 2026) and the
+// CADE fields (1 June) silently stopped every remote save. Task-specific columns
+// are appended as their migrations land.
+var PROGRESS_COLUMNS = ['user_id', 'rel_coding', 'rel_answered', 'ev_coding', 'ev_answered',
+  'cp_coding', 'cp_answered', 'cp_redactions', 'active_case', 'active_batch_rel',
+  'active_batch_ev', 'current_doc_rel', 'current_doc_ev', 'updated_at'];
+
+// Columns the database has told us it lacks, this session. A column is only
+// dropped after the database names it, so a new column starts saving the moment
+// its migration runs.
+var progressColumnsMissing = {};
+
+function progressRemotePayload(data) {
+  var out = {};
+  PROGRESS_COLUMNS.forEach(function (c) {
+    if (progressColumnsMissing[c]) return;
+    if (data[c] !== undefined) out[c] = data[c];
+  });
+  return out;
+}
+
 // Save to Supabase (background, non-blocking)
 async function saveProgressRemote() {
   if (!SB.user) return;
-  try {
-    var data = buildProgressData();
-    data.user_id = SB.user.id;
-    data.rel_coding = JSON.stringify(data.rel_coding);
-    data.rel_answered = JSON.stringify(data.rel_answered);
-    data.ev_coding = JSON.stringify(data.ev_coding);
-    data.ev_answered = JSON.stringify(data.ev_answered);
-    data.cp_coding = JSON.stringify(data.cp_coding);
-    data.cp_answered = JSON.stringify(data.cp_answered);
-    data.cp_redactions = JSON.stringify(data.cp_redactions);
-    data.updated_at = new Date().toISOString();
-    await SB.ensureFresh();
-    await axios({
-      method: 'POST',
-      url: SB.url + '/rest/v1/reviewer_progress',
-      headers: {
-        'Content-Type': 'application/json',
-        'apikey': SB.key,
-        'Authorization': 'Bearer ' + (SB.token || SB.key),
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      data: data
-    });
-  } catch(e) {
-    // Table may not exist yet — local storage is the backup
+  var data = buildProgressData();
+  data.user_id = SB.user.id;
+  ['rel_coding', 'rel_answered', 'ev_coding', 'ev_answered',
+   'cp_coding', 'cp_answered', 'cp_redactions'].forEach(function (k) {
+    data[k] = JSON.stringify(data[k]);
+  });
+  data.updated_at = new Date().toISOString();
+  for (var attempt = 0; attempt < 2; attempt++) {
+    try {
+      await SB.ensureFresh();
+      await axios({
+        method: 'POST',
+        url: SB.url + '/rest/v1/reviewer_progress',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': SB.key,
+          'Authorization': 'Bearer ' + (SB.token || SB.key),
+          'Prefer': 'resolution=merge-duplicates'
+        },
+        data: progressRemotePayload(data)
+      });
+      return;
+    } catch (e) {
+      var msg = (e.response && e.response.data && e.response.data.message) || '';
+      var m = msg.match(/Could not find the '([^']+)' column/);
+      if (m && PROGRESS_COLUMNS.indexOf(m[1]) !== -1 && !progressColumnsMissing[m[1]]) {
+        progressColumnsMissing[m[1]] = true;   // retry once without it
+        continue;
+      }
+      return;   // offline, signed out, or table missing: local storage is the backup
+    }
   }
 }
 
@@ -7937,7 +7965,11 @@ async function loadProgressRemote() {
       active_batch_rel: d.active_batch_rel,
       active_batch_ev:  d.active_batch_ev,
       current_doc_rel:  d.current_doc_rel,
-      current_doc_ev:   d.current_doc_ev
+      current_doc_ev:   d.current_doc_ev,
+      // loadProgress() keeps whichever copy is newer. The row's timestamp is
+      // updated_at; without it the remote copy always looked older than any
+      // local one, so work saved from a second computer never loaded.
+      saved_at:         d.updated_at
     };
   } catch(e) {
     return null;
