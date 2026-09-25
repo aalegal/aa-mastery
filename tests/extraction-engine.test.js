@@ -92,3 +92,151 @@ test('validateEntry: a complete row passes', function () {
   assert.strictEqual(v.ok, true);
   assert.strictEqual(v.rows.length, 1);
 });
+
+// ── Task 3: matching and grading ─────────────────────────────────────────────
+
+function person(o) {
+  var p = row(o);
+  p.why = o.why || {};
+  if (o.whyNot) p.whyNot = o.whyNot;
+  return p;
+}
+
+var ANA   = person({ first: 'Ana', last: 'Rivera', dob: '03/14/1986', street: '41 Alder Ct', city: 'Tacoma', state: 'WA', zip: '98402', el: ['ssn', 'plan', 'med'], why: { person: 'Row 1 of the census.' } });
+var DAVID = person({ first: 'David', last: 'Okafor', dob: '11/02/1979', street: '9 Birch Ln', city: 'Olympia', state: 'WA', zip: '98501', el: ['ssn', 'fin'], why: { person: 'Row 2.', fin: 'The direct-deposit section on page 2.' } });
+var LILY  = person({ first: 'Lily', last: 'Chen', dob: '07/22/2012', street: '41 Alder Ct', city: 'Tacoma', state: 'WA', zip: '98402', el: ['plan'], why: { person: 'Row 3; a dependent.' } });
+var GRACE = person({ first: 'Grace', last: 'Holloway', dob: '05/30/1961', street: '7 Quarry Rd', city: 'Lakewood', state: 'WA', zip: '98499', el: ['ssn', 'dl', 'plan'], why: { person: 'The last row, below the page break.' } });
+
+function typed(p) { return row({ first: p.first, last: p.last, dob: p.dob, street: p.street, city: p.city, state: p.state, zip: p.zip, el: EX.ELEMENTS.filter(function (k) { return p.el[k]; }) }); }
+
+test('DEFECT_WEIGHTS match the spec', function () {
+  assert.deepStrictEqual(EX.DEFECT_WEIGHTS, { MISSED_INDIVIDUAL: 5, MISSED_ELEMENT: 3, EXTRA_INDIVIDUAL: 2, EXTRA_ELEMENT: 1, FIELD_ERROR: 1 });
+});
+
+test('matchPeople pairs exact names, catches a typo, and reports missed and extra', function () {
+  var m = EX.matchPeople([ANA, DAVID, GRACE], [typed(ANA), row({ first: 'Davd', last: 'Okafor', el: ['ssn'] }), row({ first: 'Meera', last: 'Patel', el: ['ssn'] })]);
+  assert.strictEqual(m.pairs.length, 2);
+  assert.strictEqual(m.pairs[0].nameTypo, false);
+  assert.strictEqual(m.pairs[1].nameTypo, true);
+  assert.strictEqual(m.pairs[1].key, DAVID);
+  assert.deepStrictEqual(m.missed, [GRACE]);
+  assert.strictEqual(m.extra[0].first, 'Meera');
+});
+
+test('matchPeople splits two people with one name by date of birth, then address', function () {
+  var sr = person({ first: 'Robert', last: 'Hayes', dob: '01/05/1950', street: '1 Oak St', el: ['ssn'] });
+  var jr = person({ first: 'Robert', last: 'Hayes', dob: '06/12/1980', street: '2 Elm St', el: ['ssn'] });
+  var m = EX.matchPeople([sr, jr], [row({ first: 'Robert', last: 'Hayes', dob: '06/12/1980', el: ['ssn'] })]);
+  assert.strictEqual(m.pairs[0].key, jr);
+  m = EX.matchPeople([sr, jr], [row({ first: 'Robert', last: 'Hayes', street: '2 Elm Street', el: ['ssn'] })]);
+  assert.strictEqual(m.pairs[0].key, jr);
+});
+
+test('gradeDocument: a perfect entry has no defects', function () {
+  var answer = { noPii: false, people: [ANA, LILY] };
+  var r = EX.gradeDocument(answer, { noPii: false, rows: [typed(ANA), typed(LILY)] });
+  assert.strictEqual(r.perfect, true);
+  assert.strictEqual(r.weight, 0);
+  assert.strictEqual(r.lines.length, 2);
+});
+
+test('gradeDocument: normalization forgives formatting, never content', function () {
+  var answer = { noPii: false, people: [ANA] };
+  var t = typed(ANA); t.dob = '3/14/1986'; t.street = '41 Alder Court'; t.state = 'Washington'; t.zip = '98402-1234';
+  assert.strictEqual(EX.gradeDocument(answer, { noPii: false, rows: [t] }).perfect, true);
+  t.zip = '98403';
+  var r = EX.gradeDocument(answer, { noPii: false, rows: [t] });
+  assert.strictEqual(r.defects[0].type, 'FIELD_ERROR');
+  assert.strictEqual(r.defects[0].field, 'zip');
+});
+
+test('gradeDocument: blank against blank is correct; a value against a blank is not', function () {
+  var noAddr = person({ first: 'Kofi', last: 'Mensah', dob: '02/02/1990', el: ['mrn'] });
+  var answer = { noPii: false, people: [noAddr] };
+  assert.strictEqual(EX.gradeDocument(answer, { noPii: false, rows: [typed(noAddr)] }).perfect, true);
+  var t = typed(noAddr); t.city = 'Tacoma';
+  var r = EX.gradeDocument(answer, { noPii: false, rows: [t] });
+  assert.deepStrictEqual(r.defects.map(function (d) { return d.type + ':' + d.field; }), ['FIELD_ERROR:city']);
+});
+
+test('gradeDocument: the approved mockup scores 4 defects, weight 11', function () {
+  var answer = { noPii: false, people: [ANA, DAVID, LILY, GRACE],
+                 notPeople: [{ name: 'Dr. Meera Patel', why: 'The treating provider: business contact details.' }] };
+  var david = typed(DAVID); david.el.fin = false;
+  var lily = typed(LILY); lily.dob = '07/22/2021';
+  var meera = row({ first: 'Meera', last: 'Patel', street: '1200 Harbor Way', city: 'Tacoma', state: 'WA', zip: '98405' });
+  var r = EX.gradeDocument(answer, { noPii: false, rows: [typed(ANA), david, lily, meera] });
+  assert.strictEqual(r.defects.length, 4);
+  assert.strictEqual(r.weight, 11);
+  var byType = {};
+  r.defects.forEach(function (d) { byType[d.type] = d; });
+  assert.strictEqual(byType.MISSED_ELEMENT.field, 'fin');
+  assert.strictEqual(byType.MISSED_ELEMENT.why, 'The direct-deposit section on page 2.');
+  assert.strictEqual(byType.FIELD_ERROR.expected, '07/22/2012');
+  assert.strictEqual(byType.EXTRA_INDIVIDUAL.why, 'The treating provider: business contact details.');
+  assert.strictEqual(byType.MISSED_INDIVIDUAL.person, 'Grace Holloway');
+  var kinds = r.lines.map(function (l) { return l.kind; });
+  assert.deepStrictEqual(kinds, ['matched', 'matched', 'matched', 'extra', 'missed']);
+  assert.deepStrictEqual(r.lines[1].missedElements, ['fin']);
+  assert.strictEqual(r.lines[2].fieldErrors.dob, '07/22/2012');
+});
+
+test('gradeDocument: a wrongly ticked element explains itself when the key says why not', function () {
+  var dd = person({ first: 'Tom', last: 'Reed', el: ['fin'], whyNot: { ssn: 'Only the last four digits are shown: a masked SSN does not count.' } });
+  var t = typed(dd); t.el.ssn = true;
+  var r = EX.gradeDocument({ noPii: false, people: [dd] }, { noPii: false, rows: [t] });
+  assert.strictEqual(r.defects[0].type, 'EXTRA_ELEMENT');
+  assert.strictEqual(r.defects[0].why, 'Only the last four digits are shown: a masked SSN does not count.');
+  assert.deepStrictEqual(r.lines[0].extraElements, ['ssn']);
+});
+
+test('gradeDocument: the three "No PII/PHI" outcomes', function () {
+  var empty = { noPii: true, people: [], why: 'A newsletter mailing list: names and addresses only.' };
+  assert.strictEqual(EX.gradeDocument(empty, { noPii: true, rows: [] }).perfect, true);
+  var extra = EX.gradeDocument(empty, { noPii: false, rows: [row({ first: 'Ana', last: 'Rivera', el: ['ssn'] })] });
+  assert.deepStrictEqual(extra.defects.map(function (d) { return d.type; }), ['EXTRA_INDIVIDUAL']);
+  assert.strictEqual(extra.defects[0].why, 'A newsletter mailing list: names and addresses only.');
+  var missed = EX.gradeDocument({ noPii: false, people: [ANA, LILY] }, { noPii: true, rows: [] });
+  assert.deepStrictEqual(missed.defects.map(function (d) { return d.type; }), ['MISSED_INDIVIDUAL', 'MISSED_INDIVIDUAL']);
+  assert.strictEqual(missed.weight, 10);
+});
+
+test('gradeDocument: a second row for the same person is an extra individual, and says why', function () {
+  var r = EX.gradeDocument({ noPii: false, people: [ANA] }, { noPii: false, rows: [typed(ANA), typed(ANA)] });
+  assert.deepStrictEqual(r.defects.map(function (d) { return d.type; }), ['EXTRA_INDIVIDUAL']);
+  assert.match(r.defects[0].why, /already has a row/);
+});
+
+test('entryFromAnswer grades perfect against its own answer', function () {
+  var answer = { noPii: false, people: [ANA, DAVID, LILY, GRACE] };
+  assert.strictEqual(EX.gradeDocument(answer, EX.entryFromAnswer(answer)).perfect, true);
+  assert.strictEqual(EX.gradeDocument({ noPii: true, people: [] }, EX.entryFromAnswer({ noPii: true, people: [] })).perfect, true);
+});
+
+test('summarize reports accuracy and a defect breakdown', function () {
+  var s = EX.summarize([
+    { perfect: true, weight: 0, defects: [] },
+    { perfect: false, weight: 5, defects: [{ type: 'MISSED_INDIVIDUAL' }] },
+    { perfect: false, weight: 4, defects: [{ type: 'MISSED_ELEMENT' }, { type: 'FIELD_ERROR' }] },
+    { perfect: true, weight: 0, defects: [] }
+  ]);
+  assert.strictEqual(s.submitted, 4);
+  assert.strictEqual(s.perfect, 2);
+  assert.strictEqual(s.accuracy, 0.5);
+  assert.deepStrictEqual(s.breakdown, { MISSED_INDIVIDUAL: 1, MISSED_ELEMENT: 1, EXTRA_INDIVIDUAL: 0, EXTRA_ELEMENT: 0, FIELD_ERROR: 1 });
+  assert.strictEqual(EX.summarize([]).accuracy, null);
+});
+
+test('currentSession keeps only the latest working session', function () {
+  var H = 3600000, M = 60000;
+  var marks = [0, 10 * M, 20 * M, 20 * H, 20 * H + 5 * M, 20 * H + 9 * M];
+  assert.deepStrictEqual(EX.currentSession(marks, 30 * M), [20 * H, 20 * H + 5 * M, 20 * H + 9 * M]);
+  assert.deepStrictEqual(EX.currentSession([], 30 * M), []);
+});
+
+test('resultStatus gives the document list one word per result', function () {
+  assert.strictEqual(EX.resultStatus(null), 'none');
+  assert.strictEqual(EX.resultStatus({ perfect: true, defects: [] }), 'correct');
+  assert.strictEqual(EX.resultStatus({ perfect: false, defects: [{ type: 'FIELD_ERROR' }] }), 'partial');
+  assert.strictEqual(EX.resultStatus({ perfect: false, defects: [{ type: 'MISSED_INDIVIDUAL' }] }), 'wrong');
+});
