@@ -39,10 +39,10 @@ TRAINING_NOTE = ("Training matter. The parties, events and documents are fiction
                  "and exist for AA Team review practice.")
 
 # ── Coding schemes ───────────────────────────────────────────────────────────
-# Two schemes, and they genuinely differ. The biggest difference: on Relativity
-# and Everlaw the action field only records a privilege withhold, so a
-# non-responsive document stays at Produce. On Casepoint the action field means
-# "does it go out", so a non-responsive document is withheld.
+# Two schemes with different vocabularies, one shared rule for what goes out:
+# a document that is not responsive is withheld on every platform. (Relativity
+# and Everlaw keys used to say Produce; they were changed to match real review
+# and Casepoint, so reviewers build one habit.)
 
 def scheme_relativity_everlaw(acp, acpwp, action_field, unused):
     """acp / acpwp: the platform's labels for the two privilege values."""
@@ -58,7 +58,7 @@ def scheme_relativity_everlaw(acp, acpwp, action_field, unused):
                  action_field, "Confidentiality"],
         "rows": [
             ["Not responsive to any request",
-             "Non-Responsive", "Not Privileged", "Produce *", "Standard"],
+             "Non-Responsive", "Not Privileged", "Withhold", "Standard"],
             ["Responsive, with no legal advice in it",
              "Responsive", "Not Privileged", "Produce", "Highly Confidential or Standard (see 8)"],
             ["Responsive, and carries legal advice from counsel",
@@ -68,10 +68,9 @@ def scheme_relativity_everlaw(acp, acpwp, action_field, unused):
              "Responsive", acpwp, "Withhold", "Attorneys Eyes Only"],
         ],
         "notes": [
-            "* On this platform %s only records whether a document is withheld for "
-            "privilege. Responsiveness is what keeps a non-responsive document out of "
-            "the production, so its action stays at Produce. This is not how Casepoint "
-            "works; do not carry the habit across." % action_field,
+            "Anything that is not going out is withheld, so a non-responsive document is "
+            "withheld just as a privileged one is. It is the same rule on every platform "
+            "in the AA Team program.",
             "Issues go on responsive documents only. A non-responsive document never "
             "carries an issue.",
             "Every privileged document is withheld and designated Attorneys Eyes Only. "
@@ -88,8 +87,9 @@ def scheme_relativity_everlaw(acp, acpwp, action_field, unused):
             ("Standard", "Government and regulator documents, routine recurring records, "
              "widely distributed material, and every non-responsive document."),
         ],
-        "conf_note": ("The call turns on content. It does not follow the custodian, and "
-                      "it does not follow how many issues a document hits."),
+        "conf_note": ("These categories come from how the matter is graded. The call "
+                      "follows the content: not the custodian, and not how many issues a "
+                      "document hits."),
     }
 
 
@@ -112,18 +112,18 @@ def scheme_casepoint(priv_label, third_priv):
             ["Not responsive to any request",
              "Not Responsive", "Not Privileged", "Withhold", "Confidential"],
             ["Responsive and privileged throughout",
-             "Responsive", priv_label, "Withhold", "Usually Highly Conf. – AEO"],
+             "Responsive", priv_label, "Withhold", "See 8"],
             third_row,
             ["Responsive, not privileged, but contains protected personal or "
              "sensitive information (see 9)",
              "Responsive", "Not Privileged", "Redact", "By content (see 8)"],
             ["Responsive, and none of the above",
-             "Responsive", "Not Privileged", "Produce", "Confidential or Highly Conf. – AEO"],
+             "Responsive", "Not Privileged", "Produce", "See 8"],
         ],
         "notes": [
-            "On Casepoint the Production field means \"does this go out\". A document "
-            "that is not responsive, or cannot be read, is withheld. This is not how "
-            "Relativity and Everlaw work; do not carry the habit across.",
+            "Production means \"does this go out\". A document that is not responsive, "
+            "or cannot be read, is withheld. It is the same rule on every platform in the "
+            "AA Team program.",
             "Technical Issue: if a file failed processing, code it Technical Issue, "
             "withhold it and route it for re-collection. Never guess substantive coding "
             "for a document you cannot read.",
@@ -136,7 +136,8 @@ def scheme_casepoint(priv_label, third_priv):
             ("Confidential", "Everything else, including every Not Responsive and "
              "Technical Issue document, and ordinary business logistics."),
         ],
-        "conf_note": ("The call turns on content, not on who sent the document."),
+        "conf_note": ("These categories come from how the matter is graded. The call "
+                      "follows the content, not who sent the document."),
     }
 
 # ── The six matters ──────────────────────────────────────────────────────────
@@ -146,6 +147,7 @@ MATTERS = [
 # 1 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "QuantumEdge-AI-Review-Protocol.pdf",
+    "conf": [('Attorneys Eyes Only', 'Every withheld privileged document.'), ('Highly Confidential', "Internal technical and trading material about APEX: performance reports, stress tests, override reconstructions and production logs. What clients and investors were told about APEX's specifications. Investor loss claims and other evidence of damages. Internal communications about the crash."), ('Standard', 'Routine recurring records, such as the monthly code reviews. Government documents, such as the SEC Wells Notice. Every non-responsive document.')],
     "short": "SEC v. QuantumEdge AI",
     "title": "SEC v. QuantumEdge AI",
     "subtitle": "APEX Flash Crash · SEC, CFTC and DOJ investigation",
@@ -219,6 +221,7 @@ MATTERS = [
 # 2 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "VeridianBank-GDPR-Review-Protocol.pdf",
+    "conf": [('Attorneys Eyes Only', 'Every withheld privileged document.'), ('Highly Confidential', 'Internal deliberation during the notification delay, including draft notifications. The review of biometric data retention. Personnel records about the CISO, such as performance reviews and advice on her termination. Internal communications that show what the bank knew.'), ('Standard', 'Security assessments, access-control audits and infrastructure remediation records. Notification status updates and DSAR figures. Scheduling and correspondence with the ICO and other regulators. Every non-responsive document.')],
     "short": "VeridianBank European Data Breach",
     "title": "VeridianBank European Data Breach",
     "subtitle": "Biometric and financial data breach · ICO, CNIL and BaFin enforcement",
@@ -287,6 +290,7 @@ MATTERS = [
 # 3 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "NorthStar-Meridian-Review-Protocol.pdf",
+    "conf": [('Highly Conf. – AEO', 'Pricing and bidding strategy; customer-specific pricing; market-share analyses and competitive intelligence; deal rationale and integration planning; hot documents. Among privileged documents: advice from outside counsel, and attorney work product.'), ('Confidential', "Ordinary-course operational reports. Logistics and administration, including the General Counsel's. Any document redacted for employee personal information, even when it concerns integration planning. Documents with a privileged passage redacted. In-house counsel's privileged advice. Every Not Responsive and Technical Issue document.")],
     "short": "NorthStar / Meridian Merger Review",
     "title": "NorthStar / Meridian Merger Review",
     "subtitle": "DOJ Antitrust Division · HSR Second Request",
@@ -361,6 +365,7 @@ MATTERS = [
 # 4 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "St-Aurelius-Breach-Review-Protocol.pdf",
+    "conf": [('Highly Conf. – AEO', "Sensitive business information: internal discussion of financial exposure, costs and insurance, and the ransom terms. Among privileged documents: forensic work performed at outside counsel's direction."), ('Confidential', 'Everything else: patient complaints and HR records once redacted, security correspondence, notification logistics, incident-response status updates, vendor invoices, PR material, other privileged communications, and every Not Responsive and Technical Issue document.')],
     "short": "Doe v. St. Aurelius Health System",
     "title": "Doe v. St. Aurelius Health System",
     "subtitle": "CryptVault ransomware breach · HHS OCR investigation and class action",
@@ -434,6 +439,7 @@ MATTERS = [
 # 5 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "Cascade-Headwaters-Review-Protocol.pdf",
+    "conf": [('Highly Conf. – AEO', 'Every document coded First Am. — Flag & Escalate, and every privileged document.'), ('Confidential', 'Every other responsive document, including published advocacy material, operational monitoring and incident records, and vendor invoices. Every Not Responsive and Technical Issue document.')],
     "short": "TransRidge v. Cascade Headwaters",
     "title": "TransRidge Pipeline LLC v. Cascade Headwaters Alliance",
     "subtitle": "Pipeline protest discovery · First Amendment associational privilege",
@@ -507,6 +513,7 @@ MATTERS = [
 # 6 ─────────────────────────────────────────────────────────────────────────
 {
     "file": "CADE-TechBrasil-Review-Protocol.pdf",
+    "conf": [('Attorneys Eyes Only', 'Every withheld privileged document.'), ('Highly Confidential', 'Pricing coordination, bid-rigging and exchanges of competitor data. Board approvals of pricing. Trade secrets, such as technology roadmaps. Attempts to destroy evidence.'), ('Standard', "CADE's own requests and other regulatory correspondence. LGPD personal-data incident records. Whistleblower complaints. Every non-responsive document.")],
     "short": "CADE v. TechBrasil Consortium",
     "title": "CADE v. TechBrasil Consortium",
     "subtitle": "Brazilian antitrust · Lei 12.529/2011 · Portuguese-language review",

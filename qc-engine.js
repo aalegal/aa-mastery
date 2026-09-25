@@ -111,7 +111,7 @@
       applies: function (a, v) {
         return a.responsive === 'responsive' && v.responsive.indexOf('non-responsive') !== -1;
       },
-      apply: function () { return { responsive: 'non-responsive', issues: [] }; }
+      apply: function () { return { responsive: 'non-responsive', action: 'withhold', issues: [] }; }
     },
     OVER_DESIGNATION: {
       key: 'OVER_DESIGNATION', weight: 2, freq: 30,
@@ -122,7 +122,8 @@
         return a.responsive === 'non-responsive' && v.responsive.indexOf('responsive') !== -1;
       },
       apply: function (a, v, rng) {
-        return { responsive: 'responsive', issues: v.issues.length ? [pickFrom(v.issues, rng)] : [] };
+        return { responsive: 'responsive', action: 'produce',
+                 issues: v.issues.length ? [pickFrom(v.issues, rng)] : [] };
       }
     },
     CONFIDENTIALITY: {
