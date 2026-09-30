@@ -5826,6 +5826,9 @@ function cirRenderDoc(doc) {
     h += '<div class="rel-email-body">' + esc(doc.text || doc.body) + '</div>';
   }
   el.innerHTML = h + '</div>';
+  // Each document opens at its top-left: this element is the scroller, and a
+  // long roster left scrolled would hide the next document's first fields.
+  el.scrollTop = 0; el.scrollLeft = 0;
 }
 
 // Show or hide an element that belongs to one mode, remembering its previous
@@ -5847,6 +5850,7 @@ function relApplyMatterChrome() {
   // Back to standard coding first, so redaction or PLOG mode is not left half
   // on, and so what gets remembered below is the standard layout.
   if (x && typeof switchCodingMode === 'function') switchCodingMode('standard');
+  var wasX = shell.classList.contains('cir-mode');
   shell.classList.toggle('cir-mode', x);
   ['rel-coding-panel', 'coding-mode-switcher', 'inline-rdx-panel', 'inline-plog-panel',
    'drag-rdx-hint', 'rel-filter-bar'].forEach(function (id) {
@@ -5863,6 +5867,14 @@ function relApplyMatterChrome() {
   var drawer = document.getElementById('cir-drawer');
   if (drawer) drawer.style.display = 'none';   // shown again when a document opens
   if (!x) shell.classList.remove('cir-collapsed');
+  // Leaving Larkspur: its sidebar clicks cleared QuantumEdge's highlight, so
+  // mark All Documents again, matching the relFilter that openCase just reset.
+  if (wasX && !x) {
+    document.querySelectorAll('#rel-sidebar .rel-sidebar-item').forEach(function (i) { i.classList.remove('active'); });
+    var all = document.getElementById('sc-all');
+    var allRow = all && all.closest('.rel-sidebar-item');
+    if (allRow) allRow.classList.add('active');
+  }
 }
 
 function cirEnsureKindsBox() {
@@ -5913,9 +5925,14 @@ function openCase(caseNum) {
   relCodingState = {};
   relCurrentDoc = null; relCurrentIdx = -1;
   relFilter = 'all'; relSearchQ = '';
-  // Switching matters clears the viewer, so one matter's document never shows
-  // under the other. Reopening the same matter keeps its view, as before.
-  if (prevCase !== ACTIVE_CASE) relClearViewer();
+  // Switching between matters clears the viewer and the search box, so one
+  // matter's document or search never shows under the other. The first open,
+  // and reopening the same matter, keep their view as before.
+  if (prevCase !== ACTIVE_CASE && REL_MATTERS[prevCase]) {
+    relClearViewer();
+    var searchBar = document.getElementById('rel-search-bar');
+    if (searchBar) searchBar.value = '';
+  }
   if (typeof rdxState !== 'undefined') rdxState.marks = {};
   if (typeof relApplyMatterChrome === 'function') relApplyMatterChrome();
   updateSidebarForCase(caseNum);
