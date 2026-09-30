@@ -1548,6 +1548,27 @@ table.cir-grid .cir-del{width:2.4%;text-align:center}
 .cir-x{background:none;border:none;color:#6e8aaa;font-size:1rem;cursor:pointer;line-height:1}
 .cir-x:hover{color:#ff8a80}
 .cir-add{margin-top:6px;background:none;border:1px dashed #2a3550;color:var(--gold-light);border-radius:6px;padding:4px 12px;font-size:.76rem;font-weight:700;cursor:pointer}
+.cir-badge{font-weight:800;padding:3px 10px;border-radius:999px;font-size:.74rem}
+.cir-badge.ok{background:#0d3b34;color:#4fd1b5;border:1px solid #145146}
+.cir-badge.bad{background:#3a2028;color:#ff8a80;border:1px solid #5a2f39}
+.cir-tally{font-size:.72rem;padding:2px 8px;border-radius:999px;background:#16203a;color:#b0c4de}
+.cir-tally b{color:#fff}
+table.cir-review td{font-size:.74rem;color:#dce6f5;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:4px 3px}
+.cir-box{display:inline-block;width:11px;height:11px;border:1px solid #6e8aaa;border-radius:2px;vertical-align:middle}
+.cir-box.on{background:#d4a82a;border-color:#d4a82a}
+.cir-row-ok td:first-child{box-shadow:inset 3px 0 0 #26a69a}
+.cir-bad{background:rgba(229,57,53,.18);outline:1px solid #e53935}
+.cir-miss{background:rgba(229,57,53,.18);outline:1px dashed #e53935}
+.cir-row-extra td{text-decoration:line-through;color:#8a95a8}
+.cir-row-extra td:first-child{box-shadow:inset 3px 0 0 #9e9e9e}
+.cir-row-missed{background:rgba(229,57,53,.10)}
+.cir-row-missed td:first-child{box-shadow:inset 3px 0 0 #e53935}
+tr.cir-why td{border-top:none;padding:0 4px 7px;white-space:normal;font-size:.72rem;color:#b0c4de}
+.cir-tag{font-size:.6rem;font-weight:800;letter-spacing:.05em;padding:1px 5px;border-radius:3px;margin-right:5px}
+.cir-tag.m{background:#e53935;color:#fff}
+.cir-tag.x{background:#616161;color:#fff}
+.cir-tag.ok{background:#26a69a;color:#062e2a}
+.cir-empty{padding:14px;color:#4fd1b5;font-size:.84rem}
 .rv-proto{display:flex;align-items:center;gap:.7rem;margin:0 0 .5rem;padding:.55rem .75rem;
   border:1px solid #2a3550;border-radius:8px;background:#0f1726;color:var(--text);text-decoration:none;
   transition:border-color .15s,background .15s}
@@ -4849,7 +4870,7 @@ function relRenderList(){
   }
   var typeLabels=Object.assign({email:"email",attachment:"attachment",memo:"memo",contract:"contract",chat:"chat"},CIR_KIND_LABELS);
   scroll.innerHTML=visible.map(function(d){
-    var answered=relAnswered[d.id];
+    var answered=relIsExtraction()?cirAnswered(d.id):relAnswered[d.id];
     var dotClass="dot-none";
     var rowClass="";
     if(answered){
@@ -6100,6 +6121,146 @@ document.addEventListener('keydown', function (e) {
   if (!shell || shell.style.display === 'none' || !relIsExtraction()) return;
   cirKeydown(e);
 });
+
+var CIR_DEFECT_LABELS = { MISSED_INDIVIDUAL: 'missed individual', MISSED_ELEMENT: 'missed element',
+  EXTRA_INDIVIDUAL: 'extra individual', EXTRA_ELEMENT: 'extra element', FIELD_ERROR: 'field error' };
+var CIR_FIELD_NAMES = { first: 'First name', last: 'Last name', dob: 'DOB', street: 'Street', city: 'City', state: 'State', zip: 'ZIP' };
+
+// The first submission is the graded one: feedback reveals the full correct
+// rows, so a resubmission would be trivially perfect.
+function cirSubmit() {
+  if (cirReviewing || !cirDraft || !relCurrentDoc) return;
+  var v = EX.validateEntry(cirDraft);
+  if (!v.ok) { cirRenderEntryHead(); return; }
+  var entry = { noPii: !!cirDraft.noPii, rows: v.rows };
+  var g = EX.gradeDocument(relCurrentDoc.answer, entry);
+  relExtract.entries[relCurrentDoc.id] = { noPii: entry.noPii, rows: entry.rows,
+    submittedAt: new Date().toISOString(), result: { weight: g.weight, perfect: g.perfect, defects: g.defects } };
+  delete cirDrafts[relCurrentDoc.id];
+  cirReviewing = true; cirDraft = null;
+  cirRender();
+  cirFocus();
+  relRenderList();
+  updateRelProgress();
+  triggerAutoSave();
+}
+
+function cirBatchStatus() {
+  var st = relBatchState(), size = relBatchSize();
+  return {
+    done: isBatchComplete(ACTIVE_DOCS, st.currentBatch, relExtract.entries, size),
+    last: st.currentBatch >= getTotalBatches(ACTIVE_DOCS, size) - 1,
+    nextNum: st.currentBatch + 2
+  };
+}
+
+// The feedback screen's main button. Moves to the next unsubmitted document in
+// the batch; once the whole batch is in, opens the next batch. The shell's own
+// unlock banner sits inside the coding panel, which this matter hides.
+function cirNext() {
+  var b = cirBatchStatus();
+  if (b.done) {
+    if (b.last) return;
+    completeBatchAndNext('rel');
+    var first = relGetVisible()[0];
+    if (first) relOpenDoc(first.id);
+    return;
+  }
+  var list = relGetVisible();
+  var at = relCurrentDoc ? list.findIndex(function (d) { return d.id === relCurrentDoc.id; }) : -1;
+  var order = list.slice(at + 1).concat(list.slice(0, at + 1));
+  var next = order.filter(function (d) { return !relExtract.entries[d.id]; })[0];
+  if (next) relOpenDoc(next.id); else relNav(1);
+}
+
+function cirAnswered(id) {
+  var e = relExtract.entries[id];
+  if (!e) return null;
+  var s = EX.resultStatus(e.result);
+  return { correct: s === 'correct', partial: s === 'partial' };
+}
+
+// Back to the top of the document, to re-read it against the feedback.
+function cirReviewAgain() { var c = document.getElementById('rel-doc-content'); if (c) c.scrollTop = 0; }
+
+function cirLineClean(line) {
+  return !!line && !Object.keys(line.fieldErrors).length && !line.missedElements.length && !line.extraElements.length;
+}
+
+function cirReviewRow(values, kind, line) {
+  var cls = kind === 'extra' ? 'cir-row-extra' : kind === 'missed' ? 'cir-row-missed' : (cirLineClean(line) ? 'cir-row-ok' : '');
+  var h = '<tr class="' + cls + '">';
+  CIR_FIELDS.forEach(function (f) {
+    var bad = !!line && line.fieldErrors[f.k] !== undefined;
+    h += '<td class="cir-f-' + f.k + (bad ? ' cir-bad' : '') + '"' +
+      (bad ? ' title="Should be ' + escAttr(line.fieldErrors[f.k] || '(blank)') + '"' : '') + '>' + esc(values[f.k] || '') + '</td>';
+  });
+  CIR_ELEMENT_COLS.forEach(function (e) {
+    var on = !!(values.el && values.el[e.k]);
+    var missed = !!line && line.missedElements.indexOf(e.k) !== -1;
+    var extra = !!line && line.extraElements.indexOf(e.k) !== -1;
+    h += '<td class="cir-el ' + e.g + (missed ? ' cir-miss' : '') + (extra ? ' cir-bad' : '') + '"><span class="cir-box' + (on ? ' on' : '') + '"></span></td>';
+  });
+  return h + '<td class="cir-del"></td></tr>';
+}
+
+function cirWhyRow(notes) {
+  return '<tr class="cir-why"><td colspan="' + (CIR_FIELDS.length + CIR_ELEMENT_COLS.length + 1) + '">' +
+    notes.map(function (n) { return '<span class="cir-tag ' + n.cls + '">' + n.tag + '</span>' + esc(n.text || ''); }).join('<br>') +
+    '</td></tr>';
+}
+
+function cirElementTitle(k) { return CIR_ELEMENT_COLS.filter(function (c) { return c.k === k; })[0].title; }
+
+function cirMatchedNotes(line) {
+  if (cirLineClean(line)) return [{ tag: 'CORRECT', cls: 'ok', text: '' }];
+  var notes = [], why = line.key.why || {}, whyNot = line.key.whyNot || {};
+  Object.keys(line.fieldErrors).forEach(function (f) {
+    notes.push({ tag: 'FIELD ERROR', cls: 'm', text: CIR_FIELD_NAMES[f] + ' should be ' + (line.fieldErrors[f] || '(blank)') + '.' });
+  });
+  line.missedElements.forEach(function (k) {
+    notes.push({ tag: 'MISSED ELEMENT', cls: 'm', text: cirElementTitle(k) + ': ' + (why[k] || '') });
+  });
+  line.extraElements.forEach(function (k) {
+    notes.push({ tag: 'EXTRA ELEMENT', cls: 'x', text: cirElementTitle(k) + (whyNot[k] ? ': ' + whyNot[k] : ' is not exposed for this person.') });
+  });
+  return notes;
+}
+
+function cirRenderFeedback() {
+  var doc = relCurrentDoc, saved = relExtract.entries[doc.id];
+  if (!saved) return;
+  document.getElementById('rel-shell').classList.toggle('cir-collapsed', cirCollapsed);
+  var r = saved.result, counts = {}, b = cirBatchStatus();
+  (r.defects || []).forEach(function (d) { counts[d.type] = (counts[d.type] || 0) + 1; });
+  var nextLabel = !b.done ? 'Next document →' : b.last ? 'All batches submitted' : 'Batch ' + b.nextNum + ' →';
+  document.getElementById('cir-drawer-head').innerHTML =
+    '<span class="cir-docid">' + esc(doc.id) + ' · ' + esc(CIR_KIND_LABELS[doc.type] || doc.type) + '</span>' +
+    (r.perfect ? '<span class="cir-badge ok">Perfect</span>'
+      : '<span class="cir-badge bad">' + r.defects.length + ' defect' + (r.defects.length === 1 ? '' : 's') + ' · weight ' + r.weight + '</span>' +
+        Object.keys(CIR_DEFECT_LABELS).filter(function (t) { return counts[t]; }).map(function (t) {
+          return '<span class="cir-tally"><b>' + counts[t] + '</b> ' + CIR_DEFECT_LABELS[t] + '</span>';
+        }).join('')) +
+    '<span class="cir-spacer"></span>' +
+    '<button class="cir-btn" onclick="cirReviewAgain()">Review again</button>' +
+    '<button class="cir-btn gold" id="cir-next" onclick="cirNext()" title="Ctrl+Enter"' + (b.done && b.last ? ' disabled' : '') + '>' + nextLabel + '</button>' +
+    '<button class="cir-btn" onclick="cirToggleCollapse()" title="' + (cirCollapsed ? 'Expand' : 'Collapse') + '">' + (cirCollapsed ? '▴' : '▾') + '</button>';
+  document.getElementById('cir-drawer-hint').textContent = '';
+  var body = document.getElementById('cir-drawer-body');
+  if (cirCollapsed) { body.innerHTML = ''; return; }
+  if (doc.answer.noPii && saved.noPii) {
+    body.innerHTML = '<div class="cir-empty">Correct: there is no PII or PHI in this document.' + (doc.answer.why ? ' ' + esc(doc.answer.why) : '') + '</div>';
+    return;
+  }
+  var g = EX.gradeDocument(doc.answer, saved);   // recomputed for display; the stored result is the grade
+  var h = '<table class="cir-grid cir-review">' + cirGridHead() + '<tbody>';
+  g.lines.forEach(function (ln) {
+    if (ln.kind === 'matched') h += cirReviewRow(ln.row, 'matched', ln) + cirWhyRow(cirMatchedNotes(ln));
+    else if (ln.kind === 'extra') h += cirReviewRow(ln.row, 'extra', null) + cirWhyRow([{ tag: 'EXTRA INDIVIDUAL', cls: 'x', text: ln.why }]);
+    else h += cirReviewRow(ln.key, 'missed', null) + cirWhyRow([{ tag: 'MISSED INDIVIDUAL', cls: 'm', text: (ln.why ? ln.why + ' ' : '') + 'The correct row is shown.' }]);
+  });
+  body.innerHTML = h + '</tbody></table>';
+}
 
 function openCase(caseNum) {
   var prevCase = ACTIVE_CASE;
