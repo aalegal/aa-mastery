@@ -140,7 +140,7 @@ def scheme_casepoint(priv_label, third_priv):
                       "follows the content, not who sent the document."),
     }
 
-# ── The six matters ──────────────────────────────────────────────────────────
+# ── The matters ──────────────────────────────────────────────────────────────
 
 MATTERS = [
 
@@ -631,8 +631,8 @@ MATTERS = [
     "overview": [
         "Larkspur Benefit Services, a health-benefits administrator, suffered a ransomware attack, and "
         "the attacker took a copy of a file share. Outside counsel has engaged the review team to mine "
-        "the stolen files: to find every affected person and every data element exposed, so Larkspur "
-        "can notify them under HIPAA and state breach-notification laws.",
+        "the stolen files: to find every affected person and every data element exposed, so the "
+        "notices that HIPAA and state breach-notification laws require can go out.",
         "Larkspur handles health-plan data for the plans it serves, which makes it a HIPAA business "
         "associate rather than a covered entity. It also holds ordinary employer HR data. You will meet "
         "both PII and PHI.",
@@ -640,6 +640,10 @@ MATTERS = [
         "You do not decide responsiveness or privilege.",
     ],
     "custodians": [
+        ("Larkspur Benefit Services",
+         "The breached benefits administrator: a HIPAA business associate of the plans it serves"),
+        ("The health plans", "Covered entities whose members' data was in the stolen files"),
+        ("Outside counsel", "Directs this review and the notification analysis"),
         ("Benefits Operations", "Enrollment and eligibility files, member correspondence"),
         ("Claims", "Claim forms and care-management records"),
         ("HR", "W-2s, direct-deposit forms, I-9s"),
@@ -685,8 +689,9 @@ MATTERS = [
     ],
     "traps": [
         ("The provider is not the patient",
-         "Claims and progress notes name a doctor with a practice address. That is business contact "
-         "information. The patient is the affected individual."),
+         "Claims name the treating doctor with a practice address, and progress notes name the "
+         "clinician who signed. Both are business contact details. The patient is the affected "
+         "individual."),
         ("Masked numbers don't count",
          "Direct-deposit forms show only the last four digits of an SSN. Record the person for their bank "
          "account, and leave the SSN box empty."),
@@ -699,7 +704,7 @@ MATTERS = [
          "on it gets a row."),
     ],
     "pace_text": "The target for this matter is 15 documents per hour. Extraction is slower than coding: "
-                 "rosters and claim files carry many people each. Pace is measured per working session; "
+                 "rosters carry many people each. Pace is measured per working session; "
                  "a gap of more than 30 minutes starts a new one. Your first submission of each document "
                  "is the graded one.",
     "defects": [
@@ -709,7 +714,17 @@ MATTERS = [
         ("Extra data element", "Overstates the exposure", "1"),
         ("Identity field error", "The letter is misaddressed or cannot be matched", "1"),
     ],
-    "pace_line": "15 documents per hour for this extraction matter (60 applies to the coding matters).",
+    "qc_overrides": {
+        "Pace": "15 documents per hour, sustained, done properly, for this extraction matter "
+                "(60 applies to the coding matters).",
+        "The rule that outranks the others": "Never trade accuracy for speed: a missed person is "
+                                             "the costliest defect.",
+    },
+    "escalation_notes": [
+        "Never guess silently on a gray area. While you wait for an answer, leave the document "
+        "unsubmitted: your first submission is the graded one.",
+        ESCALATION_NOTES[1],
+    ],
 },
 
 ]

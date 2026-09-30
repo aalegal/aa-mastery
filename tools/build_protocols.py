@@ -191,10 +191,9 @@ class NumberedCanvas(rl_canvas.Canvas):
                              "Page %d of %d" % (self._pageNumber, total))
 
 
-def build(m):
-    if m.get("layout") == "extraction":
-        return build_extraction(m)
-    story = [
+def _story_head(m):
+    """The title block every protocol opens with."""
+    return [
         Paragraph("AA TEAM&nbsp;&nbsp;·&nbsp;&nbsp;DOCUMENT REVIEW PROTOCOL", S["eyebrow"]),
         Paragraph(esc(m["title"]), S["title"]),
         Paragraph(esc(m["subtitle"]), S["subtitle"]),
@@ -202,8 +201,11 @@ def build(m):
         Spacer(1, 6),
         P(C.TRAINING_NOTE, "training"),
     ]
-    sc = m["scheme"]
-    w = FRAME_W
+
+
+def _sectioner(story):
+    """Returns (sect, num). sect() appends a numbered section to story; num is its
+    one-item counter, for a heading that has to be placed by hand."""
     num = [0]
 
     def sect(title, *first, rest=()):
@@ -211,6 +213,71 @@ def build(m):
         num[0] += 1
         story.append(KeepTogether([section(num[0], title)] + list(first)))
         story.extend(rest)
+
+    return sect, num
+
+
+def _callouts(items):
+    """(first, rest) for a run of callouts: the first binds to its heading, the rest follow."""
+    al = [callout(t, x) for t, x in items]
+    rest = []
+    for c in al[1:]:
+        rest += [Spacer(1, 6), c]
+    return al[0], rest
+
+
+def _qc_rows(m):
+    """The shared QC rows, with the matter's own wording swapped in where it has
+    qc_overrides ({row name: text}). An override must name an existing row, so a
+    renamed row fails here instead of quietly printing the shared default."""
+    over = m.get("qc_overrides") or {}
+    names = [k for k, _ in C.QC_STANDARD]
+    bad = [k for k in over if k not in names]
+    if bad:
+        raise ValueError("%s: qc_overrides names no QC_STANDARD row: %s (the rows are %s)"
+                         % (m["file"], ", ".join(repr(k) for k in bad),
+                            ", ".join(repr(k) for k in names)))
+    return [(k, over.get(k, v)) for k, v in C.QC_STANDARD]
+
+
+def _closing(sect, m):
+    """Escalation and the QC standard, the last section of every protocol. A matter
+    may carry escalation_notes, used instead of the shared ones, and qc_overrides."""
+    w = FRAME_W
+    notes = m.get("escalation_notes")
+    if notes is None:
+        notes = C.ESCALATION_NOTES
+    # The closing section moves as one unit: a lone QC table on an otherwise
+    # empty last page reads as a mistake.
+    sect("Escalation and the QC standard",
+         table(["Step", "Who", "When"], C.ESCALATION, [w * 0.08, w * 0.24, w * 0.68]),
+         Spacer(1, 6), *bullets(notes, "note"),
+         Spacer(1, 6), table(["QC Track standard", ""], _qc_rows(m), [w * 0.30, w * 0.70]))
+
+
+def _write(m, story):
+    """Lays the story out as the matter's PDF in OUT, and returns its path."""
+    path = os.path.join(OUT, m["file"])
+
+    class _Canvas(NumberedCanvas):
+        matter_short = m["short"]
+
+    doc = SimpleDocTemplate(path, pagesize=letter, leftMargin=MARGIN, rightMargin=MARGIN,
+                            topMargin=MARGIN, bottomMargin=MARGIN,
+                            title="%s — Review Protocol" % m["title"],
+                            author="AA Team", subject="Document review protocol",
+                            creator="AA Team Mastery Hub")
+    doc.build(story, canvasmaker=_Canvas)
+    return path
+
+
+def build(m):
+    if m.get("layout") == "extraction":
+        return build_extraction(m)
+    story = _story_head(m)
+    sect, num = _sectioner(story)
+    sc = m["scheme"]
+    w = FRAME_W
 
     sect("Matter overview", *[P(t) for t in m["overview"]])
 
@@ -256,99 +323,48 @@ def build(m):
         sect("Redaction", *red[:2], rest=red[2:])
 
     if m.get("alerts"):
-        al = [callout(t, x) for t, x in m["alerts"]]
-        rest = []
-        for c in al[1:]:
-            rest += [Spacer(1, 6), c]
-        sect("Matter alerts", al[0], rest=rest)
+        first, rest = _callouts(m["alerts"])
+        sect("Matter alerts", first, rest=rest)
 
-    # The closing section moves as one unit: a lone QC table on an otherwise
-    # empty last page reads as a mistake.
-    sect("Escalation and the QC standard",
-         table(["Step", "Who", "When"], C.ESCALATION, [w * 0.08, w * 0.24, w * 0.68]),
-         Spacer(1, 6), *bullets(C.ESCALATION_NOTES, "note"),
-         Spacer(1, 6), table(["QC Track standard", ""], C.QC_STANDARD, [w * 0.30, w * 0.70]))
-
-    path = os.path.join(OUT, m["file"])
-
-    class _Canvas(NumberedCanvas):
-        matter_short = m["short"]
-
-    doc = SimpleDocTemplate(path, pagesize=letter, leftMargin=MARGIN, rightMargin=MARGIN,
-                            topMargin=MARGIN, bottomMargin=MARGIN,
-                            title="%s — Review Protocol" % m["title"],
-                            author="AA Team", subject="Document review protocol",
-                            creator="AA Team Mastery Hub")
-    doc.build(story, canvasmaker=_Canvas)
-    return path
+    _closing(sect, m)
+    return _write(m, story)
 
 
 def build_extraction(m):
-    story = [
-        Paragraph("AA TEAM&nbsp;&nbsp;·&nbsp;&nbsp;DOCUMENT REVIEW PROTOCOL", S["eyebrow"]),
-        Paragraph(esc(m["title"]), S["title"]),
-        Paragraph(esc(m["subtitle"]), S["subtitle"]),
-        meta_row(m["meta"]),
-        Spacer(1, 6),
-        P(C.TRAINING_NOTE, "training"),
-    ]
+    story = _story_head(m)
+    sect, _ = _sectioner(story)
     w = FRAME_W
-    num = [0]
-
-    def sect(title, *first, rest=()):
-        """A heading bound to its first block, so it can never end a page alone."""
-        num[0] += 1
-        story.append(KeepTogether([section(num[0], title)] + list(first)))
-        story.extend(rest)
 
     sect("Matter overview", *[P(t) for t in m["overview"]])
     sect("Parties and custodians",
-         table(["Custodian", "What it holds"], m["custodians"], [w * 0.30, w * 0.70]))
+         table(["Party or custodian", "Role, or what it holds"], m["custodians"], [w * 0.30, w * 0.70]))
+    # One unit: with the PII/PHI table left in `rest`, it fell alone to the top of the next page.
     sect("The extraction template",
          P("One row per affected person in the document: typed identity values, then a tick box for "
            "each data element exposed."),
          table(["Identity field", "How to enter it"], m["template_fields"], [w * 0.30, w * 0.70]),
-         rest=[Spacer(1, 6),
-               table(["PII (state breach-law triggers)", "PHI (HIPAA)"], [[m["pii_list"], m["phi_list"]]],
-                     [w * 0.5, w * 0.5], bold_first=False),
-               Spacer(1, 4), P(m["no_pii_rule"], "note")])
+         Spacer(1, 6),
+         table(["PII (state breach-law triggers)", "PHI (HIPAA)"], [[m["pii_list"], m["phi_list"]]],
+               [w * 0.5, w * 0.5], bold_first=False))
     rules = [Paragraph(esc(t), S["bullet"], bulletText="%d." % (i + 1))
              for i, t in enumerate(m["rules"])]
-    sect("How to extract", *rules[:2], rest=rules[2:])
+    sect("How to extract", P(m["no_pii_rule"], "note"), *rules[:2], rest=rules[2:])
     sect("Data elements: what counts",
          table(["Element", "Counts", "Does not count"], m["elements"], [w * 0.24, w * 0.40, w * 0.36]))
-    al = [callout(t, x) for t, x in m["traps"]]
-    rest = []
-    for c in al[1:]:
-        rest += [Spacer(1, 6), c]
-    sect("Judgment traps", al[0], rest=rest)
+    first, rest = _callouts(m["traps"])
+    sect("Judgment traps", first, rest=rest)
     sect("Pace and grading", P(m["pace_text"]),
          table(["Defect", "What it costs the client", "Weight"], m["defects"], [w * 0.28, w * 0.58, w * 0.14]))
-    qc = [(k, m["pace_line"] if k == "Pace" else v) for k, v in C.QC_STANDARD]
-    # The closing section moves as one unit, as in the coding protocols.
-    sect("Escalation and the QC standard",
-         table(["Step", "Who", "When"], C.ESCALATION, [w * 0.08, w * 0.24, w * 0.68]),
-         Spacer(1, 6), *bullets(C.ESCALATION_NOTES, "note"),
-         Spacer(1, 6), table(["QC Track standard", ""], qc, [w * 0.30, w * 0.70]))
-
-    path = os.path.join(OUT, m["file"])
-
-    class _Canvas(NumberedCanvas):
-        matter_short = m["short"]
-
-    doc = SimpleDocTemplate(path, pagesize=letter, leftMargin=MARGIN, rightMargin=MARGIN,
-                            topMargin=MARGIN, bottomMargin=MARGIN,
-                            title="%s — Review Protocol" % m["title"],
-                            author="AA Team", subject="Document review protocol",
-                            creator="AA Team Mastery Hub")
-    doc.build(story, canvasmaker=_Canvas)
-    return path
+    _closing(sect, m)
+    return _write(m, story)
 
 
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
     only = sys.argv[1:]   # optional: build only files whose name contains one of these
-    for m in C.MATTERS:
-        if only and not any(o in m["file"] for o in only):
-            continue
+    todo = [m for m in C.MATTERS if not only or any(o in m["file"] for o in only)]
+    if not todo:
+        print("no matter file name contains: " + " ".join(only), file=sys.stderr)
+        sys.exit(2)
+    for m in todo:
         print(build(m))
