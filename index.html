@@ -6103,6 +6103,7 @@ function cirKeydown(e) {
   if (!relCurrentDoc) return;
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
+    if (e.repeat) return;   // a held chord must not submit and then skip the feedback
     if (cirReviewing) { if (typeof cirNext === 'function') cirNext(); else relNav(1); }
     else if (typeof cirSubmit === 'function') cirSubmit();
     return;
@@ -6234,6 +6235,8 @@ function cirRenderFeedback() {
   var r = saved.result, counts = {}, b = cirBatchStatus();
   (r.defects || []).forEach(function (d) { counts[d.type] = (counts[d.type] || 0) + 1; });
   var nextLabel = !b.done ? 'Next document →' : b.last ? 'All batches submitted' : 'Batch ' + b.nextNum + ' →';
+  // The second click of a double-click on Submit lands on Next (same spot):
+  // it is ignored, so the feedback stays on screen.
   document.getElementById('cir-drawer-head').innerHTML =
     '<span class="cir-docid">' + esc(doc.id) + ' · ' + esc(CIR_KIND_LABELS[doc.type] || doc.type) + '</span>' +
     (r.perfect ? '<span class="cir-badge ok">Perfect</span>'
@@ -6243,7 +6246,7 @@ function cirRenderFeedback() {
         }).join('')) +
     '<span class="cir-spacer"></span>' +
     '<button class="cir-btn" onclick="cirReviewAgain()">Review again</button>' +
-    '<button class="cir-btn gold" id="cir-next" onclick="cirNext()" title="Ctrl+Enter"' + (b.done && b.last ? ' disabled' : '') + '>' + nextLabel + '</button>' +
+    '<button class="cir-btn gold" id="cir-next" onclick="if (event.detail > 1) return; cirNext()" title="Ctrl+Enter"' + (b.done && b.last ? ' disabled' : '') + '>' + nextLabel + '</button>' +
     '<button class="cir-btn" onclick="cirToggleCollapse()" title="' + (cirCollapsed ? 'Expand' : 'Collapse') + '">' + (cirCollapsed ? '▴' : '▾') + '</button>';
   document.getElementById('cir-drawer-hint').textContent = '';
   var body = document.getElementById('cir-drawer-body');
