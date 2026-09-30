@@ -1,8 +1,9 @@
 """
-Build the six review-protocol PDFs into ../protocols/.
+Build the review-protocol PDFs into ../protocols/.
 
     python3 -m venv .venv && .venv/bin/pip install reportlab
-    .venv/bin/python tools/build_protocols.py
+    .venv/bin/python tools/build_protocols.py            # all of them
+    .venv/bin/python tools/build_protocols.py Larkspur   # only files containing "Larkspur"
 
 The words live in protocols_content.py; this file only lays them out.
 Fonts come from macOS (Arial, Georgia). On another OS, point FONT_DIR at any
@@ -191,6 +192,8 @@ class NumberedCanvas(rl_canvas.Canvas):
 
 
 def build(m):
+    if m.get("layout") == "extraction":
+        return build_extraction(m)
     story = [
         Paragraph("AA TEAM&nbsp;&nbsp;·&nbsp;&nbsp;DOCUMENT REVIEW PROTOCOL", S["eyebrow"]),
         Paragraph(esc(m["title"]), S["title"]),
@@ -280,7 +283,72 @@ def build(m):
     return path
 
 
+def build_extraction(m):
+    story = [
+        Paragraph("AA TEAM&nbsp;&nbsp;·&nbsp;&nbsp;DOCUMENT REVIEW PROTOCOL", S["eyebrow"]),
+        Paragraph(esc(m["title"]), S["title"]),
+        Paragraph(esc(m["subtitle"]), S["subtitle"]),
+        meta_row(m["meta"]),
+        Spacer(1, 6),
+        P(C.TRAINING_NOTE, "training"),
+    ]
+    w = FRAME_W
+    num = [0]
+
+    def sect(title, *first, rest=()):
+        """A heading bound to its first block, so it can never end a page alone."""
+        num[0] += 1
+        story.append(KeepTogether([section(num[0], title)] + list(first)))
+        story.extend(rest)
+
+    sect("Matter overview", *[P(t) for t in m["overview"]])
+    sect("Parties and custodians",
+         table(["Custodian", "What it holds"], m["custodians"], [w * 0.30, w * 0.70]))
+    sect("The extraction template",
+         P("One row per affected person in the document: typed identity values, then a tick box for "
+           "each data element exposed."),
+         table(["Identity field", "How to enter it"], m["template_fields"], [w * 0.30, w * 0.70]),
+         rest=[Spacer(1, 6),
+               table(["PII (state breach-law triggers)", "PHI (HIPAA)"], [[m["pii_list"], m["phi_list"]]],
+                     [w * 0.5, w * 0.5], bold_first=False),
+               Spacer(1, 4), P(m["no_pii_rule"], "note")])
+    rules = [Paragraph(esc(t), S["bullet"], bulletText="%d." % (i + 1))
+             for i, t in enumerate(m["rules"])]
+    sect("How to extract", *rules[:2], rest=rules[2:])
+    sect("Data elements: what counts",
+         table(["Element", "Counts", "Does not count"], m["elements"], [w * 0.24, w * 0.40, w * 0.36]))
+    al = [callout(t, x) for t, x in m["traps"]]
+    rest = []
+    for c in al[1:]:
+        rest += [Spacer(1, 6), c]
+    sect("Judgment traps", al[0], rest=rest)
+    sect("Pace and grading", P(m["pace_text"]),
+         table(["Defect", "What it costs the client", "Weight"], m["defects"], [w * 0.28, w * 0.58, w * 0.14]))
+    qc = [(k, m["pace_line"] if k == "Pace" else v) for k, v in C.QC_STANDARD]
+    # The closing section moves as one unit, as in the coding protocols.
+    sect("Escalation and the QC standard",
+         table(["Step", "Who", "When"], C.ESCALATION, [w * 0.08, w * 0.24, w * 0.68]),
+         Spacer(1, 6), *bullets(C.ESCALATION_NOTES, "note"),
+         Spacer(1, 6), table(["QC Track standard", ""], qc, [w * 0.30, w * 0.70]))
+
+    path = os.path.join(OUT, m["file"])
+
+    class _Canvas(NumberedCanvas):
+        matter_short = m["short"]
+
+    doc = SimpleDocTemplate(path, pagesize=letter, leftMargin=MARGIN, rightMargin=MARGIN,
+                            topMargin=MARGIN, bottomMargin=MARGIN,
+                            title="%s — Review Protocol" % m["title"],
+                            author="AA Team", subject="Document review protocol",
+                            creator="AA Team Mastery Hub")
+    doc.build(story, canvasmaker=_Canvas)
+    return path
+
+
 if __name__ == "__main__":
     os.makedirs(OUT, exist_ok=True)
+    only = sys.argv[1:]   # optional: build only files whose name contains one of these
     for m in C.MATTERS:
+        if only and not any(o in m["file"] for o in only):
+            continue
         print(build(m))
