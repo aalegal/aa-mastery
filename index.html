@@ -26,6 +26,8 @@
 <meta name="twitter:image:alt" content="AA Team Privilege &amp; Coding Mastery – Training Hub">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.2/axios.min.js"></script>
 <script src="/qc-engine.js"></script>
+<script src="/extraction-engine.js" defer></script>
+<script src="/cir-docs.js" defer></script>
 <style>
 /* ══════════════════════════════════════════
    GOLD STANDARD PREMIUM PALETTE
@@ -1499,6 +1501,23 @@ tr:nth-child(even) td{background:#0d162080}
 .qc-backbar{margin-bottom:.6rem}
 .rv-cap{margin-top:.6rem;padding-top:.5rem;border-top:1px solid #1c2740;color:#7d8ca3;font-size:.74rem}
 .rv-path{display:flex;flex-direction:column;gap:.5rem}
+#rel-shell.cir-mode .rel-doc-type-badge{background:#123040;color:#80deea;border:1px solid #1f6f8b}
+.cir-doc{padding:14px 18px 22px;font-size:.84rem;color:var(--text2)}
+.cir-doc-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.cir-kind{font-size:.68rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#80deea;background:#123040;border:1px solid #1f6f8b;border-radius:999px;padding:2px 9px}
+.cir-date{color:var(--muted);font-size:.76rem}
+.cir-fiction{margin-left:auto;color:var(--muted);font-size:.7rem;font-style:italic}
+.cir-caption{font-weight:700;color:var(--text);margin-bottom:8px}
+table.cir-table{border-collapse:collapse;width:100%;font-size:.76rem}
+table.cir-table th{background:#16203a;color:#9fb0c9;text-align:left;padding:5px 6px;font-weight:700;white-space:nowrap}
+table.cir-table td{border-top:1px solid #1c2740;padding:4px 6px;color:#dce6f5;white-space:nowrap}
+tr.cir-pagebreak td{background:#0b1220;color:var(--muted);text-align:center;font-size:.7rem;letter-spacing:.2em;text-transform:uppercase;border-top:2px dashed #2a3550;border-bottom:2px dashed #2a3550;padding:7px}
+.cir-form-h{font-weight:800;color:var(--text);font-size:.95rem;margin-bottom:10px}
+.cir-form-sec{background:#0f1726;border:1px solid #1c2740;border-radius:8px;padding:8px 10px;margin-bottom:8px}
+.cir-form-label{color:var(--gold-light);font-size:.7rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-bottom:5px}
+.cir-field{display:flex;gap:10px;padding:2px 0}
+.cir-field span{flex:0 0 42%;color:var(--muted)}
+.cir-field b{color:#dce6f5;font-weight:600}
 .rv-proto{display:flex;align-items:center;gap:.7rem;margin:0 0 .5rem;padding:.55rem .75rem;
   border:1px solid #2a3550;border-radius:8px;background:#0f1726;color:var(--text);text-decoration:none;
   transition:border-color .15s,background .15s}
@@ -2711,6 +2730,15 @@ tr:nth-child(even) td{background:#0d162080}
       </div>
     </div>
     <div style="margin-top:12px;background:#2e7d32;color:#fff;border:none;border-radius:7px;padding:10px;font-weight:700;font-size:.84rem;text-align:center;">Open in Casepoint →</div>
+  </div>
+
+  <!-- PROJECT 5: LARKSPUR (Cyber Incident Response, PII/PHI extraction) -->
+  <div class="card proj-case-card" onclick="openLarkspurCase()" style="border-color:#1f6f8b;margin-bottom:14px;">
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:3px 12px;border-radius:14px;font-size:.71rem;font-weight:700;margin-bottom:8px;background:rgba(31,111,139,.18);color:#4fc3f7;border:1px solid #1f6f8b">🛡️ Cyber Incident Response · PII/PHI Extraction · Relativity Platform</div>
+    <div style="font-size:1.05rem;font-weight:800;color:var(--text);margin-bottom:4px">🏥 Larkspur Benefit Services: Ransomware Data Incident</div>
+    <div style="font-size:.8rem;color:var(--text2);margin-bottom:10px">Mine the stolen file share. Record every affected person and every exposed data element, for HIPAA and state breach notification.</div>
+    <div style="font-size:.78rem;color:var(--muted)">🖥️ Runs on <strong style="color:#4fc3f7">Relativity</strong> · 150 documents · 15 docs/hour target · spreadsheet extraction</div>
+    <div style="margin-top:12px;text-align:right"><span class="btn btn-sm" style="background:#1f6f8b;color:#fff;border-color:#1f6f8b">Open in Relativity →</span></div>
   </div>
 
   <!-- PROJECT 4: AI -->
@@ -4789,7 +4817,7 @@ function relRenderList(){
     scroll.innerHTML="<div style=\"padding:20px;text-align:center;color:var(--muted);font-size:.82rem\">No documents match this filter.</div>";
     return;
   }
-  var typeLabels={email:"email",attachment:"attachment",memo:"memo",contract:"contract",chat:"chat"};
+  var typeLabels=Object.assign({email:"email",attachment:"attachment",memo:"memo",contract:"contract",chat:"chat"},CIR_KIND_LABELS);
   scroll.innerHTML=visible.map(function(d){
     var answered=relAnswered[d.id];
     var dotClass="dot-none";
@@ -4835,6 +4863,7 @@ function relOpenDoc(id){
 }
 
 function renderDocContent(doc){
+  if (cirIsDoc(doc)) { cirRenderDoc(doc); return; }
   var content=document.getElementById("rel-doc-content");
   var html="";
   // Header
@@ -5115,6 +5144,14 @@ function showRelResults(){
   document.body.appendChild(overlay);
 }
 
+// The viewer's empty state, shown when no document is open.
+function relClearViewer(){
+  document.getElementById("rel-doc-content").innerHTML="<div style=\"text-align:center;padding:60px 20px;color:var(--muted)\"><div style=\"font-size:3rem;margin-bottom:14px\">📂</div><div style=\"font-size:1rem;font-weight:600;color:var(--text2);margin-bottom:8px\">No Document Selected</div><div style=\"font-size:.84rem\">Select a document from the list to begin.</div></div>";
+  document.getElementById("rel-doc-title").textContent="Select a document to begin review";
+  document.getElementById("rel-doc-counter").textContent="";
+  document.getElementById("rel-panel-doc-id").textContent="No document loaded";
+}
+
 // Resets only the open matter. It used to wipe every key in relCoding, so
 // pressing it inside Larkspur would have erased QuantumEdge work. It saves, so
 // a reload no longer brings the reset work back.
@@ -5130,9 +5167,7 @@ function relResetAll(){
     ACTIVE_DOCS.forEach(function(d){ delete relCoding[d.id]; delete relAnswered[d.id]; });
   }
   relCodingState={};relCurrentDoc=null;relCurrentIdx=-1;
-  document.getElementById("rel-doc-content").innerHTML="<div style=\"text-align:center;padding:60px 20px;color:var(--muted)\"><div style=\"font-size:3rem;margin-bottom:14px\">📂</div><div style=\"font-size:1rem;font-weight:600;color:var(--text2);margin-bottom:8px\">No Document Selected</div><div style=\"font-size:.84rem\">Select a document from the list to begin.</div></div>";
-  document.getElementById("rel-doc-title").textContent="Select a document to begin review";
-  document.getElementById("rel-panel-doc-id").textContent="No document loaded";
+  relClearViewer();
   relRenderList();updateRelProgress();
   triggerAutoSave();
 }
@@ -5732,7 +5767,133 @@ function relStore() { return relIsExtraction() ? relExtract.entries : relCoding;
 function relBatchState() { return relIsExtraction() ? relExtract.batch : batchState.rel; }
 function relBatchSize() { return relMatter().batchSize; }
 
+// ── Cyber Incident Response (Larkspur, matter 5) ─────────────────────────────
+var CIR_KIND_LABELS = { roster: 'roster', claim: 'claim', 'visit-note': 'visit note', w2: 'W-2',
+  'direct-deposit': 'deposit', i9: 'I-9', email: 'email', policy: 'policy', 'it-ticket': 'IT ticket',
+  marketing: 'marketing', 'meeting-notes': 'notes' };
+
+var CIR_SEARCHES = [
+  { mode: 'all', label: 'All Documents', icon: '📂' },
+  { mode: 'kind:roster', label: 'Rosters', icon: '📋', types: ['roster'] },
+  { mode: 'kind:claims', label: 'Claims', icon: '🧾', types: ['claim'] },
+  { mode: 'kind:medical', label: 'Medical', icon: '🩺', types: ['visit-note'] },
+  { mode: 'kind:hr', label: 'HR', icon: '🗂️', types: ['w2', 'direct-deposit', 'i9'] },
+  { mode: 'kind:email', label: 'Email', icon: '✉️', types: ['email'] },
+  { mode: 'kind:other', label: 'Other', icon: '📄', types: ['policy', 'it-ticket', 'marketing', 'meeting-notes'] }
+];
+
+// Opens straight onto the first document not yet submitted, so the drawer is
+// ready to type into.
+function openLarkspurCase() {
+  openCase(5);
+  var docs = relGetVisible();
+  var next = docs.filter(function (d) { return !relExtract.entries[d.id]; })[0] || docs[0];
+  if (next) relOpenDoc(next.id);
+}
+
+function cirIsDoc(doc) { return !!(doc && doc.answer && Array.isArray(doc.answer.people)); }
+
+function cirRenderDoc(doc) {
+  var el = document.getElementById('rel-doc-content');
+  var h = '<div class="cir-doc"><div class="cir-doc-head"><span class="cir-kind">' +
+    esc(CIR_KIND_LABELS[doc.type] || doc.type) + '</span><span class="cir-date">' + esc(doc.date) + '</span>' +
+    '<span class="cir-fiction">Training matter: fictional people and data</span></div>';
+  if (doc.email) {
+    var e = doc.email;
+    h += '<div class="rel-email-header">' +
+      '<div class="rel-email-header-row"><span class="rel-email-header-label">From:</span><span class="rel-email-header-val">' + esc(e.from) + '</span></div>' +
+      '<div class="rel-email-header-row"><span class="rel-email-header-label">To:</span><span class="rel-email-header-val">' + esc(e.to) + '</span></div>' +
+      '<div class="rel-email-header-row"><span class="rel-email-header-label">Subject:</span><span class="rel-email-header-val" style="font-weight:700;color:var(--text)">' + esc(e.subject) + '</span></div>' +
+      '</div><div class="rel-email-body">' + esc(e.body) + '</div>';
+  } else if (doc.table) {
+    var t = doc.table;
+    h += '<div class="cir-caption">' + esc(t.caption) + '</div><table class="cir-table"><thead><tr>' +
+      t.columns.map(function (c) { return '<th>' + esc(c) + '</th>'; }).join('') + '</tr></thead><tbody>';
+    t.rows.forEach(function (r, i) {
+      if (t.pageBreakBefore === i) h += '<tr class="cir-pagebreak"><td colspan="' + t.columns.length + '">Page 2</td></tr>';
+      h += '<tr>' + r.map(function (c) { return '<td>' + esc(c) + '</td>'; }).join('') + '</tr>';
+    });
+    h += '</tbody></table>';
+  } else if (doc.form) {
+    h += '<div class="cir-form"><div class="cir-form-h">' + esc(doc.form.heading) + '</div>';
+    doc.form.sections.forEach(function (s) {
+      h += '<div class="cir-form-sec"><div class="cir-form-label">' + esc(s.label) + '</div>' +
+        s.fields.map(function (f) { return '<div class="cir-field"><span>' + esc(f[0]) + '</span><b>' + esc(f[1]) + '</b></div>'; }).join('') +
+        '</div>';
+    });
+    h += '</div>';
+  } else {
+    h += '<div class="rel-email-body">' + esc(doc.text || doc.body) + '</div>';
+  }
+  el.innerHTML = h + '</div>';
+}
+
+// Show or hide an element that belongs to one mode, remembering its previous
+// inline display so leaving Larkspur restores QuantumEdge exactly as it was.
+function relSetShown(el, shown) {
+  if (!el) return;
+  if (!shown) {
+    if (el.dataset.relPrev === undefined) el.dataset.relPrev = el.style.display;
+    el.style.display = 'none';
+  } else if (el.dataset.relPrev !== undefined) {
+    el.style.display = el.dataset.relPrev;
+    delete el.dataset.relPrev;
+  }
+}
+
+function relApplyMatterChrome() {
+  var x = relIsExtraction();
+  var shell = document.getElementById('rel-shell');
+  // Back to standard coding first, so redaction or PLOG mode is not left half
+  // on, and so what gets remembered below is the standard layout.
+  if (x && typeof switchCodingMode === 'function') switchCodingMode('standard');
+  shell.classList.toggle('cir-mode', x);
+  ['rel-coding-panel', 'coding-mode-switcher', 'inline-rdx-panel', 'inline-plog-panel',
+   'drag-rdx-hint', 'rel-filter-bar'].forEach(function (id) {
+    relSetShown(document.getElementById(id), !x);
+  });
+  document.querySelectorAll('#rel-toolbar [onclick="openPlogViewer()"], #rel-toolbar [onclick="showRelResults()"]')
+    .forEach(function (b) { relSetShown(b, !x); });
+  var issues = document.getElementById('rel-sidebar-issues');
+  relSetShown(issues && issues.closest('.rel-sidebar-section'), !x);
+  var kinds = document.getElementById('rel-sidebar-kinds');
+  if (kinds) kinds.style.display = x ? '' : 'none';
+  var extra = document.getElementById('cir-progress-extra');
+  if (extra) extra.style.display = x ? '' : 'none';
+  var drawer = document.getElementById('cir-drawer');
+  if (drawer) drawer.style.display = 'none';   // shown again when a document opens
+  if (!x) shell.classList.remove('cir-collapsed');
+}
+
+function cirEnsureKindsBox() {
+  var box = document.getElementById('rel-sidebar-kinds');
+  if (box) return box;
+  var anchor = document.getElementById('sc-chat');
+  var last = anchor && anchor.closest('.rel-sidebar-item');
+  if (!last) return null;
+  box = document.createElement('div');
+  box.id = 'rel-sidebar-kinds';
+  last.parentNode.insertBefore(box, last.nextSibling);
+  return box;
+}
+
+function cirRenderKinds(docs) {
+  var box = cirEnsureKindsBox();
+  if (!box) return;
+  box.innerHTML = '';
+  CIR_SEARCHES.forEach(function (s) {
+    var n = docs.filter(function (d) { return relMatchesSidebar(d, s.mode); }).length;
+    if (!n && s.mode !== 'all') return;
+    var div = document.createElement('div');
+    div.className = 'rel-sidebar-item' + (relFilter === s.mode ? ' active' : '');
+    div.innerHTML = '<span>' + s.icon + ' ' + esc(s.label) + '</span><span class="rel-count">' + n + '</span>';
+    div.onclick = (function (mode) { return function () { relSidebarFilter(mode, this); }; })(s.mode);
+    box.appendChild(div);
+  });
+}
+
 function openCase(caseNum) {
+  var prevCase = ACTIVE_CASE;
   ACTIVE_CASE = REL_MATTERS[caseNum] ? caseNum : 4;
   var m = relMatter();
   ACTIVE_DOCS = m.docs();
@@ -5752,6 +5913,9 @@ function openCase(caseNum) {
   relCodingState = {};
   relCurrentDoc = null; relCurrentIdx = -1;
   relFilter = 'all'; relSearchQ = '';
+  // Switching matters clears the viewer, so one matter's document never shows
+  // under the other. Reopening the same matter keeps its view, as before.
+  if (prevCase !== ACTIVE_CASE) relClearViewer();
   if (typeof rdxState !== 'undefined') rdxState.marks = {};
   if (typeof relApplyMatterChrome === 'function') relApplyMatterChrome();
   updateSidebarForCase(caseNum);
@@ -5817,6 +5981,10 @@ function relBatchDocs() {
 // which is how a saved search on a coded field behaves in real Relativity.
 function relMatchesSidebar(d, mode) {
   if (!mode || mode === 'all') return true;
+  if (/^kind:/.test(mode)) {
+    var kind = CIR_SEARCHES.filter(function (s) { return s.mode === mode; })[0];
+    return !!kind && kind.types.indexOf(d.type) !== -1;
+  }
   if (mode === 'attachment') return d.type === 'attachment' || !!d.hasAttachment;
   if (/^cust-/.test(mode)) return d.custodian === mode;
   if (/^issue\d$/.test(mode)) {
@@ -5831,6 +5999,23 @@ function relMatchesSidebar(d, mode) {
 // clicking the entry will list. They used to be Joba's totals, hardcoded.
 function updateRelSearchCounts() {
   var docs = relBatchDocs();
+  // Larkspur lists document kinds instead of Relativity's saved searches, and
+  // has no issues: extraction does not code them.
+  if (relIsExtraction()) {
+    ['all', 'email', 'attachment', 'memo', 'contract', 'chat'].forEach(function (mode) {
+      var el = document.getElementById('sc-' + mode);
+      var row = el && el.closest('.rel-sidebar-item');
+      if (row) row.style.display = 'none';
+    });
+    cirRenderKinds(docs);
+    renderRelCustodians(docs);
+    return;
+  }
+  var kindsBox = document.getElementById('rel-sidebar-kinds');
+  if (kindsBox) kindsBox.innerHTML = '';
+  var allCount = document.getElementById('sc-all');
+  var allRow = allCount && allCount.closest('.rel-sidebar-item');
+  if (allRow) allRow.style.display = '';
   var count = function (mode) {
     return docs.filter(function (d) { return relMatchesSidebar(d, mode); }).length;
   };
@@ -9366,7 +9551,7 @@ function qcSaveProject(caseKey) {
 // Cards are discrete nodes, so the library is built by moving them rather than by
 // rewriting markup - every inline onclick survives the move untouched.
 var REVIEW_LIBRARY = {
-  relativity: ['openAICase'],
+  relativity: ['openAICase', 'openLarkspurCase'],
   everlaw:    ['openEverlawCase', 'openCadeCase'],
   casepoint:  ['antitrust', 'breach', 'firstam']
 };
