@@ -1569,6 +1569,12 @@ tr.cir-why td{border-top:none;padding:0 4px 7px;white-space:normal;font-size:.72
 .cir-tag.x{background:#616161;color:#fff}
 .cir-tag.ok{background:#26a69a;color:#062e2a}
 .cir-empty{padding:14px;color:#4fd1b5;font-size:.84rem}
+#cir-progress-extra{margin-top:8px;font-size:.72rem;color:var(--muted)}
+.cir-pace{margin-bottom:5px}
+.cir-pace b{color:var(--gold-light)}
+.cir-pace.slow b{color:#ffb74d}
+.cir-bd{display:flex;justify-content:space-between;padding:1px 0}
+.cir-bd b{color:#dce6f5}
 .rv-proto{display:flex;align-items:center;gap:.7rem;margin:0 0 .5rem;padding:.55rem .75rem;
   border:1px solid #2a3550;border-radius:8px;background:#0f1726;color:var(--text);text-decoration:none;
   transition:border-color .15s,background .15s}
@@ -6265,6 +6271,49 @@ function cirRenderFeedback() {
   body.innerHTML = h + '</tbody></table>';
 }
 
+var CIR_PACE_TARGET = 15;
+var CIR_SESSION_GAP_MS = 30 * 60000;
+
+// Whatever storage hands back (a JSON string, an object, or nothing) becomes a
+// well-formed extraction store.
+function cirNormalizeStore(v) {
+  if (typeof v === 'string') { try { v = JSON.parse(v); } catch (e) { v = null; } }
+  if (!v || typeof v !== 'object') v = {};
+  var b = v.batch || {};
+  return {
+    entries: (v.entries && typeof v.entries === 'object') ? v.entries : {},
+    batch: { currentBatch: +b.currentBatch || 0,
+             unlockedBatches: (Array.isArray(b.unlockedBatches) && b.unlockedBatches.length) ? b.unlockedBatches : [0] }
+  };
+}
+
+function cirUpdateProgress() {
+  var total = ACTIVE_DOCS.length;
+  var done = ACTIVE_DOCS.filter(function (d) { return !!relExtract.entries[d.id]; });
+  var pct = total ? Math.round(done.length / total * 100) : 0;
+  document.getElementById('rel-prog-pct').textContent = pct + '%';
+  document.getElementById('rel-prog-fill').style.width = pct + '%';
+  var s = EX.summarize(done.map(function (d) { return relExtract.entries[d.id].result; }));
+  document.getElementById('rel-accuracy-disp').textContent = s.accuracy === null ? '—' : Math.round(s.accuracy * 100) + '%';
+  var marks = done.map(function (d) { return Date.parse(relExtract.entries[d.id].submittedAt); }).filter(isFinite);
+  var pace = QC.paceStats(EX.currentSession(marks, CIR_SESSION_GAP_MS)).docsPerHour;
+  var box = document.getElementById('cir-progress-extra');
+  if (!box) {
+    var badge = document.getElementById('rel-accuracy-disp');
+    var holder = badge && badge.closest('.rel-accuracy-badge');
+    if (!holder) return;
+    box = document.createElement('div');
+    box.id = 'cir-progress-extra';
+    holder.parentNode.insertBefore(box, holder.nextSibling);
+  }
+  box.style.display = '';
+  box.innerHTML = '<div class="cir-pace' + (pace && pace < CIR_PACE_TARGET ? ' slow' : '') + '">Pace <b>' +
+    (pace ? pace.toFixed(1) : '—') + '</b> docs/hr · target ' + CIR_PACE_TARGET + '</div>' +
+    Object.keys(CIR_DEFECT_LABELS).map(function (t) {
+      return '<div class="cir-bd"><span>' + CIR_DEFECT_LABELS[t] + '</span><b>' + s.breakdown[t] + '</b></div>';
+    }).join('');
+}
+
 function openCase(caseNum) {
   var prevCase = ACTIVE_CASE;
   ACTIVE_CASE = REL_MATTERS[caseNum] ? caseNum : 4;
@@ -8430,6 +8479,7 @@ function buildProgressData() {
     cp_coding: cpCoding,
     cp_answered: cpAnswered,
     cp_redactions: cpRedactions,
+    rel_extract: relExtract,
     active_case: ACTIVE_CASE,
     active_batch_rel: batchState.rel,
     active_batch_ev: batchState.ev,
@@ -8448,6 +8498,7 @@ function applyProgressData(d) {
   if (d.cp_coding) cpCoding = d.cp_coding;
   if (d.cp_answered) cpAnswered = d.cp_answered;
   if (d.cp_redactions) cpRedactions = d.cp_redactions;
+  if (d.rel_extract) relExtract = cirNormalizeStore(d.rel_extract);
   cpMigrateFlatState();
   // ACTIVE_CASE is not restored: openCase() sets it together with ACTIVE_DOCS.
   // Restoring it alone could put the shell in Larkspur's mode while
@@ -8485,7 +8536,7 @@ function loadProgressLocal() {
 // CADE fields (1 June) silently stopped every remote save. Task-specific columns
 // are appended as their migrations land.
 var PROGRESS_COLUMNS = ['user_id', 'rel_coding', 'rel_answered', 'ev_coding', 'ev_answered',
-  'cp_coding', 'cp_answered', 'cp_redactions', 'active_case', 'active_batch_rel',
+  'cp_coding', 'cp_answered', 'cp_redactions', 'rel_extract', 'active_case', 'active_batch_rel',
   'active_batch_ev', 'current_doc_rel', 'current_doc_ev', 'updated_at'];
 
 // Columns the database has told us it lacks, this session. A column is only
@@ -8562,6 +8613,7 @@ async function loadProgressRemote() {
       cp_coding:     typeof d.cp_coding     === 'string' ? JSON.parse(d.cp_coding)     : (d.cp_coding     || {}),
       cp_answered:   typeof d.cp_answered   === 'string' ? JSON.parse(d.cp_answered)   : (d.cp_answered   || {}),
       cp_redactions: typeof d.cp_redactions === 'string' ? JSON.parse(d.cp_redactions) : (d.cp_redactions || {}),
+      rel_extract:  d.rel_extract,
       active_case:      d.active_case,
       active_batch_rel: d.active_batch_rel,
       active_batch_ev:  d.active_batch_ev,
