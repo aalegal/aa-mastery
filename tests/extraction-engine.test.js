@@ -93,6 +93,13 @@ test('validateEntry: a complete row passes', function () {
   assert.strictEqual(v.rows.length, 1);
 });
 
+test('validateEntry numbers rows as they appear on screen, blank rows included', function () {
+  var v = EX.validateEntry({ noPii: false, rows: [row({}), row({ first: 'Ana', el: ['ssn'] })] });
+  assert.strictEqual(v.problems[0].code, 'NAME');
+  assert.strictEqual(v.problems[0].row, 1);
+  assert.match(v.problems[0].text, /^Row 2:/);
+});
+
 // ── Task 3: matching and grading ─────────────────────────────────────────────
 
 function person(o) {
@@ -188,6 +195,21 @@ test('gradeDocument: a wrongly ticked element explains itself when the key says 
   assert.strictEqual(r.defects[0].type, 'EXTRA_ELEMENT');
   assert.strictEqual(r.defects[0].why, 'Only the last four digits are shown: a masked SSN does not count.');
   assert.deepStrictEqual(r.lines[0].extraElements, ['ssn']);
+});
+
+test('matchPeople: a doubled row never stands in for a missed household member', function () {
+  var dara = person({ first: 'Dara', last: 'Joyner', el: ['plan'] });
+  var yara = person({ first: 'Yara', last: 'Joyner', el: ['plan'] });
+  var r = EX.gradeDocument({ noPii: false, people: [dara, yara] }, { noPii: false, rows: [typed(yara), typed(yara)] });
+  assert.deepStrictEqual(r.defects.map(function (d) { return d.type; }).sort(), ['EXTRA_INDIVIDUAL', 'MISSED_INDIVIDUAL']);
+  assert.strictEqual(r.weight, 7);
+});
+
+test('matchPeople: first and last typed the wrong way round is two field errors', function () {
+  var t = typed(ANA); t.first = 'Rivera'; t.last = 'Ana';
+  var r = EX.gradeDocument({ noPii: false, people: [ANA] }, { noPii: false, rows: [t] });
+  assert.deepStrictEqual(r.defects.map(function (d) { return d.type + ':' + d.field; }), ['FIELD_ERROR:first', 'FIELD_ERROR:last']);
+  assert.strictEqual(r.weight, 2);
 });
 
 test('gradeDocument: the three "No PII/PHI" outcomes', function () {

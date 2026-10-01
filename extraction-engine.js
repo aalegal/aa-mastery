@@ -110,10 +110,13 @@
   }
 
   // Problems block Submit. Wholly blank rows are ignored, so a fresh grid with
-  // an empty starter row can still be submitted as "No PII/PHI".
+  // an empty starter row can still be submitted as "No PII/PHI". Row numbers in
+  // the messages count every grid row, blank ones included, so "Row 3" is the
+  // third row on screen.
   function validateEntry(entry) {
     var problems = [];
-    var rows = ((entry && entry.rows) || []).filter(function (r) { return !isBlankRow(r); });
+    var all = (entry && entry.rows) || [];
+    var rows = all.filter(function (r) { return !isBlankRow(r); });
     var noPii = !!(entry && entry.noPii);
     if (noPii && rows.length) {
       problems.push({ code: 'CONTRADICTION', text: 'Rows are entered and "No PII/PHI" is ticked: pick one.' });
@@ -121,7 +124,8 @@
     if (!noPii && !rows.length) {
       problems.push({ code: 'INCOMPLETE', text: 'Add at least one person, or tick "No PII/PHI".' });
     }
-    rows.forEach(function (r, i) {
+    all.forEach(function (r, i) {
+      if (isBlankRow(r)) return;
       var n = i + 1;
       if (!clean(r.first) || !clean(r.last)) {
         problems.push({ code: 'NAME', row: i, text: 'Row ' + n + ': first and last name are both required.' });
@@ -179,10 +183,15 @@
     });
     pending.forEach(function (row) {
       var name = fullName(row);
+      // A second row for someone already matched is a duplicate, never a typo
+      // for another person: otherwise a doubled entry could hide a missed one.
+      if (name && keys.some(function (k) { return k.used && k.name === name; })) { extra.push(row); return; }
+      // First and last typed the wrong way round still identify the person.
+      var swapped = (normalizeName(row.last) + ' ' + normalizeName(row.first)).trim();
       var near = [];
       keys.forEach(function (k) {
         if (k.used || !name) return;
-        var d = editDistance(name, k.name);
+        var d = (swapped === k.name) ? 0 : editDistance(name, k.name);
         if (d <= 2) near.push({ k: k, d: d });
       });
       if (!near.length) { extra.push(row); return; }
