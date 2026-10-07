@@ -1,5 +1,5 @@
 """
-Review protocols for the six training matters.
+Review protocols for the seven training matters.
 
 Every coding rule here was derived from the matter's answer key, not written
 from memory. The simulator grades all five fields on every document, so a rule
@@ -140,7 +140,7 @@ def scheme_casepoint(priv_label, third_priv):
                       "follows the content, not who sent the document."),
     }
 
-# ── The six matters ──────────────────────────────────────────────────────────
+# ── The matters ──────────────────────────────────────────────────────────────
 
 MATTERS = [
 
@@ -615,6 +615,115 @@ MATTERS = [
          "reajuste = price adjustment · alinhamento = alignment (a cartel term for "
          "coordination) · leniência = leniency · processo administrativo = "
          "administrative proceeding"),
+    ],
+},
+
+# 7 ─────────────────────────────────────────────────────────────────────────
+{
+    "file": "Larkspur-Cyber-Incident-Response-Protocol.pdf",
+    "short": "Larkspur Cyber Incident Response",
+    "title": "Larkspur Benefit Services: Cyber Incident Response",
+    "subtitle": "PII/PHI extraction · HIPAA and state breach notification",
+    "platform": "Relativity",
+    "layout": "extraction",
+    "meta": [("Platform", "Relativity"), ("Documents", "150 · rosters, claims, medical, HR, email"),
+             ("Pace target", "15 documents per hour")],
+    "overview": [
+        "Larkspur Benefit Services, a health-benefits administrator, suffered a ransomware attack, and "
+        "the attacker took a copy of a file share. Outside counsel has engaged the review team to mine "
+        "the stolen files: to find every affected person and every data element exposed, so the "
+        "notices that HIPAA and state breach-notification laws require can go out.",
+        "Larkspur handles health-plan data for the plans it serves, which makes it a HIPAA business "
+        "associate rather than a covered entity. It also holds ordinary employer HR data. You will meet "
+        "both PII and PHI.",
+        "This is extraction, not coding. You record who each document exposes and what was exposed. "
+        "You do not decide responsiveness or privilege.",
+    ],
+    "custodians": [
+        ("Larkspur Benefit Services",
+         "The breached benefits administrator: a HIPAA business associate of the plans it serves"),
+        ("The health plans", "Covered entities whose members' data was in the stolen files"),
+        ("Outside counsel", "Directs this review and the notification analysis"),
+        ("Benefits Operations", "Enrollment and eligibility files, member correspondence"),
+        ("Claims", "Claim forms and care-management records"),
+        ("HR", "W-2s, direct-deposit forms, I-9s"),
+        ("IT", "Tickets and account administration"),
+        ("Finance", "Billing and premium payments"),
+    ],
+    "template_fields": [
+        ("First name, Last name", "As the document gives them. First and last only."),
+        ("Date of birth", "Month first with a four-digit year, for example 03/14/1986."),
+        ("Street, City", "As the document gives them."),
+        ("State", "The two-letter code."),
+        ("ZIP", "Five digits."),
+    ],
+    "pii_list": "SSN · Driver's license / state ID · Passport · Financial account · Payment card · "
+                "Login credentials · Biometric",
+    "phi_list": "Medical record no. · Health plan / member ID · Medical info (diagnosis, treatment, medication)",
+    "no_pii_rule": "Every document ends with either at least one row or the \"No PII/PHI in this document\" "
+                   "box ticked, never both. About a quarter of the set has no PII at all.",
+    "rules": [
+        "One row per person per document. Someone who appears twice in one document is one row, with "
+        "their elements merged.",
+        "Record only individuals the document names. An SSN with no name attached is not recorded.",
+        "Type the name as the document gives it, first and last only.",
+        "Leave a field blank when the document does not show it. Never infer an address or a date of birth.",
+        "Business contact details are not PII, and providers are not affected individuals.",
+        "A masked or last-4-only SSN does not count as an SSN.",
+        "Dependents, including minors, are affected individuals.",
+        "Record a person only when at least one data element is exposed for them. A name with only an "
+        "address, or with only a masked SSN, is not an affected individual and gets no row.",
+    ],
+    "elements": [
+        ("SSN", "A full Social Security number", "A masked or last-4-only number (XXX-XX-1234)"),
+        ("Driver's license / state ID", "A license or state ID number", "The words \"driver's license\" with no number"),
+        ("Passport", "A passport number", "A note that a passport was seen, with no number"),
+        ("Financial account", "A bank account number, with or without a routing number", "A bank's name alone"),
+        ("Payment card", "A full card number", "The last four digits alone"),
+        ("Login credentials", "A username or email together with its password", "A username alone"),
+        ("Biometric", "Fingerprint, face or voice data, or an enrolled template for it", "A photo on a staff badge"),
+        ("Medical record no.", "A medical record number (MRN)", "A claim or invoice number"),
+        ("Health plan / member ID", "A member or subscriber ID", "A plan's name alone"),
+        ("Medical info", "A diagnosis, condition, treatment, procedure or medication tied to the person",
+         "A provider's specialty or a clinic's name"),
+    ],
+    "traps": [
+        ("The provider is not the patient",
+         "Claims name the treating doctor with a practice address, and progress notes name the "
+         "clinician who signed. Both are business contact details. The patient is the affected "
+         "individual."),
+        ("Masked numbers don't count",
+         "Direct-deposit forms show only the last four digits of an SSN. Record the person for their bank "
+         "account, and leave the SSN box empty."),
+        ("Look below the page break",
+         "Long rosters continue onto a second page. The last rows are as affected as the first."),
+        ("Dependents are affected too",
+         "Children listed on an enrollment census are affected individuals, with their own rows."),
+        ("Names without data",
+         "A newsletter mailing list holds names and addresses only. With no data element exposed, no one "
+         "on it gets a row."),
+    ],
+    "pace_text": "The target for this matter is 15 documents per hour. Extraction is slower than coding: "
+                 "rosters carry many people each. Pace is measured per working session; "
+                 "a gap of more than 30 minutes starts a new one. Your first submission of each document "
+                 "is the graded one.",
+    "defects": [
+        ("Missed individual", "Someone who should be notified is not", "5"),
+        ("Missed data element", "The letter understates the exposure; it can change which laws apply", "3"),
+        ("Extra individual", "Over-notification: cost, and needless alarm", "2"),
+        ("Extra data element", "Overstates the exposure", "1"),
+        ("Identity field error", "The letter is misaddressed or cannot be matched", "1"),
+    ],
+    "qc_overrides": {
+        "Pace": "15 documents per hour, sustained, done properly, for this extraction matter "
+                "(60 applies to the coding matters).",
+        "The rule that outranks the others": "Never trade accuracy for speed: a missed person is "
+                                             "the costliest defect.",
+    },
+    "escalation_notes": [
+        "Never guess silently on a gray area. While you wait for an answer, leave the document "
+        "unsubmitted: your first submission is the graded one.",
+        ESCALATION_NOTES[1],
     ],
 },
 
