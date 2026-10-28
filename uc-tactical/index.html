@@ -53,6 +53,15 @@
   .entry.missing .entry-name{color:var(--dim)}
   .entry-meta{margin-top:auto;padding-top:12px;font-size:11.5px;color:var(--dim)}
 
+  .share{display:none;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 18px;margin-bottom:14px;border-left:4px solid var(--gold)}
+  .share.show{display:flex}
+  .share .k{font-size:13px;font-weight:600;color:var(--navy)}
+  .share input{flex:1;min-width:220px;padding:9px 12px;border-radius:var(--radius-sm);border:1px solid var(--line);
+    background:#fdfcf9;font-size:13.5px;color:var(--text);outline:none}
+  .share input:focus{border-color:var(--navy)}
+  .share .msg{font-size:12.5px;color:var(--green);font-weight:600}
+  .share .msg.warn{color:var(--muted);font-weight:500}
+
   .state{padding:40px 24px;text-align:center;color:var(--muted);font-size:14px}
   #b-error{margin-bottom:16px}
 </style>
@@ -74,6 +83,13 @@
 </header>
 
 <main class="wrap">
+  <div class="card share" id="b-share">
+    <span class="k">UC Tactical Report Form link</span>
+    <input type="text" id="b-share-link" readonly aria-label="Form link">
+    <button class="btn btn-navy" type="button" id="b-share-copy">Copy</button>
+    <span class="msg" id="b-share-msg"></span>
+  </div>
+
   <div class="card weekbar">
     <div class="weeknav">
       <button class="icon-btn" type="button" id="b-prev" title="Previous Wednesday" aria-label="Previous Wednesday">&#8249;</button>
@@ -195,12 +211,37 @@ el('b-prev').addEventListener('click',function(){go(ucAddDays(week,-7));});
 el('b-next').addEventListener('click',function(){go(ucAddDays(week,7));});
 el('b-weeks').addEventListener('change',function(){go(this.value);});
 el('b-refresh').addEventListener('click',function(){load().then(function(){toast('Board refreshed');});});
-el('b-copy').addEventListener('click',function(){
-  var link=ucFormLink();
-  (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject())
-    .then(function(){toast('Form link copied');})
-    .catch(function(){window.prompt('Copy the form link:',link);});
-});
+// Some browsers refuse the clipboard API, and some in-app browsers silently
+// swallow window.prompt. So: try the API, then the older selection copy, and
+// always show the link on the page so it can be copied by hand.
+function copyText(text,input){
+  function legacy(){
+    input.focus();input.select();input.setSelectionRange(0,text.length);
+    var ok=false;
+    try{ok=document.execCommand('copy');}catch(e){}
+    return ok;
+  }
+  if(navigator.clipboard&&window.isSecureContext){
+    return navigator.clipboard.writeText(text).then(function(){return true;},function(){return legacy();});
+  }
+  return Promise.resolve(legacy());
+}
+
+function shareLink(){
+  var link=ucFormLink(),input=el('b-share-link'),msg=el('b-share-msg');
+  input.value=link;
+  el('b-share').classList.add('show');
+  copyText(link,input).then(function(ok){
+    input.select();
+    msg.className='msg'+(ok?'':' warn');
+    msg.textContent=ok?'Copied':'Press '+(/Mac|iPhone|iPad/.test(navigator.platform)?'⌘':'Ctrl')+'+C to copy';
+    if(ok) toast('Form link copied');
+  });
+}
+
+el('b-copy').addEventListener('click',shareLink);
+el('b-share-copy').addEventListener('click',shareLink);
+el('b-share-link').addEventListener('focus',function(){this.select();});
 document.addEventListener('visibilitychange',function(){ if(!document.hidden) load(); });
 
 load();
