@@ -4,130 +4,102 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="robots" content="noindex,nofollow">
-<title>Tactical Meeting Report &mdash; AA Team</title>
+<title>AA Tactical Report Form</title>
+<link rel="icon" href="/og-image.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/tactical/aa.css">
 <style>
-  :root{
-    --bg:#0a0b12; --bg2:#0f1120; --panel2:#171a2e;
-    --line:rgba(255,255,255,0.09); --line2:rgba(255,255,255,0.06);
-    --text:#eef0f7; --muted:#8b93ab; --dim:#5b6379;
-    --violet:#8b7cff; --violet2:#6d5bf0; --teal:#12d3b0; --amber:#f6b23a; --rose:#f2506e; --green:#37d99a;
-    --grad:linear-gradient(135deg,#8b7cff,#12d3b0);
-    --radius:18px; --radius-sm:12px;
-    --shadow:0 10px 40px -12px rgba(0,0,0,0.6);
-  }
-  *{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
-       background-image:radial-gradient(900px 500px at 20% -10%,rgba(139,124,255,0.13),transparent 60%),
-                        radial-gradient(800px 460px at 90% 0%,rgba(18,211,176,0.09),transparent 55%);
-       background-attachment:fixed}
-  button{font-family:inherit;cursor:pointer;color:inherit}
-  .wrap{max-width:760px;margin:0 auto;padding:34px 20px 70px}
+  .intro{padding:22px 24px;margin-bottom:18px}
+  .intro p{font-size:14px;color:var(--muted);line-height:1.65}
+  .intro p b{color:var(--text)}
 
-  .brand{display:flex;align-items:center;gap:11px;margin-bottom:26px}
-  .brand-mark{width:34px;height:34px;border-radius:9px;background:var(--grad);display:grid;place-items:center;
-               font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:13px;color:#0a0b12;flex:none}
-  .brand-name{font-family:'Space Grotesk',sans-serif;font-size:17px;font-weight:700;letter-spacing:-0.3px}
-
-  .hero{margin-bottom:24px}
-  .hero h1{font-family:'Space Grotesk',sans-serif;font-size:25px;font-weight:700;letter-spacing:-0.4px;margin-bottom:8px}
-  .hero p{font-size:13.5px;color:var(--muted);line-height:1.65;max-width:62ch}
-
-  .card{background:var(--panel2);border:1px solid var(--line);border-radius:var(--radius);
-        padding:24px;box-shadow:var(--shadow);margin-bottom:18px}
-
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .sec{padding:24px;margin-bottom:18px}
+  .row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
   @media(max-width:620px){.row{grid-template-columns:1fr}}
 
-  .field{margin-bottom:22px}
+  .field{margin-bottom:26px}
   .field:last-child{margin-bottom:0}
-  label.lbl{display:block;font-family:'Space Grotesk',sans-serif;font-size:10.5px;font-weight:700;
-            letter-spacing:1.5px;text-transform:uppercase;color:var(--dim);margin-bottom:9px}
-  label.lbl .req{color:var(--rose);margin-left:3px}
+  .lbl{display:block;font-family:var(--serif);font-size:18px;font-weight:700;color:var(--gold-light);margin-bottom:3px}
+  .lbl .req{color:var(--rose);margin-left:3px;font-family:var(--sans)}
+  .hint{font-size:13px;color:var(--muted);line-height:1.55;margin-bottom:10px}
 
-  input[type=date],textarea,select{width:100%;padding:12px 14px;border-radius:var(--radius-sm);
-    border:1px solid var(--line);background:rgba(255,255,255,0.04);color:var(--text);
-    font-size:13.5px;outline:none;transition:border-color .2s,box-shadow .2s;font-family:inherit}
-  textarea{line-height:1.6;resize:vertical;min-height:84px}
-  input[type=date]:focus,textarea:focus,select:focus{border-color:var(--violet);box-shadow:0 0 0 3px rgba(139,124,255,0.14)}
-  input[type=date]{color-scheme:dark}
-  select{appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%238b93ab' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
-         background-repeat:no-repeat;background-position:right 14px center;padding-right:38px;cursor:pointer}
+  select,input[type=date],textarea{width:100%;padding:12px 14px;border-radius:var(--radius-sm);border:1px solid var(--line);
+    background:var(--card2);font-size:14.5px;outline:none;transition:border-color .15s,box-shadow .15s}
+  select:focus,input[type=date]:focus,textarea:focus{border-color:var(--gold);box-shadow:0 0 0 3px rgba(212,168,42,.18);background:var(--card)}
+  textarea{line-height:1.6;resize:vertical;min-height:120px;overflow:hidden}
+  select{appearance:none;cursor:pointer;padding-right:38px;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23d4a82a' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 14px center}
 
-  .weeknote{display:flex;align-items:center;gap:9px;margin-top:10px;font-size:12px;color:var(--muted);
-            background:rgba(139,124,255,0.09);border:1px solid rgba(139,124,255,0.22);
-            border-radius:10px;padding:9px 12px;line-height:1.5}
-  .weeknote b{color:var(--text);font-weight:600}
+  .weeknote{margin-top:9px;font-size:12.5px;color:var(--gold-light);display:flex;gap:7px;align-items:center}
+  .weeknote::before{content:'';width:7px;height:7px;border-radius:50%;background:var(--gold);flex:none}
 
-  .btn-submit{width:100%;border:none;background:var(--grad);color:#08121b;border-radius:var(--radius-sm);
-    padding:15px 20px;font-family:'Space Grotesk',sans-serif;font-size:14px;font-weight:700;
-    letter-spacing:.2px;transition:opacity .18s,transform .12s}
-  .btn-submit:hover:not(:disabled){opacity:.9}
-  .btn-submit:active:not(:disabled){transform:translateY(1px)}
-  .btn-submit:disabled{opacity:.5;cursor:not-allowed}
+  #f-existing{margin-bottom:18px}
+  #f-existing button{margin-left:6px;background:none;border:none;color:var(--gold-light);font-weight:600;text-decoration:underline;padding:0}
 
-  .status{margin-top:14px;font-size:13px;line-height:1.6;padding:12px 14px;border-radius:10px;display:none}
-  .status.show{display:block}
-  .status.err{background:rgba(242,80,110,0.11);border:1px solid rgba(242,80,110,0.3);color:#ffb3c2}
-  .status.info{background:rgba(255,255,255,0.05);border:1px solid var(--line);color:var(--muted)}
+  .submit-bar{padding:18px 24px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  .submit-bar .meta{font-size:12.5px;color:var(--dim)}
+  .submit-bar .btn{padding:12px 28px;font-size:14px}
+  #f-status{margin-top:14px}
 
-  .done{text-align:center;padding:44px 24px}
-  .done-mark{width:58px;height:58px;border-radius:50%;background:rgba(55,217,154,0.14);
-             border:1px solid rgba(55,217,154,0.35);display:grid;place-items:center;margin:0 auto 20px;
-             font-size:26px;color:var(--green)}
-  .done h2{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;margin-bottom:10px}
-  .done p{font-size:13.5px;color:var(--muted);line-height:1.7;max-width:46ch;margin:0 auto 22px}
-  .btn-again{border:1px solid var(--line);background:rgba(255,255,255,0.04);border-radius:var(--radius-sm);
-             padding:11px 20px;font-family:'Space Grotesk',sans-serif;font-size:12.5px;font-weight:600}
-  .btn-again:hover{border-color:var(--violet);background:rgba(139,124,255,0.1)}
-
-  .foot{text-align:center;font-size:11.5px;color:var(--dim);margin-top:26px;line-height:1.7}
+  .done{text-align:center;padding:48px 24px}
+  .done-mark{width:62px;height:62px;border-radius:50%;background:var(--green-wash);color:var(--green);display:grid;place-items:center;
+    margin:0 auto 18px;font-size:28px;border:1px solid rgba(38,166,154,.35)}
+  .done h2{font-family:var(--serif);font-size:26px;color:var(--gold-light);margin-bottom:8px}
+  .done p{color:var(--muted);font-size:14px;max-width:46ch;margin:0 auto 22px}
+  .done .acts{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
 </style>
 </head>
 <body>
-<div class="wrap">
 
-  <div class="brand">
-    <div class="brand-mark">AA</div>
-    <div class="brand-name">AA Team</div>
+<header class="mast">
+  <div class="mast-in">
+    <div class="logo" id="aa-logo"></div>
+    <div class="mast-title">
+      <div class="mast-kicker">AA Team</div>
+      <h1>AA Tactical Report Form</h1>
+    </div>
+    <div class="mast-actions">
+      <a class="btn btn-ghost" href="/tactical/board">View meeting board</a>
+    </div>
   </div>
+</header>
+
+<main class="wrap narrow">
 
   <div id="view-form">
-    <div class="hero">
-      <h1>Tactical Meeting Report</h1>
-      <p>Submitted each Wednesday &mdash; one report per person per week. Fill in what applies; you don't
-         need every section. Your report goes straight to the leadership panel.</p>
+    <div class="card intro">
+      <p>Fill this in before each <b>Wednesday tactical call</b>. Your report appears on the meeting board
+         alongside everyone else's. Sending it again for the same date replaces your earlier one.</p>
     </div>
 
-    <div class="card">
+    <div class="card sec">
       <div class="row">
         <div class="field">
-          <label class="lbl" for="f-person">Your name <span class="req">*</span></label>
-          <select id="f-person">
-            <option value="">Select your name&hellip;</option>
-          </select>
+          <label class="lbl" for="f-person">Requested by<span class="req">*</span></label>
+          <div class="hint">Select your name.</div>
+          <select id="f-person"><option value="">Select your name&hellip;</option></select>
         </div>
         <div class="field">
-          <label class="lbl" for="f-date">Meeting date <span class="req">*</span></label>
+          <label class="lbl" for="f-date">Date<span class="req">*</span></label>
+          <div class="hint">Use the date of the next Tactical call, not when you filled in the form.</div>
           <input type="date" id="f-date">
-          <div class="weeknote" id="f-weeknote" style="display:none"></div>
+          <div class="weeknote" id="f-weeknote"></div>
         </div>
       </div>
     </div>
 
-    <div class="card" id="f-sections"></div>
+    <div class="note info" id="f-existing"></div>
 
-    <div class="card">
-      <button class="btn-submit" id="f-submit" onclick="submitForm()">Submit report</button>
-      <div class="status" id="f-status"></div>
-    </div>
+    <div class="card sec" id="f-sections"></div>
 
-    <div class="foot">
-      One report per person per week. If you need to change a report you already sent,<br>
-      ask a supervisor to edit it in the leadership panel.
+    <div class="card submit-bar">
+      <span class="meta">No character limits. Write as much as you need.</span>
+      <button class="btn btn-navy" id="f-submit" type="button">Submit report</button>
     </div>
+    <div class="note" id="f-status"></div>
   </div>
 
   <div id="view-done" style="display:none">
@@ -135,126 +107,127 @@
       <div class="done-mark">&#10003;</div>
       <h2>Report received</h2>
       <p id="done-msg"></p>
-      <button class="btn-again" onclick="resetForm()">Submit another report</button>
+      <div class="acts">
+        <a class="btn btn-navy" id="done-board" href="/tactical/board">See it on the board</a>
+        <button class="btn btn-line" type="button" id="done-again">Submit another report</button>
+      </div>
     </div>
   </div>
 
-</div>
+  <div class="foot">AA Team &middot; Tactical Meeting</div>
+</main>
 
 <script src="/qc-engine.js"></script>
+<script src="/tactical/aa.js"></script>
 <script>
-var SUPABASE_URL='https://mrxhydaoxlxuampmgaoi.supabase.co';
-var SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1yeGh5ZGFveGx4dWFtcG1nYW9pIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTg2NDgsImV4cCI6MjA4OTMzNDY0OH0.STQzp2Berri61IHeoDFHnDUkg_9eSV-giVCrUhHHk64';
+var existingRec=null;
 
-// Kept in step with TACTICAL_SECTIONS in the main app. Same keys, same order,
-// same column names -- the panel reads exactly what this form writes.
-var SECTIONS=[
-  {key:'rocks',     label:'ROCK Updates', rows:7},
-  {key:'headlines', label:'Customer / Contractors Headlines', rows:4},
-  {key:'issues',    label:'Issues: Identify / Discuss / Resolve', rows:9},
-  {key:'actions',   label:'Action Items / Priorities', rows:5}
-];
+function weekOf(){return aaWeekOf(el('f-date').value);}
 
-// The people who can file a report. Add names here as the group grows.
-var PEOPLE=['Glory','Junior','Simon','Achumboro','Jeff'];
-
-function el(id){return document.getElementById(id);}
-
-function prettyWeek(weekOf){
-  if(!weekOf) return '';
-  var d=new Date(weekOf+'T12:00:00Z');
-  return d.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric',timeZone:'UTC'});
+function sectionsEmpty(){
+  return AA_SECTIONS.every(function(s){return !el('f-'+s.key).value.trim();});
 }
 
-function todayISO(){
-  var d=new Date();
-  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-}
+function autosize(t){t.style.height='auto';t.style.height=Math.max(120,t.scrollHeight+2)+'px';}
 
-function buildForm(){
-  var sel=el('f-person');
-  PEOPLE.forEach(function(name){
-    var o=document.createElement('option');
-    o.value=name; o.textContent=name;
-    sel.appendChild(o);
-  });
-
-  el('f-sections').innerHTML=SECTIONS.map(function(sec){
-    return '<div class="field">'+
-      '<label class="lbl" for="f-'+sec.key+'">'+sec.label+'</label>'+
-      '<textarea id="f-'+sec.key+'" rows="'+sec.rows+'"></textarea>'+
-    '</div>';
-  }).join('');
-
-  el('f-date').value=todayISO();
-  el('f-date').addEventListener('change',showWeek);
-  showWeek();
-}
-
-function showWeek(){
-  var note=el('f-weeknote');
-  var weekOf=QC.tacticalWeekOf(el('f-date').value);
-  if(!weekOf){note.style.display='none';return;}
-  note.style.display='flex';
-  note.innerHTML='Counts toward the week of <b>'+prettyWeek(weekOf)+'</b>';
+function fill(rec){
+  AA_SECTIONS.forEach(function(s){var t=el('f-'+s.key);t.value=(rec&&rec[s.key])||'';autosize(t);});
 }
 
 function status(msg,kind){
   var s=el('f-status');
-  if(!msg){s.className='status';s.textContent='';return;}
-  s.className='status show '+(kind||'info');
-  s.textContent=msg;
+  s.className='note'+(msg?' show '+(kind||'info'):'');
+  s.textContent=msg||'';
+}
+
+function buildForm(){
+  var sel=el('f-person');
+  AA_PEOPLE.forEach(function(name){
+    var o=document.createElement('option');o.value=name;o.textContent=name;sel.appendChild(o);
+  });
+
+  el('f-sections').innerHTML=AA_SECTIONS.map(function(s){
+    return '<div class="field">'+
+      '<label class="lbl" for="f-'+s.key+'">'+esc(s.label)+(s.required?'<span class="req">*</span>':'')+'</label>'+
+      '<div class="hint">'+esc(s.hint)+'</div>'+
+      '<textarea id="f-'+s.key+'" rows="5"></textarea>'+
+    '</div>';
+  }).join('');
+  AA_SECTIONS.forEach(function(s){
+    var t=el('f-'+s.key);
+    t.addEventListener('input',function(){autosize(t);});
+  });
+
+  var q=new URLSearchParams(location.search);
+  var person=q.get('person')||'';
+  if(!person){ try{person=localStorage.getItem('aa-tactical-person')||'';}catch(e){} }
+  if(AA_PEOPLE.indexOf(person)>=0) sel.value=person;
+  el('f-date').value=aaWeekOf(q.get('week'))||aaNextCall();
+
+  sel.addEventListener('change',checkExisting);
+  el('f-date').addEventListener('change',function(){showWeek();checkExisting();});
+  el('f-submit').addEventListener('click',submitForm);
+  el('done-again').addEventListener('click',resetForm);
+  showWeek();
+  checkExisting();
+}
+
+function showWeek(){
+  var w=weekOf(),n=el('f-weeknote');
+  n.style.display=w?'flex':'none';
+  if(!w) return;
+  n.textContent=(w===el('f-date').value?'For the tactical call on ':'Counts toward the tactical call on ')+aaPrettyDate(w,true);
+}
+
+// If this person already filed for this Wednesday, say so, and load it when the boxes are empty.
+async function checkExisting(){
+  var box=el('f-existing'),person=el('f-person').value,w=weekOf();
+  existingRec=null;
+  box.className='note info';box.innerHTML='';
+  if(!person||!w) return;
+  var rec;
+  try{rec=await aaFetchReport(person,w);}catch(e){return;}
+  if(person!==el('f-person').value||w!==weekOf()) return;
+  existingRec=rec;
+  if(!rec) return;
+  if(sectionsEmpty()){
+    fill(rec);
+    box.innerHTML='You\'re editing <b>'+esc(person)+'</b>\'s report for <b>'+esc(aaPrettyDate(w))+
+      '</b>. Submitting saves your changes.';
+  }else{
+    box.innerHTML='<b>'+esc(person)+'</b> already has a report for <b>'+esc(aaPrettyDate(w))+
+      '</b>. Submitting will replace it.<button type="button" id="f-load">Load the saved report</button>';
+    el('f-load').addEventListener('click',function(){fill(existingRec);checkExisting();});
+  }
+  box.className='note info show';
 }
 
 async function submitForm(){
-  var person=el('f-person').value;
-  var dateVal=el('f-date').value||null;
-  var weekOf=QC.tacticalWeekOf(dateVal);
+  var person=el('f-person').value,w=weekOf();
+  if(!person){status('Select your name first.','err');el('f-person').focus();return;}
+  if(!w){status('Pick the date of the tactical call.','err');el('f-date').focus();return;}
 
-  if(!person){status('Select your name first.','err');return;}
-  if(!weekOf){status('Pick the meeting date.','err');return;}
-
-  var rec={person:person,row_date:dateVal,week_of:weekOf,source:'form',confirmed:false};
-  var filled=false;
-  SECTIONS.forEach(function(sec){
-    var v=String((el('f-'+sec.key)||{}).value||'').trim();
-    rec[sec.key]=v;
-    if(v) filled=true;
-  });
-  if(!filled){status('Nothing to submit — fill in at least one section.','err');return;}
+  var rec={person:person,week_of:w,row_date:el('f-date').value};
+  for(var i=0;i<AA_SECTIONS.length;i++){
+    var s=AA_SECTIONS[i],v=el('f-'+s.key).value.trim();
+    if(s.required&&!v){status(s.label+' is required.','err');el('f-'+s.key).focus();return;}
+    rec[s.key]=v;
+  }
 
   el('f-submit').disabled=true;
   status('Sending…','info');
-
   try{
-    var res=await fetch(SUPABASE_URL+'/rest/v1/tactical',{
-      method:'POST',
-      headers:{
-        'apikey':SUPABASE_ANON_KEY,
-        'Authorization':'Bearer '+SUPABASE_ANON_KEY,
-        'Content-Type':'application/json',
-        'Prefer':'return=minimal'
-      },
-      body:JSON.stringify(rec)
-    });
-
+    var res=await aaSaveReport(rec);
     if(res.ok){
-      el('done-msg').textContent=person+', your report for the week of '+prettyWeek(weekOf)+
-        ' is with leadership. Thank you.';
+      try{localStorage.setItem('aa-tactical-person',person);}catch(e){}
+      el('done-msg').textContent=person+', your report for the tactical call on '+aaPrettyDate(w,true)+' is on the board.';
+      el('done-board').href=AA_BOARD_PATH+'?week='+w;
       el('view-form').style.display='none';
       el('view-done').style.display='block';
+      status('');
       window.scrollTo(0,0);
-      return;
-    }
-
-    var body=await res.text();
-    // The unique (person, week_of) index is what stops a second report for the
-    // same week. Say so plainly instead of leaking the Postgres error.
-    if(res.status===409||/duplicate key|tactical_person_week/i.test(body)){
-      status('A report for '+person+' already exists for the week of '+prettyWeek(weekOf)+
-             '. Ask a supervisor to update it in the leadership panel.','err');
-    }else if(res.status===401||res.status===403){
-      status('This form could not submit — it may not be set up yet. Let leadership know.','err');
+    }else if(res.status===401||res.status===403||res.status===404){
+      status('The form could not save. It may not be set up yet. Let leadership know.','err');
     }else{
       status('Submit failed ('+res.status+'). Try again in a moment.','err');
     }
@@ -265,18 +238,18 @@ async function submitForm(){
 }
 
 function resetForm(){
-  SECTIONS.forEach(function(sec){ var t=el('f-'+sec.key); if(t) t.value=''; });
+  fill(null);
   el('f-person').value='';
-  el('f-date').value=todayISO();
-  showWeek();
-  status('');
-  el('f-submit').disabled=false;
+  el('f-date').value=aaNextCall();
+  history.replaceState(null,'',AA_FORM_PATH);
+  showWeek();checkExisting();status('');
   el('view-done').style.display='none';
   el('view-form').style.display='block';
   window.scrollTo(0,0);
 }
 
 buildForm();
+document.getElementById('aa-logo').innerHTML=AA_LOGO;
 </script>
 </body>
 </html>
