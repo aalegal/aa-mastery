@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>UC Tactical Meeting</title>
+<link rel="icon" href="/uc-tactical/uplift-logo.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/uc-tactical/uc.css">
+<style>
+  .weekbar{display:flex;align-items:center;gap:14px;flex-wrap:wrap;padding:16px 20px;margin-bottom:14px}
+  .weeknav{display:flex;align-items:center;gap:6px}
+  .icon-btn{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:#fff;color:var(--navy);
+    display:grid;place-items:center;font-size:16px}
+  .icon-btn:hover{border-color:var(--navy)}
+  .week-label{flex:1;min-width:200px}
+  .week-label .k{font-size:11px;font-weight:600;letter-spacing:1.6px;text-transform:uppercase;color:var(--gold-dark)}
+  .week-label .d{font-family:var(--serif);font-size:22px;font-weight:700;color:var(--navy);line-height:1.2}
+  .weekbar select{padding:9px 34px 9px 12px;border-radius:999px;border:1px solid var(--line);background:#fff;
+    font-size:13px;color:var(--navy);font-weight:500;appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%231a365d' stroke-width='1.6' fill='none' stroke-linecap='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 12px center}
+
+  .roster{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:26px;align-items:center}
+  .roster .lead{font-size:13px;color:var(--muted);margin-right:4px}
+  .chip{display:inline-flex;align-items:center;gap:7px;padding:5px 12px 5px 5px;border-radius:999px;font-size:13px;font-weight:500;
+    background:#fff;border:1px solid var(--line)}
+  .chip.in{border-color:#bfe6d4;background:var(--green-wash);color:var(--green)}
+  .chip.out{color:var(--dim)}
+  .chip .av{width:22px;height:22px;font-size:10.5px}
+
+  .av{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:700;font-size:12.5px;flex:none}
+
+  .section{margin-bottom:34px}
+  .sec-head{display:flex;align-items:baseline;gap:12px;margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--line)}
+  .sec-num{font-family:var(--serif);font-size:15px;font-weight:700;color:var(--navy-dark);background:var(--gold);
+    width:30px;height:30px;border-radius:50%;display:grid;place-items:center;flex:none;transform:translateY(4px)}
+  .sec-head h2{font-family:var(--serif);font-size:24px;font-weight:700;color:var(--navy);letter-spacing:-.2px}
+
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+  .entry{padding:16px 18px 18px;display:flex;flex-direction:column;border-top:3px solid var(--navy)}
+  .entry-head{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .entry-name{font-weight:600;font-size:15px;flex:1}
+  .entry-edit{font-size:12px;font-weight:600;color:var(--navy);text-decoration:none;border:1px solid var(--line);
+    border-radius:999px;padding:4px 11px}
+  .entry-edit:hover{border-color:var(--navy)}
+  .entry-body{font-size:14px;line-height:1.65;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere;color:var(--text)}
+  .entry-body.empty{color:var(--dim);font-style:italic}
+  .entry.missing{border-top-color:var(--line);background:#fbfaf6;box-shadow:none}
+  .entry.missing .entry-name{color:var(--dim)}
+  .entry-meta{margin-top:auto;padding-top:12px;font-size:11.5px;color:var(--dim)}
+
+  .state{padding:40px 24px;text-align:center;color:var(--muted);font-size:14px}
+  #b-error{margin-bottom:16px}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="logo"><img src="/uc-tactical/uplift-logo.png" alt="Uplift Communities"></div>
+    <div class="mast-title">
+      <div class="mast-kicker">Uplift Communities</div>
+      <h1>UC Tactical Meeting</h1>
+    </div>
+    <div class="mast-actions">
+      <button class="btn btn-ghost" type="button" id="b-copy">Copy form link</button>
+      <a class="btn btn-gold" href="/uc-tactical/form" id="b-form">Open the form</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="card weekbar">
+    <div class="weeknav">
+      <button class="icon-btn" type="button" id="b-prev" title="Previous Wednesday" aria-label="Previous Wednesday">&#8249;</button>
+      <button class="icon-btn" type="button" id="b-next" title="Next Wednesday" aria-label="Next Wednesday">&#8250;</button>
+    </div>
+    <div class="week-label">
+      <div class="k">Tactical call</div>
+      <div class="d" id="b-date"></div>
+    </div>
+    <select id="b-weeks" aria-label="Jump to a meeting"></select>
+    <button class="btn btn-line" type="button" id="b-refresh">Refresh</button>
+  </div>
+
+  <div class="roster" id="b-roster"></div>
+  <div class="note err" id="b-error"></div>
+  <div id="b-board"><div class="card state">Loading reports&hellip;</div></div>
+
+  <div class="foot">Uplift Communities &middot; Tactical Meeting &middot; reports from the UC Tactical Report Form</div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script src="/uc-tactical/uc.js"></script>
+<script>
+var AV_COLORS=['#1a365d','#b8922e','#2563eb','#0f7a55','#7a3e9d','#b4233c','#0e7490','#5b6474'];
+var week=ucWednesdayOf(new URLSearchParams(location.search).get('week'))||ucWednesdayOf(todayISO());
+var knownWeeks=[];
+
+function avatar(name){
+  var i=UC_PEOPLE.indexOf(name);
+  if(i<0){i=0;for(var c=0;c<name.length;c++) i+=name.charCodeAt(c);}
+  return '<span class="av" style="background:'+AV_COLORS[i%AV_COLORS.length]+'">'+esc(name.charAt(0).toUpperCase())+'</span>';
+}
+
+function toast(msg){
+  var t=el('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('show');},1800);
+}
+
+function formHref(person){
+  return UC_FORM_PATH+'?person='+encodeURIComponent(person)+'&week='+week;
+}
+
+function stamp(rec){
+  var d=new Date(rec.updated_at||rec.created_at);
+  if(isNaN(d)) return '';
+  var edited=rec.updated_at&&rec.created_at&&(new Date(rec.updated_at)-new Date(rec.created_at)>60000);
+  return (edited?'Updated ':'Submitted ')+d.toLocaleDateString('en-US',{month:'short',day:'numeric'})+', '+
+         d.toLocaleTimeString('en-US',{hour:'numeric',minute:'2-digit'});
+}
+
+function renderWeekPicker(){
+  var weeks=knownWeeks.slice(),cur=ucWednesdayOf(todayISO());
+  if(weeks.indexOf(cur)<0) weeks.push(cur);
+  if(weeks.indexOf(week)<0) weeks.push(week);
+  weeks.sort().reverse();
+  el('b-weeks').innerHTML=weeks.map(function(w){
+    var has=knownWeeks.indexOf(w)>=0;
+    return '<option value="'+w+'"'+(w===week?' selected':'')+'>'+
+      esc(ucPrettyDate(w))+(w===cur?' (this week)':'')+(has?'':' (no reports)')+'</option>';
+  }).join('');
+}
+
+function render(rows){
+  var byPerson={};
+  rows.forEach(function(r){byPerson[r.person]=r;});
+  // Everyone on the roster, plus anyone who filed but has since left the list.
+  var people=UC_PEOPLE.slice();
+  rows.forEach(function(r){ if(people.indexOf(r.person)<0) people.push(r.person); });
+
+  var inCount=people.filter(function(p){return byPerson[p];}).length;
+  el('b-roster').innerHTML='<span class="lead">'+inCount+' of '+people.length+' reports in</span>'+
+    people.map(function(p){
+      return '<span class="chip '+(byPerson[p]?'in':'out')+'">'+avatar(p)+esc(p)+(byPerson[p]?' &#10003;':'')+'</span>';
+    }).join('');
+
+  el('b-board').innerHTML=UC_SECTIONS.map(function(s,i){
+    return '<section class="section">'+
+      '<div class="sec-head"><span class="sec-num">'+(i+1)+'</span><h2>'+esc(s.short)+'</h2></div>'+
+      '<div class="grid">'+people.map(function(p){
+        var r=byPerson[p];
+        if(!r){
+          return '<div class="card entry missing"><div class="entry-head">'+avatar(p)+
+            '<span class="entry-name">'+esc(p)+'</span>'+
+            '<a class="entry-edit" href="'+formHref(p)+'">Add report</a></div>'+
+            '<div class="entry-body empty">No report yet</div></div>';
+        }
+        var txt=(r[s.key]||'').trim();
+        return '<div class="card entry"><div class="entry-head">'+avatar(p)+
+          '<span class="entry-name">'+esc(p)+'</span>'+
+          '<a class="entry-edit" href="'+formHref(p)+'">Edit</a></div>'+
+          '<div class="entry-body'+(txt?'':' empty')+'">'+(txt?esc(txt):'Nothing added for this section')+'</div>'+
+          '<div class="entry-meta">'+esc(stamp(r))+'</div></div>';
+      }).join('')+'</div></section>';
+  }).join('');
+}
+
+async function load(){
+  el('b-date').textContent=ucPrettyDate(week,true);
+  el('b-form').href=UC_FORM_PATH+'?week='+week;
+  history.replaceState(null,'',UC_BOARD_PATH+'?week='+week);
+  renderWeekPicker();
+  var err=el('b-error');err.className='note err';
+  try{
+    var results=await Promise.all([ucFetchWeek(week),ucFetchWeeks()]);
+    knownWeeks=results[1];
+    renderWeekPicker();
+    render(results[0]);
+  }catch(e){
+    err.textContent='Could not load reports. Check your connection, then press Refresh.';
+    err.className='note err show';
+    el('b-board').innerHTML='';
+  }
+}
+
+function go(w){week=w;load();}
+
+el('b-prev').addEventListener('click',function(){go(ucAddDays(week,-7));});
+el('b-next').addEventListener('click',function(){go(ucAddDays(week,7));});
+el('b-weeks').addEventListener('change',function(){go(this.value);});
+el('b-refresh').addEventListener('click',function(){load().then(function(){toast('Board refreshed');});});
+el('b-copy').addEventListener('click',function(){
+  var link=ucFormLink();
+  (navigator.clipboard?navigator.clipboard.writeText(link):Promise.reject())
+    .then(function(){toast('Form link copied');})
+    .catch(function(){window.prompt('Copy the form link:',link);});
+});
+document.addEventListener('visibilitychange',function(){ if(!document.hidden) load(); });
+
+load();
+</script>
+</body>
+</html>
