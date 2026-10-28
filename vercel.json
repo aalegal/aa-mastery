@@ -6,6 +6,8 @@
     { "source": "/wellness/", "destination": "/wellness/index.html" },
     { "source": "/tactical", "destination": "/tactical/index.html" },
     { "source": "/tactical/", "destination": "/tactical/index.html" },
+    { "source": "/tactical/board", "destination": "/tactical/board.html" },
+    { "source": "/tactical/board/", "destination": "/tactical/board.html" },
     { "source": "/uc-tactical", "destination": "/uc-tactical/index.html" },
     { "source": "/uc-tactical/", "destination": "/uc-tactical/index.html" },
     { "source": "/uc-tactical/form", "destination": "/uc-tactical/form.html" },
