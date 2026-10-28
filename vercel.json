@@ -6,8 +6,12 @@
     { "source": "/wellness/", "destination": "/wellness/index.html" },
     { "source": "/tactical", "destination": "/tactical/index.html" },
     { "source": "/tactical/", "destination": "/tactical/index.html" },
+    { "source": "/uc-tactical", "destination": "/uc-tactical/index.html" },
+    { "source": "/uc-tactical/", "destination": "/uc-tactical/index.html" },
+    { "source": "/uc-tactical/form", "destination": "/uc-tactical/form.html" },
+    { "source": "/uc-tactical/form/", "destination": "/uc-tactical/form.html" },
     {
-      "source": "/((?!og-image\\.png$|qc-engine\\.js$|extraction-engine\\.js$|cir-docs\\.js$|accent-trainer|wellness|tactical|protocols/).*)",
+      "source": "/((?!og-image\\.png$|qc-engine\\.js$|extraction-engine\\.js$|cir-docs\\.js$|accent-trainer|wellness|tactical|uc-tactical|protocols/).*)",
       "destination": "/index.html"
     }
   ]

@@ -20,7 +20,7 @@ Then open `http://localhost:8000`.
 
 ## Deploying
 
-Push to `main` — Vercel auto-deploys. All other routes are rewritten to `index.html` by the catch-all in `vercel.json`, which excludes the static files the page loads (`og-image.png`, `qc-engine.js`, `extraction-engine.js`, `cir-docs.js`, `protocols/`) and the standalone pages (`accent-trainer`, `wellness`, `tactical`).
+Push to `main` — Vercel auto-deploys. All other routes are rewritten to `index.html` by the catch-all in `vercel.json`, which excludes the static files the page loads (`og-image.png`, `qc-engine.js`, `extraction-engine.js`, `cir-docs.js`, `protocols/`) and the standalone pages (`accent-trainer`, `wellness`, `tactical`, `uc-tactical`). `uc-tactical/` is the Uplift Communities tactical meeting (form + board): public, no login, shares nothing with the main app, backed by the `uc_tactical` table; its member list is `UC_PEOPLE` in `uc-tactical/uc.js`.
 
 ## Architecture
 
