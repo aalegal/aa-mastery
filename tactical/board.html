@@ -62,6 +62,35 @@
   .share .msg{font-size:12.5px;color:var(--green);font-weight:600}
   .share .msg.warn{color:var(--muted);font-weight:500}
 
+
+  .grid{align-items:start}
+  .entry.can-open{cursor:zoom-in;transition:transform .12s,box-shadow .12s,border-color .12s}
+  .entry.can-open:hover{transform:translateY(-2px);box-shadow:0 14px 34px -14px rgba(0,0,0,.45);border-color:var(--gold)}
+  .entry.can-open:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+  .entry-open{font-size:11.5px;color:var(--dim);margin-top:6px}
+
+  /* ── Full-screen reading view for screen sharing ── */
+  body.presenting{overflow:hidden}
+  .present{position:fixed;inset:0;z-index:40;display:none;flex-direction:column;background:var(--bg)}
+  .present.show{display:flex}
+  .pr-top{display:flex;align-items:center;gap:14px;padding:14px 22px;background:var(--navy);color:#fff;flex-wrap:wrap;
+    border-bottom:3px solid var(--gold)}
+  .pr-sec{font-size:12px;font-weight:600;letter-spacing:1.8px;text-transform:uppercase;color:var(--gold-light)}
+  .pr-who{display:flex;align-items:center;gap:12px;flex:1;min-width:220px}
+  .pr-who .av{width:44px;height:44px;font-size:18px;box-shadow:0 0 0 2px rgba(255,255,255,.85)}
+  .pr-name{font-family:var(--serif);font-size:30px;font-weight:700;line-height:1.1;color:#fff}
+  .pr-count{font-size:13px;color:rgba(255,255,255,.75)}
+  .pr-btns{display:flex;gap:8px;flex-wrap:wrap}
+  .pr-btn{border-radius:999px;padding:9px 16px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,.3);
+    background:rgba(255,255,255,.08);color:#fff}
+  .pr-btn:hover{background:rgba(255,255,255,.18)}
+  .pr-btn:disabled{opacity:.35;cursor:default}
+  .pr-body{flex:1;overflow:auto;padding:4vh 6vw 6vh}
+  .pr-text{max-width:1100px;margin:0 auto;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--text);
+    font-size:clamp(20px,2.3vw,34px);line-height:1.6}
+  .pr-foot{text-align:center;font-size:12px;color:var(--dim);padding:10px;border-top:1px solid var(--line)}
+  @media(max-width:560px){.pr-name{font-size:23px}.pr-body{padding:24px 18px}}
+
   .state{padding:40px 24px;text-align:center;color:var(--muted);font-size:14px}
   #b-error{margin-bottom:16px}
 </style>
@@ -109,6 +138,23 @@
 
   <div class="foot">AA Team &middot; Tactical Meeting &middot; reports from the AA Tactical Report Form</div>
 </main>
+
+<div class="present" id="pr" role="dialog" aria-modal="true" aria-label="Report, full screen">
+  <div class="pr-top">
+    <div class="pr-who"><span id="pr-av"></span>
+      <div><div class="pr-sec" id="pr-sec"></div><div class="pr-name" id="pr-name"></div></div>
+    </div>
+    <span class="pr-count" id="pr-count"></span>
+    <div class="pr-btns">
+      <button class="pr-btn" type="button" id="pr-prev">&#8592; Previous</button>
+      <button class="pr-btn" type="button" id="pr-next">Next &#8594;</button>
+      <button class="pr-btn" type="button" id="pr-full">Full screen</button>
+      <button class="pr-btn" type="button" id="pr-close">Close &#10005;</button>
+    </div>
+  </div>
+  <div class="pr-body" id="pr-body"><div class="pr-text" id="pr-text"></div></div>
+  <div class="pr-foot">&#8592; &#8594; to move between reports &middot; F for full screen &middot; Esc to close</div>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -167,6 +213,7 @@ function render(rows){
       return '<span class="chip '+(byPerson[p]?'in':'out')+'">'+avatar(p)+esc(p)+(byPerson[p]?' &#10003;':'')+'</span>';
     }).join('');
 
+  SLIDES=[];
   el('b-board').innerHTML=AA_SECTIONS.map(function(s,i){
     return '<section class="section">'+
       '<div class="sec-head"><span class="sec-num">'+(i+1)+'</span><h2>'+esc(s.short)+'</h2></div>'+
@@ -179,11 +226,16 @@ function render(rows){
             '<div class="entry-body empty">No report yet</div></div>';
         }
         var txt=(r[s.key]||'').trim();
-        return '<div class="card entry"><div class="entry-head">'+avatar(p)+
+        var open='';
+        if(txt){
+          SLIDES.push({section:s.short,secNum:i+1,person:p,text:txt});
+          open=' can-open" tabindex="0" role="button" title="Open full screen" data-slide="'+(SLIDES.length-1);
+        }
+        return '<div class="card entry'+open+'"><div class="entry-head">'+avatar(p)+
           '<span class="entry-name">'+esc(p)+'</span>'+
           '<a class="entry-edit" href="'+formHref(p)+'">Edit</a></div>'+
           '<div class="entry-body'+(txt?'':' empty')+'">'+(txt?esc(txt):'Nothing added for this section')+'</div>'+
-          '<div class="entry-meta">'+esc(stamp(r))+'</div></div>';
+          '<div class="entry-meta">'+esc(stamp(r))+(txt?' &middot; click to read full screen':'')+'</div></div>';
       }).join('')+'</div></section>';
   }).join('');
 }
@@ -243,7 +295,64 @@ function shareLink(){
 el('b-copy').addEventListener('click',shareLink);
 el('b-share-copy').addEventListener('click',shareLink);
 el('b-share-link').addEventListener('focus',function(){this.select();});
-document.addEventListener('visibilitychange',function(){ if(!document.hidden) load(); });
+document.addEventListener('visibilitychange',function(){ if(!document.hidden&&slideAt<0) load(); });
+// ── Full-screen reading view ──
+// Every filled-in box, in meeting order: each section, then each person.
+var SLIDES=[],slideAt=-1;
+
+function openSlide(i){
+  if(i<0||i>=SLIDES.length) return;
+  slideAt=i;
+  var s=SLIDES[i];
+  el('pr-av').innerHTML=avatar(s.person);
+  el('pr-sec').textContent=(s.secNum)+'. '+s.section;
+  el('pr-name').textContent=s.person;
+  el('pr-text').textContent=s.text;
+  el('pr-count').textContent=(i+1)+' of '+SLIDES.length;
+  el('pr-prev').disabled=i===0;
+  el('pr-next').disabled=i===SLIDES.length-1;
+  el('pr').classList.add('show');
+  document.body.classList.add('presenting');
+  el('pr-body').scrollTop=0;
+}
+
+function closeSlide(){
+  slideAt=-1;
+  el('pr').classList.remove('show');
+  document.body.classList.remove('presenting');
+  if(document.fullscreenElement&&document.exitFullscreen) document.exitFullscreen().catch(function(){});
+}
+
+function toggleFull(){
+  if(document.fullscreenElement){ document.exitFullscreen().catch(function(){}); return; }
+  var r=document.documentElement;
+  if(r.requestFullscreen) r.requestFullscreen().catch(function(){ toast('Full screen is blocked here. Use your browser’s full-screen instead.'); });
+}
+
+el('b-board').addEventListener('click',function(e){
+  if(e.target.closest('a')) return;
+  var card=e.target.closest('[data-slide]');
+  if(card) openSlide(+card.getAttribute('data-slide'));
+});
+el('b-board').addEventListener('keydown',function(e){
+  var card=e.target.closest('[data-slide]');
+  if(card&&(e.key==='Enter'||e.key===' ')){ e.preventDefault(); openSlide(+card.getAttribute('data-slide')); }
+});
+el('pr-prev').addEventListener('click',function(){openSlide(slideAt-1);});
+el('pr-next').addEventListener('click',function(){openSlide(slideAt+1);});
+el('pr-close').addEventListener('click',closeSlide);
+el('pr-full').addEventListener('click',toggleFull);
+document.addEventListener('fullscreenchange',function(){
+  el('pr-full').textContent=document.fullscreenElement?'Exit full screen':'Full screen';
+});
+document.addEventListener('keydown',function(e){
+  if(slideAt<0) return;
+  if(e.key==='Escape'&&!document.fullscreenElement) closeSlide();
+  else if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); openSlide(slideAt+1); }
+  else if(e.key==='ArrowLeft'||e.key==='PageUp'){ e.preventDefault(); openSlide(slideAt-1); }
+  else if(e.key==='f'||e.key==='F') toggleFull();
+});
+
 
 load();
 document.getElementById('aa-logo').innerHTML=AA_LOGO;
